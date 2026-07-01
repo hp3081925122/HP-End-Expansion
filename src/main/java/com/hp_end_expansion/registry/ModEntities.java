@@ -1,6 +1,7 @@
 package com.hp_end_expansion.registry;
 
 import com.hp_end_expansion.HpEndExpansion;
+import com.hp_end_expansion.world.entity.EnderBox;
 import com.hp_end_expansion.world.entity.VoidWhale;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
@@ -21,12 +22,19 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<VoidWhale>> VOID_WHALE = ENTITIES.register("void_whale", () -> EntityType.Builder.of(VoidWhale::new, MobCategory.CREATURE)
             .fireImmune()
             .canSpawnFarFromPlayer()
-            .sized(24.0F, 12.3F)
-            .eyeHeight(8.4F)
+            .sized(12.0F, 6.3F)
+            .eyeHeight( 4.4F)
             .passengerAttachments(9.0F)
             .clientTrackingRange(32)
             .updateInterval(2)
             .build("void_whale"));
+
+    // 末影盒实体类型，当前先使用临时方块渲染占位。
+    public static final DeferredHolder<EntityType<?>, EntityType<EnderBox>> ENDER_BOX = ENTITIES.register("ender_box", () -> EntityType.Builder.of(EnderBox::new, MobCategory.CREATURE)
+            .sized(1.0F, 1.0F)
+            .clientTrackingRange(8)
+            .updateInterval(3)
+            .build("ender_box"));
 
     // 实体注册类只提供静态入口，不允许实例化。
     private ModEntities() {
@@ -40,6 +48,7 @@ public final class ModEntities {
     // 注册虚空鲸属性。
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
+        event.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
     }
 
     // 注册虚空鲸生成条件。

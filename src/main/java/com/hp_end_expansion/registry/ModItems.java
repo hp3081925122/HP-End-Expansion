@@ -1,6 +1,8 @@
 package com.hp_end_expansion.registry;
 
 import com.hp_end_expansion.HpEndExpansion;
+import com.hp_end_expansion.world.item.EnderBoxItem;
+import com.hp_end_expansion.world.item.PetBagItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -15,6 +17,9 @@ public final class ModItems {
 
     // 虚空鲸刷怪蛋。
     public static final DeferredItem<DeferredSpawnEggItem> VOID_WHALE_SPAWN_EGG = ITEMS.register("void_whale_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.VOID_WHALE, 0x1D0B2E, 0xC77DFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ENDER_BOX_SPAWN_EGG = ITEMS.register("ender_box_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ENDER_BOX, 0x2A103D, 0xB05CFF, new Item.Properties()));
+    public static final DeferredItem<EnderBoxItem> ENDER_BOX = ITEMS.register("ender_box", () -> new EnderBoxItem(new Item.Properties()));
+    public static final DeferredItem<PetBagItem> PET_BAG = ITEMS.register("pet_bag", () -> new PetBagItem(new Item.Properties()));
 
     // 物品注册类只提供静态入口，不允许实例化。
     private ModItems() {
@@ -30,6 +35,11 @@ public final class ModItems {
     private static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
             event.accept(VOID_WHALE_SPAWN_EGG.get());
+            event.accept(ENDER_BOX_SPAWN_EGG.get());
+        }
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(ENDER_BOX.get());
+            event.accept(PET_BAG.get());
         }
     }
 }

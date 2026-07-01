@@ -20,6 +20,6 @@ public class VoidWhaleRenderer extends GeoEntityRenderer<VoidWhale> {
     protected void applyRotations(VoidWhale animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
         super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
         poseStack.mulPose(Axis.YP.rotationDegrees(-90.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-animatable.getXRot()));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(animatable.getXRot()));
     }
 }

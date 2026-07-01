@@ -1,4 +1,13 @@
 {
   "entity.hp_end_expansion.void_whale": "Void Whale",
-  "item.hp_end_expansion.void_whale_spawn_egg": "Void Whale Spawn Egg"
+  "entity.hp_end_expansion.ender_box": "Ender Box",
+  "item.hp_end_expansion.void_whale_spawn_egg": "Void Whale Spawn Egg",
+  "item.hp_end_expansion.ender_box_spawn_egg": "Ender Box Spawn Egg",
+  "item.hp_end_expansion.ender_box": "Ender Box",
+  "item.hp_end_expansion.ender_box.contents": "%s items stored",
+  "item.hp_end_expansion.pet_bag": "Pet Bag",
+  "item.hp_end_expansion.pet_bag.empty": "Empty",
+  "item.hp_end_expansion.pet_bag.contains": "Contains: %s",
+  "key.categories.hp_end_expansion": "HP End Expansion",
+  "key.hp_end_expansion.open_ender_box": "Open Ender Box"
 }

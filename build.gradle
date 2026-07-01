@@ -69,8 +69,8 @@ configurations {
 }
 
 dependencies {
-    implementation name: 'geckolib-neoforge-1.21.1-4.8.4'
-    localRuntime name: 'geckolib-neoforge-1.21.1-4.8.4'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    localRuntime fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {

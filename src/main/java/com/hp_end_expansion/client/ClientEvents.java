@@ -1,11 +1,15 @@
 package com.hp_end_expansion.client;
 
 import com.hp_end_expansion.HpEndExpansion;
+import com.hp_end_expansion.client.renderer.EnderBoxRenderer;
 import com.hp_end_expansion.client.renderer.VoidWhaleRenderer;
+import com.hp_end_expansion.network.OpenEnderBoxPayload;
 import com.hp_end_expansion.network.VoidWhaleTeleportPayload;
 import com.hp_end_expansion.registry.ModEntities;
 import com.hp_end_expansion.world.entity.VoidWhale;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
@@ -13,9 +17,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
 
 public final class ClientEvents {
+    private static final KeyMapping OPEN_ENDER_BOX = new KeyMapping("key.hp_end_expansion.open_ender_box", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.hp_end_expansion");
+
     // 客户端事件类只提供静态事件入口，不允许实例化。
     private ClientEvents() {
     }
@@ -31,6 +39,12 @@ public final class ClientEvents {
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(ModEntities.VOID_WHALE.get(), VoidWhaleRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_BOX.get(), EnderBoxRenderer::new);
+        }
+
+        @SubscribeEvent
+        public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
+            event.register(OPEN_ENDER_BOX);
         }
     }
 
@@ -61,6 +75,15 @@ public final class ClientEvents {
                 PacketDistributor.sendToServer(VoidWhaleTeleportPayload.INSTANCE);
                 event.setSwingHand(false);
                 event.setCanceled(true);
+            }
+        }
+
+        @SubscribeEvent
+        public static void onKeyInput(InputEvent.Key event) {
+            while (OPEN_ENDER_BOX.consumeClick()) {
+                if (Minecraft.getInstance().player != null) {
+                    PacketDistributor.sendToServer(OpenEnderBoxPayload.INSTANCE);
+                }
             }
         }
     }

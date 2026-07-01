@@ -1,4 +1,13 @@
 {
   "entity.hp_end_expansion.void_whale": "虚空鲸",
-  "item.hp_end_expansion.void_whale_spawn_egg": "虚空鲸刷怪蛋"
+  "entity.hp_end_expansion.ender_box": "末影盒",
+  "item.hp_end_expansion.void_whale_spawn_egg": "虚空鲸刷怪蛋",
+  "item.hp_end_expansion.ender_box_spawn_egg": "末影盒刷怪蛋",
+  "item.hp_end_expansion.ender_box": "末影盒",
+  "item.hp_end_expansion.ender_box.contents": "已存入 %s 个物品",
+  "item.hp_end_expansion.pet_bag": "宠物袋",
+  "item.hp_end_expansion.pet_bag.empty": "空",
+  "item.hp_end_expansion.pet_bag.contains": "收容：%s",
+  "key.categories.hp_end_expansion": "HP 末地扩展",
+  "key.hp_end_expansion.open_ender_box": "打开末影盒"
 }
