@@ -315,6 +315,7 @@ public class VoidWhale extends TamableAnimal implements GeoEntity {
         // 在传送前后生成传送粒子并触发动画。
         this.sendPortalParticles(serverLevel, this.position(), 80);
         this.teleportTo(target.x, y, target.z);
+        player.teleportTo(target.x, target.y, target.z);
         this.setDeltaMovement(Vec3.ZERO);
         this.teleportCooldown = 40;
         this.triggerAnim("main", "teleport");
@@ -328,13 +329,23 @@ public class VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 根据玩家输入控制虚空鲸移动。
     private void travelWithRider(Player player) {
+        // 手持末影珍珠骑乘时，虚空鲸获得额外移动倍率。
+        boolean hasPearl = player.getMainHandItem().is(Items.ENDER_PEARL) || player.getOffhandItem().is(Items.ENDER_PEARL);
+        double pearlSpeedMultiplier = hasPearl ? 1.5 : 1.0;
+
+        // 服务端每秒有 2% 概率吃掉骑乘玩家手上的一颗末影珍珠。
+        if (!this.level().isClientSide && hasPearl && this.tickCount % 20 == 0 && this.random.nextFloat() < 0.02F && !player.getAbilities().instabuild) {
+            ItemStack pearlStack = player.getMainHandItem().is(Items.ENDER_PEARL) ? player.getMainHandItem() : player.getOffhandItem();
+            pearlStack.shrink(1);
+        }
+
         // 获取玩家视线、侧向、前进、横移和下降输入。
         Vec3 look = player.getLookAngle().normalize();
         Vec3 side = new Vec3(look.z, 0.0, -look.x).normalize();
         double forward = player.zza;
         double strafe = player.xxa;
         double descent = player.isShiftKeyDown() ? -RIDER_DESCEND_SPEED : 0.0;
-        Vec3 desired = look.scale(forward * RIDER_FORWARD_SPEED).add(side.scale(strafe * RIDER_STRAFE_SPEED)).add(0.0, descent, 0.0);
+        Vec3 desired = look.scale(forward * RIDER_FORWARD_SPEED * pearlSpeedMultiplier).add(side.scale(strafe * RIDER_STRAFE_SPEED * pearlSpeedMultiplier)).add(0.0, descent * pearlSpeedMultiplier, 0.0);
 
         // 有移动输入时朝向移动方向，没有移动输入时朝向玩家视线方向。
         if (desired.lengthSqr() > 1.0E-4) {

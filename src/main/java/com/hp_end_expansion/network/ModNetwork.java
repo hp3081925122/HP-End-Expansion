@@ -21,5 +21,6 @@ public final class ModNetwork {
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
         registrar.playToServer(VoidWhaleTeleportPayload.TYPE, VoidWhaleTeleportPayload.STREAM_CODEC, VoidWhaleTeleportPayload::handle);
+        registrar.playToServer(OpenEnderBoxPayload.TYPE, OpenEnderBoxPayload.STREAM_CODEC, OpenEnderBoxPayload::handle);
     }
 }
