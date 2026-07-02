@@ -4,8 +4,8 @@
 		{
 			"description": {
 				"identifier": "geometry.hp_end_expansion.ender_snail",
-				"texture_width": 64,
-				"texture_height": 64,
+				"texture_width": 128,
+				"texture_height": 128,
 				"visible_bounds_width": 2.5,
 				"visible_bounds_height": 2.25,
 				"visible_bounds_offset": [
@@ -43,7 +43,7 @@
 								4,
 								7
 							],
-							"inflate": 0.08,
+							"inflate": 0.16,
 							"uv": {
 								"north": {
 									"uv": [
@@ -129,7 +129,7 @@
 								5,
 								1
 							],
-							"inflate": 0.02,
+							"inflate": 0.06,
 							"uv": {
 								"north": {
 									"uv": [
@@ -204,7 +204,7 @@
 								2,
 								2
 							],
-							"inflate": 0.02,
+							"inflate": 0.08,
 							"uv": {
 								"north": {
 									"uv": [
@@ -290,7 +290,7 @@
 								5,
 								1
 							],
-							"inflate": 0.02,
+							"inflate": 0.06,
 							"uv": {
 								"north": {
 									"uv": [
@@ -365,7 +365,7 @@
 								2,
 								2
 							],
-							"inflate": 0.02,
+							"inflate": 0.08,
 							"uv": {
 								"north": {
 									"uv": [
@@ -451,7 +451,7 @@
 								5,
 								8
 							],
-							"inflate": 0.08,
+							"inflate": 0.16,
 							"uv": {
 								"north": {
 									"uv": [
@@ -537,7 +537,7 @@
 								2,
 								15
 							],
-							"inflate": 0.04,
+							"inflate": 0.12,
 							"uv": {
 								"north": {
 									"uv": [
@@ -623,66 +623,66 @@
 								8,
 								9
 							],
-							"inflate": 0.12,
+							"inflate": 0.28,
 							"uv": {
 								"north": {
 									"uv": [
-										49,
-										22
+										80,
+										64
 									],
 									"uv_size": [
-										6,
-										6
+										16,
+										16
 									]
 								},
 								"south": {
 									"uv": [
-										57,
-										22
+										112,
+										64
 									],
 									"uv_size": [
-										6,
-										6
+										16,
+										16
 									]
 								},
 								"east": {
 									"uv": [
-										55,
-										22
+										96,
+										64
 									],
 									"uv_size": [
-										2,
-										6
+										16,
+										16
 									]
 								},
 								"west": {
 									"uv": [
-										63,
-										22
+										64,
+										64
 									],
 									"uv_size": [
-										1,
-										6
+										16,
+										16
 									]
 								},
 								"up": {
 									"uv": [
-										49,
-										17
+										80,
+										48
 									],
 									"uv_size": [
-										6,
-										5
+										16,
+										16
 									]
 								},
 								"down": {
 									"uv": [
-										57,
-										17
+										80,
+										80
 									],
 									"uv_size": [
-										6,
-										5
+										16,
+										16
 									]
 								}
 							}
@@ -709,7 +709,7 @@
 								5,
 								1
 							],
-							"inflate": 0.04,
+							"inflate": 0.1,
 							"uv": {
 								"north": {
 									"uv": [
@@ -795,7 +795,7 @@
 								3,
 								2
 							],
-							"inflate": 0.02,
+							"inflate": 0.06,
 							"uv": {
 								"north": {
 									"uv": [
@@ -870,7 +870,7 @@
 								3,
 								2
 							],
-							"inflate": 0.02,
+							"inflate": 0.06,
 							"uv": {
 								"north": {
 									"uv": [
@@ -945,7 +945,7 @@
 								2,
 								2
 							],
-							"inflate": 0.02,
+							"inflate": 0.06,
 							"uv": {
 								"north": {
 									"uv": [
