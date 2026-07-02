@@ -546,6 +546,16 @@ public class EnderNavigator extends PathfinderMob implements GeoEntity {
             serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, x, this.anchorCenter.y + 0.35D, z, 4, 0.1D, 0.15D, 0.1D, 0.01D);
             serverLevel.sendParticles(ParticleTypes.END_ROD, x, this.anchorCenter.y + 0.35D, z, 1, 0.02D, 0.02D, 0.02D, 0.0D);
         }
+        for (int i = 0; i < 6; i++) {
+            double angle = this.anchorTicks * 0.17D + i * (Math.PI * 2.0D / 6.0D);
+            double x = this.anchorCenter.x + Math.cos(angle) * 2.8D;
+            double z = this.anchorCenter.z + Math.sin(angle) * 2.8D;
+            for (int heightStep = 0; heightStep < 2; heightStep++) {
+                double y = this.anchorCenter.y + 0.85D + heightStep * 0.9D + (i % 2) * 0.28D;
+                serverLevel.sendParticles(ParticleTypes.END_ROD, x, y, z, 1, 0.025D, 0.04D, 0.025D, 0.0D);
+                serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, x, y + 0.12D, z, 1, 0.04D, 0.08D, 0.04D, 0.015D);
+            }
+        }
         serverLevel.sendParticles(ParticleTypes.PORTAL, this.anchorCenter.x, this.anchorCenter.y + 0.35D, this.anchorCenter.z, 8, 0.4D, 0.2D, 0.4D, 0.01D);
 
         for (LivingEntity livingEntity : serverLevel.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(18.0D), entity -> entity.isAlive() && entity != this && entity.distanceToSqr(this.anchorCenter) <= 30.25D)) {
