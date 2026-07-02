@@ -32,8 +32,8 @@ public class EnderSnailModel extends GeoModel<EnderSnail> {
 
     // 按晶簇状态隐藏或显示壳上的晶簇骨骼。
     @Override
-    public void setCustomAnimations(EnderSnail animatable, long 实例ID, AnimationState<EnderSnail> animationState) {
-        super.setCustomAnimations(animatable, 实例ID, animationState);
-        this.getBone("crystals").ifPresent(晶簇数量 -> 晶簇数量.setHidden(animatable.getChorusCrystals() <= 0));
+    public void setCustomAnimations(EnderSnail animatable, long instanceId, AnimationState<EnderSnail> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
+        this.getBone("crystals").ifPresent(crystals -> crystals.setHidden(animatable.getChorusCrystals() <= 0));
     }
 }

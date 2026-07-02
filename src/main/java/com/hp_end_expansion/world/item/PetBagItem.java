@@ -20,73 +20,73 @@ import net.minecraft.world.level.Level;
 
 public class PetBagItem extends Item {
     // 创建只能单个堆叠的宠物袋。
-    public PetBagItem(Properties 属性) {
-        super(属性.stacksTo(1));
+    public PetBagItem(Properties properties) {
+        super(properties.stacksTo(1));
     }
 
     // 右键自己的已驯服生物时，把宠物实体保存到物品组件中。
     @Override
-    public InteractionResult interactLivingEntity(ItemStack 物品栈, Player 玩家, LivingEntity 目标, InteractionHand 手) {
+    public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
         // 已经装有宠物的袋子不再收容其他实体。
-        if (物品栈.has(DataComponents.ENTITY_DATA)) {
+        if (stack.has(DataComponents.ENTITY_DATA)) {
             return InteractionResult.FAIL;
         }
 
         // 只允许收容属于当前玩家的已驯服宠物，避免误收其他生物。
-        if (!(目标 instanceof TamableAnimal 可驯服动物) || !可驯服动物.isTame() || !可驯服动物.isOwnedBy(玩家) || 目标.isPassenger() || 目标.isVehicle()) {
+        if (!(target instanceof TamableAnimal tamableAnimal) || !tamableAnimal.isTame() || !tamableAnimal.isOwnedBy(player) || target.isPassenger() || target.isVehicle()) {
             return InteractionResult.PASS;
         }
 
         // 服务端保存完整实体数据，然后移除世界中的原实体。
-        if (!玩家.level().isClientSide) {
-            CompoundTag 实体标签 = new CompoundTag();
-            if (!目标.saveAsPassenger(实体标签)) {
+        if (!player.level().isClientSide) {
+            CompoundTag entityTag = new CompoundTag();
+            if (!target.saveAsPassenger(entityTag)) {
                 return InteractionResult.FAIL;
             }
-            物品栈.set(DataComponents.ENTITY_DATA, CustomData.of(实体标签));
-            目标.discard();
+            stack.set(DataComponents.ENTITY_DATA, CustomData.of(entityTag));
+            target.discard();
         }
-        return InteractionResult.sidedSuccess(玩家.level().isClientSide);
+        return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
 
     // 潜行右键方块时，把宠物袋里的宠物重新放回世界。
     @Override
-    public InteractionResult useOn(UseOnContext 上下文) {
-        Player 玩家 = 上下文.getPlayer();
-        CustomData 实体数据 = 上下文.getItemInHand().get(DataComponents.ENTITY_DATA);
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        CustomData entityData = context.getItemInHand().get(DataComponents.ENTITY_DATA);
         // 空袋子或非潜行使用时，不拦截普通方块交互。
-        if (玩家 == null || 实体数据 == null || !玩家.isShiftKeyDown()) {
+        if (player == null || entityData == null || !player.isShiftKeyDown()) {
             return InteractionResult.PASS;
         }
 
-        Level 世界 = 上下文.getLevel();
+        Level level = context.getLevel();
         // 服务端从组件恢复实体，并放在点击方块的相邻位置。
-        if (!世界.isClientSide) {
-            Entity 实体 = EntityType.create(实体数据.copyTag(), 世界).orElse(null);
-            if (实体 == null) {
+        if (!level.isClientSide) {
+            Entity entity = EntityType.create(entityData.copyTag(), level).orElse(null);
+            if (entity == null) {
                 return InteractionResult.FAIL;
             }
-            实体.moveTo(上下文.getClickedPos().relative(上下文.getClickedFace()).getBottomCenter(), 上下文.getRotation(), 0.0F);
-            if (!世界.noCollision(实体)) {
+            entity.moveTo(context.getClickedPos().relative(context.getClickedFace()).getBottomCenter(), context.getRotation(), 0.0F);
+            if (!level.noCollision(entity)) {
                 return InteractionResult.FAIL;
             }
-            世界.addFreshEntity(实体);
-            上下文.getItemInHand().remove(DataComponents.ENTITY_DATA);
+            level.addFreshEntity(entity);
+            context.getItemInHand().remove(DataComponents.ENTITY_DATA);
         }
-        return InteractionResult.sidedSuccess(世界.isClientSide);
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     // 显示宠物袋当前是否装有宠物。
     @Override
-    public void appendHoverText(ItemStack 物品栈, TooltipContext 上下文, List<Component> 提示列表, TooltipFlag 提示标志) {
-        CustomData 实体数据 = 物品栈.get(DataComponents.ENTITY_DATA);
-        if (实体数据 == null) {
-            提示列表.add(Component.translatable("item.hp_end_expansion.pet_bag.empty"));
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        CustomData entityData = stack.get(DataComponents.ENTITY_DATA);
+        if (entityData == null) {
+            tooltip.add(Component.translatable("item.hp_end_expansion.pet_bag.empty"));
             return;
         }
 
         // 从实体数据里读取实体 id，方便玩家区分袋子内容。
-        String 实体ID = 实体数据.copyTag().getString("id");
-        提示列表.add(Component.translatable("item.hp_end_expansion.pet_bag.contains", 实体ID));
+        String entityId = entityData.copyTag().getString("id");
+        tooltip.add(Component.translatable("item.hp_end_expansion.pet_bag.contains", entityId));
     }
 }

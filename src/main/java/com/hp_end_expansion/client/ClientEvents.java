@@ -38,15 +38,15 @@ public final class ClientEvents {
 
         // 注册虚空鲸的 GeckoLib 实体渲染器。
         @SubscribeEvent
-        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers 事件) {
-            事件.registerEntityRenderer(ModEntities.VOID_WHALE.get(), VoidWhaleRenderer::new);
-            事件.registerEntityRenderer(ModEntities.ENDER_BOX.get(), EnderBoxRenderer::new);
-            事件.registerEntityRenderer(ModEntities.ENDER_SNAIL.get(), EnderSnailRenderer::new);
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.VOID_WHALE.get(), VoidWhaleRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_BOX.get(), EnderBoxRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_SNAIL.get(), EnderSnailRenderer::new);
         }
 
         @SubscribeEvent
-        public static void registerKeyMappings(RegisterKeyMappingsEvent 事件) {
-            事件.register(OPEN_ENDER_BOX);
+        public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
+            event.register(OPEN_ENDER_BOX);
         }
     }
 
@@ -59,29 +59,29 @@ public final class ClientEvents {
 
         // 骑乘虚空鲸且主手拿末影珍珠时，拦截攻击键并请求服务端传送。
         @SubscribeEvent
-        public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered 事件) {
+        public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
             // 只处理攻击键，其他交互键不参与传送逻辑。
-            if (!事件.isAttack()) {
+            if (!event.isAttack()) {
                 return;
             }
 
             // 玩家不存在或主手不是末影珍珠时不发包。
-            Minecraft 客户端 = Minecraft.getInstance();
-            if (客户端.player == null || !客户端.player.getMainHandItem().is(Items.ENDER_PEARL)) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.player == null || !minecraft.player.getMainHandItem().is(Items.ENDER_PEARL)) {
                 return;
             }
 
             // 只有骑乘虚空鲸时才向服务端发送传送请求。
-            Entity 载具 = 客户端.player.getVehicle();
-            if (载具 instanceof VoidWhale) {
+            Entity vehicle = minecraft.player.getVehicle();
+            if (vehicle instanceof VoidWhale) {
                 PacketDistributor.sendToServer(VoidWhaleTeleportPayload.INSTANCE);
-                事件.setSwingHand(false);
-                事件.setCanceled(true);
+                event.setSwingHand(false);
+                event.setCanceled(true);
             }
         }
 
         @SubscribeEvent
-        public static void onKeyInput(InputEvent.Key 事件) {
+        public static void onKeyInput(InputEvent.Key event) {
             while (OPEN_ENDER_BOX.consumeClick()) {
                 if (Minecraft.getInstance().player != null) {
                     PacketDistributor.sendToServer(OpenEnderBoxPayload.INSTANCE);

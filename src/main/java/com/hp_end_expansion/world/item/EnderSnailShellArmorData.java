@@ -14,19 +14,19 @@ public final class EnderSnailShellArmorData {
     }
 
     // 读取盔甲上的蜗牛壳层数。
-    public static int getShellCount(ItemStack 物品栈) {
-        CustomData 自定义数据 = 物品栈.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag 标签 = 自定义数据.copyTag();
-        return Math.max(0, 标签.getInt(SHELL_COUNT_TAG));
+    public static int getShellCount(ItemStack stack) {
+        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag tag = customData.copyTag();
+        return Math.max(0, tag.getInt(SHELL_COUNT_TAG));
     }
 
     // 设置盔甲上的蜗牛壳层数。
-    public static void setShellCount(ItemStack 物品栈, int 蜗牛壳数量) {
-        CustomData.update(DataComponents.CUSTOM_DATA, 物品栈, 标签 -> {
-            if (蜗牛壳数量 <= 0) {
-                标签.remove(SHELL_COUNT_TAG);
+    public static void setShellCount(ItemStack stack, int shellCount) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (shellCount <= 0) {
+                tag.remove(SHELL_COUNT_TAG);
             } else {
-                标签.putInt(SHELL_COUNT_TAG, 蜗牛壳数量);
+                tag.putInt(SHELL_COUNT_TAG, shellCount);
             }
         });
     }

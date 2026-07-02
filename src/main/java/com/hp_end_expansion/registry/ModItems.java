@@ -29,22 +29,22 @@ public final class ModItems {
     }
 
     // 注册物品和创造模式物品栏事件。
-    public static void register(IEventBus 模组事件总线) {
-        ITEMS.register(模组事件总线);
-        模组事件总线.addListener(ModItems::addCreativeItems);
+    public static void register(IEventBus modEventBus) {
+        ITEMS.register(modEventBus);
+        modEventBus.addListener(ModItems::addCreativeItems);
     }
 
     // 把虚空鲸刷怪蛋加入原版刷怪蛋标签页。
-    private static void addCreativeItems(BuildCreativeModeTabContentsEvent 事件) {
-        if (事件.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
-            事件.accept(VOID_WHALE_SPAWN_EGG.get());
-            事件.accept(ENDER_BOX_SPAWN_EGG.get());
-            事件.accept(ENDER_SNAIL_SPAWN_EGG.get());
+    private static void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            event.accept(VOID_WHALE_SPAWN_EGG.get());
+            event.accept(ENDER_BOX_SPAWN_EGG.get());
+            event.accept(ENDER_SNAIL_SPAWN_EGG.get());
         }
-        if (事件.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            事件.accept(ENDER_BOX.get());
-            事件.accept(PET_BAG.get());
-            事件.accept(ENDER_SNAIL_SHELL.get());
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(ENDER_BOX.get());
+            event.accept(PET_BAG.get());
+            event.accept(ENDER_SNAIL_SHELL.get());
         }
     }
 }

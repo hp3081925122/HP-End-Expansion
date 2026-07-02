@@ -31,63 +31,63 @@ public final class CommonEvents {
 
     // 玩家死亡时消耗带壳盔甲上的所有蜗牛壳层数，随机传送到附近安全位置并回血。
     @SubscribeEvent
-    public static void onLivingDeath(LivingDeathEvent 事件) {
-        if (!(事件.getEntity() instanceof ServerPlayer 玩家)) {
+    public static void onLivingDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        int 蜗牛壳数量 = 0;
-        for (EquipmentSlot 槽位 : ARMOR_SLOTS) {
-            蜗牛壳数量 += EnderSnailShellArmorData.getShellCount(玩家.getItemBySlot(槽位));
+        int shellCount = 0;
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            shellCount += EnderSnailShellArmorData.getShellCount(player.getItemBySlot(slot));
         }
-        if (蜗牛壳数量 <= 0 || !(玩家.level() instanceof ServerLevel 服务端世界)) {
+        if (shellCount <= 0 || !(player.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
-        BlockPos 安全位置 = null;
-        BlockPos 玩家位置 = 玩家.blockPosition();
-        for (int 索引 = 0; 索引 < 64; 索引++) {
-            int 横坐标 = 玩家位置.getX() + 玩家.getRandom().nextInt(SHELL_TELEPORT_RADIUS * 2 + 1) - SHELL_TELEPORT_RADIUS;
-            int 纵坐标 = 玩家位置.getZ() + 玩家.getRandom().nextInt(SHELL_TELEPORT_RADIUS * 2 + 1) - SHELL_TELEPORT_RADIUS;
-            int 目标Y = Mth.clamp(玩家位置.getY() + 玩家.getRandom().nextInt(17) - 8, 服务端世界.getMinBuildHeight() + 1, 服务端世界.getMaxBuildHeight() - 2);
-            BlockPos 候选位置 = new BlockPos(横坐标, 目标Y, 纵坐标);
-            while (候选位置.getY() > 服务端世界.getMinBuildHeight() + 1 && 服务端世界.getBlockState(候选位置.below()).isAir()) {
-                候选位置 = 候选位置.below();
+        BlockPos safePos = null;
+        BlockPos playerPos = player.blockPosition();
+        for (int i = 0; i < 64; i++) {
+            int x = playerPos.getX() + player.getRandom().nextInt(SHELL_TELEPORT_RADIUS * 2 + 1) - SHELL_TELEPORT_RADIUS;
+            int z = playerPos.getZ() + player.getRandom().nextInt(SHELL_TELEPORT_RADIUS * 2 + 1) - SHELL_TELEPORT_RADIUS;
+            int y = Mth.clamp(playerPos.getY() + player.getRandom().nextInt(17) - 8, serverLevel.getMinBuildHeight() + 1, serverLevel.getMaxBuildHeight() - 2);
+            BlockPos candidate = new BlockPos(x, y, z);
+            while (candidate.getY() > serverLevel.getMinBuildHeight() + 1 && serverLevel.getBlockState(candidate.below()).isAir()) {
+                candidate = candidate.below();
             }
-            BlockState 脚部状态 = 服务端世界.getBlockState(候选位置);
-            BlockState 头部状态 = 服务端世界.getBlockState(候选位置.above());
-            if (!服务端世界.getBlockState(候选位置.below()).blocksMotion() || !脚部状态.getCollisionShape(服务端世界, 候选位置).isEmpty() || !头部状态.getCollisionShape(服务端世界, 候选位置.above()).isEmpty() || 服务端世界.containsAnyLiquid(玩家.getBoundingBox().move(候选位置.getBottomCenter().subtract(玩家.position())))) {
+            BlockState feet = serverLevel.getBlockState(candidate);
+            BlockState head = serverLevel.getBlockState(candidate.above());
+            if (!serverLevel.getBlockState(candidate.below()).blocksMotion() || !feet.getCollisionShape(serverLevel, candidate).isEmpty() || !head.getCollisionShape(serverLevel, candidate.above()).isEmpty() || serverLevel.containsAnyLiquid(player.getBoundingBox().move(candidate.getBottomCenter().subtract(player.position())))) {
                 continue;
             }
-            玩家.teleportTo(候选位置.getX() + 0.5D, 候选位置.getY(), 候选位置.getZ() + 0.5D);
-            if (服务端世界.noCollision(玩家) && !服务端世界.containsAnyLiquid(玩家.getBoundingBox())) {
-                安全位置 = 候选位置;
+            player.teleportTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D);
+            if (serverLevel.noCollision(player) && !serverLevel.containsAnyLiquid(player.getBoundingBox())) {
+                safePos = candidate;
                 break;
             }
-            玩家.teleportTo(玩家位置.getX() + 0.5D, 玩家位置.getY(), 玩家位置.getZ() + 0.5D);
+            player.teleportTo(playerPos.getX() + 0.5D, playerPos.getY(), playerPos.getZ() + 0.5D);
         }
-        if (安全位置 == null) {
+        if (safePos == null) {
             return;
         }
 
-        for (EquipmentSlot 槽位 : ARMOR_SLOTS) {
-            EnderSnailShellArmorData.setShellCount(玩家.getItemBySlot(槽位), 0);
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            EnderSnailShellArmorData.setShellCount(player.getItemBySlot(slot), 0);
         }
-        事件.setCanceled(true);
-        玩家.setHealth(Math.max(1.0F, 玩家.getMaxHealth() * Math.min(1.0F, 蜗牛壳数量 * HEAL_PER_SHELL)));
-        玩家.fallDistance = 0.0F;
-        玩家.displayClientMessage(Component.translatable("message.hp_end_expansion.ender_snail_shell_saved", 蜗牛壳数量), true);
+        event.setCanceled(true);
+        player.setHealth(Math.max(1.0F, player.getMaxHealth() * Math.min(1.0F, shellCount * HEAL_PER_SHELL)));
+        player.fallDistance = 0.0F;
+        player.displayClientMessage(Component.translatable("message.hp_end_expansion.ender_snail_shell_saved", shellCount), true);
     }
 
     // 在带壳盔甲 tooltip 上显示当前蜗牛壳层数。
     @SubscribeEvent
-    public static void onItemTooltip(ItemTooltipEvent 事件) {
-        ItemStack 物品栈 = 事件.getItemStack();
-        if (!(物品栈.getItem() instanceof ArmorItem)) {
+    public static void onItemTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (!(stack.getItem() instanceof ArmorItem)) {
             return;
         }
-        int 蜗牛壳数量 = EnderSnailShellArmorData.getShellCount(物品栈);
-        if (蜗牛壳数量 > 0) {
-            事件.getToolTip().add(Component.translatable("item.hp_end_expansion.ender_snail_shell.armor_shells", 蜗牛壳数量));
+        int shellCount = EnderSnailShellArmorData.getShellCount(stack);
+        if (shellCount > 0) {
+            event.getToolTip().add(Component.translatable("item.hp_end_expansion.ender_snail_shell.armor_shells", shellCount));
         }
     }
 }

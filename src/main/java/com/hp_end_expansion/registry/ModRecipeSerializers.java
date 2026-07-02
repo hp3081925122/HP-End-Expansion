@@ -21,7 +21,7 @@ public final class ModRecipeSerializers {
     }
 
     // 注册配方序列化器。
-    public static void register(IEventBus 模组事件总线) {
-        RECIPE_SERIALIZERS.register(模组事件总线);
+    public static void register(IEventBus modEventBus) {
+        RECIPE_SERIALIZERS.register(modEventBus);
     }
 }

@@ -73,11 +73,11 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
     private static final RawAnimation TAME_ANIMATION = RawAnimation.begin().thenPlay("animation.ender_snail.tame");
     // 末影蜗牛动画缓存和幼体成长状态。
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private int 幼体晶簇成长次数;
+    private int juvenileCrystalGrowths;
 
     // 创建末影蜗牛实体实例。
-    public EnderSnail(EntityType<? extends TamableAnimal> 实体类型, Level 世界) {
-        super(实体类型, 世界);
+    public EnderSnail(EntityType<? extends TamableAnimal> entityType, Level level) {
+        super(entityType, level);
     }
 
     // 创建末影蜗牛基础属性。
@@ -97,17 +97,17 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
     }
 
     // 限制末影蜗牛自然生成在末地维度内。
-    public static boolean canSpawn(EntityType<EnderSnail> 实体类型, ServerLevelAccessor 世界, MobSpawnType 生成类型, BlockPos 位置, RandomSource random) {
-        return 世界.getLevel().dimension() == Level.END;
+    public static boolean canSpawn(EntityType<EnderSnail> entityType, ServerLevelAccessor level, MobSpawnType spawnType, BlockPos pos, RandomSource random) {
+        return level.getLevel().dimension() == Level.END;
     }
 
     // 新生成的末影蜗牛九成为幼体，一成为成年个体。
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor 世界, DifficultyInstance 难度, MobSpawnType 生成类型, @Nullable SpawnGroupData 生成组数据) {
-        SpawnGroupData 生成结果 = super.finalizeSpawn(世界, 难度, 生成类型, 生成组数据);
-        this.setBaby(世界.getRandom().nextInt(10) != 0);
-        return 生成结果;
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
+        this.setBaby(level.getRandom().nextInt(10) != 0);
+        return result;
     }
 
     // 注册采集紫颂、催熟紫颂花、跟随主人、慢速闲逛和观察玩家的基础 AI。
@@ -125,58 +125,58 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
 
     // 紫颂花用于驯服后繁殖，紫颂果只走自定义驯服逻辑。
     @Override
-    public boolean isFood(ItemStack 物品栈) {
-        return 物品栈.is(Items.CHORUS_FLOWER);
+    public boolean isFood(ItemStack stack) {
+        return stack.is(Items.CHORUS_FLOWER);
     }
 
     // 处理紫颂花繁殖、紫颂果驯服和晶簇收割。
     @Override
-    public InteractionResult mobInteract(Player 玩家, InteractionHand 手) {
-        ItemStack 物品栈 = 玩家.getItemInHand(手);
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
 
         // 已驯服成年蜗牛只用紫颂花进入原版繁殖逻辑。
-        if (物品栈.is(Items.CHORUS_FLOWER)) {
+        if (stack.is(Items.CHORUS_FLOWER)) {
             if (this.isTame() && !this.isBaby()) {
                 if (!this.level().isClientSide) {
-                    if (!this.isOwnedBy(玩家)) {
-                        玩家.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：你不是这只蜗牛的主人"), false);
+                    if (!this.isOwnedBy(player)) {
+                        player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：你不是这只蜗牛的主人"), false);
                         return InteractionResult.CONSUME;
                     }
                     if (!this.canFallInLove()) {
-                        玩家.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛还在繁殖冷却或已经进入爱心状态"), false);
+                        player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛还在繁殖冷却或已经进入爱心状态"), false);
                         return InteractionResult.CONSUME;
                     }
-                    物品栈.consume(1, 玩家);
-                    this.setInLove(玩家);
-                    玩家.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花喂食成功：蜗牛已进入爱心繁殖状态"), false);
+                    stack.consume(1, player);
+                    this.setInLove(player);
+                    player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花喂食成功：蜗牛已进入爱心繁殖状态"), false);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
             if (!this.level().isClientSide) {
-                玩家.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛未驯服或还是幼体"), false);
+                player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛未驯服或还是幼体"), false);
             }
             return InteractionResult.PASS;
         }
 
         // 有紫颂晶簇时，玩家右键可收割为紫颂植株。
-        int 晶簇数量 = this.getChorusCrystals();
-        if (晶簇数量 > 0) {
+        int crystals = this.getChorusCrystals();
+        if (crystals > 0) {
             if (!this.level().isClientSide) {
-                ItemStack 收获物 = new ItemStack(Items.CHORUS_PLANT, 晶簇数量);
+                ItemStack harvest = new ItemStack(Items.CHORUS_PLANT, crystals);
                 this.setChorusCrystals(0);
-                if (!this.storeInNearbyContainer(收获物) && !玩家.addItem(收获物)) {
-                    this.spawnAtLocation(收获物);
+                if (!this.storeInNearbyContainer(harvest) && !player.addItem(harvest)) {
+                    this.spawnAtLocation(harvest);
                 }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
         // 未驯服时，紫颂果有概率驯服末影蜗牛。
-        if (!this.isTame() && 物品栈.is(Items.CHORUS_FRUIT)) {
+        if (!this.isTame() && stack.is(Items.CHORUS_FRUIT)) {
             if (!this.level().isClientSide) {
-                物品栈.consume(1, 玩家);
+                stack.consume(1, player);
                 if (this.random.nextInt(3) == 0) {
-                    this.tame(玩家);
+                    this.tame(player);
                     this.setOrderedToSit(false);
                     this.triggerAnim("main", "tame");
                     this.level().broadcastEntityEvent(this, (byte)7);
@@ -188,23 +188,23 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
-        return super.mobInteract(玩家, 手);
+        return super.mobInteract(player, hand);
     }
 
     // 保存紫颂晶簇和幼体成长次数。
     @Override
-    public void addAdditionalSaveData(CompoundTag 复合标签) {
-        super.addAdditionalSaveData(复合标签);
-        复合标签.putInt(CHORUS_CRYSTALS_TAG, this.getChorusCrystals());
-        复合标签.putInt(JUVENILE_CRYSTAL_GROWTHS_TAG, this.幼体晶簇成长次数);
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putInt(CHORUS_CRYSTALS_TAG, this.getChorusCrystals());
+        compound.putInt(JUVENILE_CRYSTAL_GROWTHS_TAG, this.juvenileCrystalGrowths);
     }
 
     // 读取紫颂晶簇和幼体成长次数。
     @Override
-    public void readAdditionalSaveData(CompoundTag 复合标签) {
-        super.readAdditionalSaveData(复合标签);
-        this.setChorusCrystals(复合标签.getInt(CHORUS_CRYSTALS_TAG));
-        this.幼体晶簇成长次数 = 复合标签.getInt(JUVENILE_CRYSTAL_GROWTHS_TAG);
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.setChorusCrystals(compound.getInt(CHORUS_CRYSTALS_TAG));
+        this.juvenileCrystalGrowths = compound.getInt(JUVENILE_CRYSTAL_GROWTHS_TAG);
     }
 
     // 已驯服或壳上有晶簇的末影蜗牛需要持久化保存。
@@ -216,45 +216,45 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
     // 驯服末影蜗牛繁殖后生成同主人的幼体。
     @Nullable
     @Override
-    public AgeableMob getBreedOffspring(ServerLevel 世界, AgeableMob 另一亲代) {
-        EnderSnail 幼体 = ModEntities.ENDER_SNAIL.get().create(世界);
-        if (幼体 != null) {
+    public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
+        EnderSnail child = ModEntities.ENDER_SNAIL.get().create(level);
+        if (child != null) {
             this.sendDebugMessage("繁殖成功，正在生成幼年末影蜗牛");
-            幼体.setBaby(true);
-            幼体.setTame(true, true);
+            child.setBaby(true);
+            child.setTame(true, true);
             if (this.getOwnerUUID() != null) {
-                幼体.setOwnerUUID(this.getOwnerUUID());
-            } else if (另一亲代 instanceof EnderSnail 另一只 && 另一只.getOwnerUUID() != null) {
-                幼体.setOwnerUUID(另一只.getOwnerUUID());
+                child.setOwnerUUID(this.getOwnerUUID());
+            } else if (otherParent instanceof EnderSnail other && other.getOwnerUUID() != null) {
+                child.setOwnerUUID(other.getOwnerUUID());
             }
-            幼体.setOrderedToSit(false);
-            幼体.setPersistenceRequired();
+            child.setOrderedToSit(false);
+            child.setPersistenceRequired();
         }
-        return 幼体;
+        return child;
     }
 
     // 只有同一主人驯服成年蜗牛可以繁殖。
     @Override
-    public boolean canMate(net.minecraft.world.entity.animal.Animal 另一动物) {
-        if (!(另一动物 instanceof EnderSnail 另一只) || 另一只 == this) {
+    public boolean canMate(net.minecraft.world.entity.animal.Animal otherAnimal) {
+        if (!(otherAnimal instanceof EnderSnail other) || other == this) {
             return false;
         }
         return this.isTame()
-                && 另一只.isTame()
+                && other.isTame()
                 && !this.isBaby()
-                && !另一只.isBaby()
+                && !other.isBaby()
                 && this.getOwnerUUID() != null
-                && this.getOwnerUUID().equals(另一只.getOwnerUUID())
+                && this.getOwnerUUID().equals(other.getOwnerUUID())
                 && this.isInLove()
-                && 另一只.isInLove();
+                && other.isInLove();
     }
 
     // 注册待机、爬行和驯服动画控制器。
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar 控制器注册器) {
-        控制器注册器.add(new AnimationController<>(this, "main", 5, 状态 -> {
-            double 水平移动量 = this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z;
-            状态.setAnimation(水平移动量 > 1.0E-5 ? CRAWL_ANIMATION : IDLE_ANIMATION);
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "main", 5, state -> {
+            double horizontalMovement = this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z;
+            state.setAnimation(horizontalMovement > 1.0E-5 ? CRAWL_ANIMATION : IDLE_ANIMATION);
             return PlayState.CONTINUE;
         }).triggerableAnim("tame", TAME_ANIMATION));
     }
@@ -271,15 +271,15 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
     }
 
     // 设置壳上紫颂晶簇数量，并限制在有效范围内。
-    private void setChorusCrystals(int 紫颂晶簇数量) {
-        this.entityData.set(DATA_CHORUS_CRYSTALS, Math.max(0, Math.min(MAX_CHORUS_CRYSTALS, 紫颂晶簇数量)));
+    private void setChorusCrystals(int chorusCrystals) {
+        this.entityData.set(DATA_CHORUS_CRYSTALS, Math.max(0, Math.min(MAX_CHORUS_CRYSTALS, chorusCrystals)));
     }
 
     // 向附近玩家发送末影蜗牛行为调试消息。
-    private void sendDebugMessage(String 消息) {
-        if (this.level() instanceof ServerLevel 服务端世界) {
-            for (ServerPlayer 玩家 : 服务端世界.getPlayers(玩家 -> 玩家.distanceToSqr(this) <= 1024.0D)) {
-                玩家.displayClientMessage(Component.literal("[末影蜗牛调试] " + 消息), false);
+    private void sendDebugMessage(String message) {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            for (ServerPlayer player : serverLevel.getPlayers(player -> player.distanceToSqr(this) <= 1024.0D)) {
+                player.displayClientMessage(Component.literal("[末影蜗牛调试] " + message), false);
             }
         }
     }
@@ -290,9 +290,9 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
             this.setChorusCrystals(this.getChorusCrystals() + 1);
         }
         if (this.isBaby()) {
-            this.幼体晶簇成长次数++;
-            if (this.幼体晶簇成长次数 >= JUVENILE_MOLT_THRESHOLD) {
-                this.幼体晶簇成长次数 = 0;
+            this.juvenileCrystalGrowths++;
+            if (this.juvenileCrystalGrowths >= JUVENILE_MOLT_THRESHOLD) {
+                this.juvenileCrystalGrowths = 0;
                 this.setBaby(false);
                 this.spawnAtLocation(new ItemStack(ModItems.ENDER_SNAIL_SHELL.get()));
                 this.setPersistenceRequired();
@@ -302,120 +302,120 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
 
     // 采集整棵相连紫颂植株，并在底部尝试重新生成一朵紫颂花。
     private void harvestChorusPlant(BlockPos start) {
-        if (!(this.level() instanceof ServerLevel 服务端世界)) {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
         }
         this.sendDebugMessage("开始啃食并采集紫颂植株：" + start.toShortString());
-        Set<BlockPos> 已访问位置 = new HashSet<>();
-        ArrayDeque<BlockPos> 待检查位置 = new ArrayDeque<>();
-        待检查位置.add(start.immutable());
-        int 植株数量 = 0;
-        BlockPos 底部位置 = start;
-        while (!待检查位置.isEmpty() && 已访问位置.size() < MAX_HARVEST_BLOCKS) {
-            BlockPos 当前位置 = 待检查位置.removeFirst();
-            if (!已访问位置.add(当前位置)) {
+        Set<BlockPos> visited = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(start.immutable());
+        int plantCount = 0;
+        BlockPos basePos = start;
+        while (!queue.isEmpty() && visited.size() < MAX_HARVEST_BLOCKS) {
+            BlockPos current = queue.removeFirst();
+            if (!visited.add(current)) {
                 continue;
             }
-            BlockState 状态 = 服务端世界.getBlockState(当前位置);
-            if (!状态.is(Blocks.CHORUS_PLANT) && !状态.is(Blocks.CHORUS_FLOWER)) {
+            BlockState state = serverLevel.getBlockState(current);
+            if (!state.is(Blocks.CHORUS_PLANT) && !state.is(Blocks.CHORUS_FLOWER)) {
                 continue;
             }
-            if (当前位置.getY() < 底部位置.getY()) {
-                底部位置 = 当前位置;
+            if (current.getY() < basePos.getY()) {
+                basePos = current;
             }
-            if (状态.is(Blocks.CHORUS_PLANT)) {
-                植株数量++;
+            if (state.is(Blocks.CHORUS_PLANT)) {
+                plantCount++;
             }
-            for (Direction 方向 : Direction.values()) {
-                待检查位置.add(当前位置.relative(方向));
+            for (Direction direction : Direction.values()) {
+                queue.add(current.relative(direction));
             }
         }
-        for (BlockPos 位置 : 已访问位置) {
-            BlockState 状态 = 服务端世界.getBlockState(位置);
-            if (状态.is(Blocks.CHORUS_PLANT) || 状态.is(Blocks.CHORUS_FLOWER)) {
-                服务端世界.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, 位置, Block.getId(状态));
-                服务端世界.setBlock(位置, Blocks.AIR.defaultBlockState(), 3);
+        for (BlockPos pos : visited) {
+            BlockState state = serverLevel.getBlockState(pos);
+            if (state.is(Blocks.CHORUS_PLANT) || state.is(Blocks.CHORUS_FLOWER)) {
+                serverLevel.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
+                serverLevel.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
         // 只有已驯服蜗牛会把啃食紫颂后的果实交给玩家使用。
-        if (植株数量 > 0 && this.isTame()) {
-            ItemStack 收获物 = new ItemStack(Items.CHORUS_FRUIT, Math.min(64, 植株数量));
-            if (!this.storeInNearbyContainer(收获物)) {
-                this.spawnAtLocation(收获物);
+        if (plantCount > 0 && this.isTame()) {
+            ItemStack harvest = new ItemStack(Items.CHORUS_FRUIT, Math.min(64, plantCount));
+            if (!this.storeInNearbyContainer(harvest)) {
+                this.spawnAtLocation(harvest);
             }
         }
-        BlockState 新紫颂花 = Blocks.CHORUS_FLOWER.defaultBlockState().setValue(ChorusFlowerBlock.AGE, 0);
-        if (服务端世界.getBlockState(底部位置.below()).is(Blocks.END_STONE) && 服务端世界.isEmptyBlock(底部位置)) {
-            服务端世界.setBlock(底部位置, 新紫颂花, 3);
+        BlockState newFlower = Blocks.CHORUS_FLOWER.defaultBlockState().setValue(ChorusFlowerBlock.AGE, 0);
+        if (serverLevel.getBlockState(basePos.below()).is(Blocks.END_STONE) && serverLevel.isEmptyBlock(basePos)) {
+            serverLevel.setBlock(basePos, newFlower, 3);
         } else if (this.isTame()) {
-            ItemStack 紫颂花物品 = new ItemStack(Items.CHORUS_FLOWER);
-            if (!this.storeInNearbyContainer(紫颂花物品)) {
-                this.spawnAtLocation(紫颂花物品);
+            ItemStack flower = new ItemStack(Items.CHORUS_FLOWER);
+            if (!this.storeInNearbyContainer(flower)) {
+                this.spawnAtLocation(flower);
             }
         }
         this.growChorusCrystal();
     }
 
     // 驯服蜗牛会把产物优先放进附近容器。
-    private boolean storeInNearbyContainer(ItemStack 物品栈) {
-        if (!this.isTame() || 物品栈.isEmpty()) {
+    private boolean storeInNearbyContainer(ItemStack stack) {
+        if (!this.isTame() || stack.isEmpty()) {
             return false;
         }
-        BlockPos 中心位置 = this.blockPosition();
-        for (BlockPos 位置 : BlockPos.betweenClosed(中心位置.offset(-CONTAINER_SEARCH_RANGE, -3, -CONTAINER_SEARCH_RANGE), 中心位置.offset(CONTAINER_SEARCH_RANGE, 3, CONTAINER_SEARCH_RANGE))) {
-            BlockEntity 方块实体 = this.level().getBlockEntity(位置);
-            if (方块实体 instanceof Container 容器) {
-                for (int 槽位 = 0; 槽位 < 容器.getContainerSize() && !物品栈.isEmpty(); 槽位++) {
-                    ItemStack 已有物品 = 容器.getItem(槽位);
-                    if (已有物品.isEmpty() && 容器.canPlaceItem(槽位, 物品栈)) {
-                        容器.setItem(槽位, 物品栈.copy());
-                        物品栈.setCount(0);
-                        容器.setChanged();
+        BlockPos center = this.blockPosition();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-CONTAINER_SEARCH_RANGE, -3, -CONTAINER_SEARCH_RANGE), center.offset(CONTAINER_SEARCH_RANGE, 3, CONTAINER_SEARCH_RANGE))) {
+            BlockEntity blockEntity = this.level().getBlockEntity(pos);
+            if (blockEntity instanceof Container container) {
+                for (int slot = 0; slot < container.getContainerSize() && !stack.isEmpty(); slot++) {
+                    ItemStack existing = container.getItem(slot);
+                    if (existing.isEmpty() && container.canPlaceItem(slot, stack)) {
+                        container.setItem(slot, stack.copy());
+                        stack.setCount(0);
+                        container.setChanged();
                         return true;
                     }
-                    if (ItemStack.isSameItemSameComponents(已有物品, 物品栈) && 已有物品.getCount() < 容器.getMaxStackSize(已有物品) && 容器.canPlaceItem(槽位, 物品栈)) {
-                        int 转移数量 = Math.min(物品栈.getCount(), 容器.getMaxStackSize(已有物品) - 已有物品.getCount());
-                        已有物品.grow(转移数量);
-                        物品栈.shrink(转移数量);
-                        容器.setChanged();
+                    if (ItemStack.isSameItemSameComponents(existing, stack) && existing.getCount() < container.getMaxStackSize(existing) && container.canPlaceItem(slot, stack)) {
+                        int moved = Math.min(stack.getCount(), container.getMaxStackSize(existing) - existing.getCount());
+                        existing.grow(moved);
+                        stack.shrink(moved);
+                        container.setChanged();
                     }
                 }
-                if (物品栈.isEmpty()) {
+                if (stack.isEmpty()) {
                     return true;
                 }
             }
         }
-        return 物品栈.isEmpty();
+        return stack.isEmpty();
     }
 
     // 成熟紫颂花采集目标，只间歇扫描附近小范围，避免高频全量查找。
     private static final class HarvestMatureChorusGoal extends Goal {
-        private final EnderSnail 蜗牛;
+        private final EnderSnail snail;
         @Nullable
-        private BlockPos 目标;
-        private int 冷却;
+        private BlockPos target;
+        private int cooldown;
 
         // 创建成熟紫颂采集 AI。
-        private HarvestMatureChorusGoal(EnderSnail 蜗牛) {
-            this.蜗牛 = 蜗牛;
+        private HarvestMatureChorusGoal(EnderSnail snail) {
+            this.snail = snail;
             this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
         }
 
         // 间歇寻找可啃食的紫颂植株或成熟紫颂花。
         @Override
         public boolean canUse() {
-            if (this.冷却-- > 0 || this.蜗牛.isBaby() && this.蜗牛.幼体晶簇成长次数 >= JUVENILE_MOLT_THRESHOLD) {
+            if (this.cooldown-- > 0 || this.snail.isBaby() && this.snail.juvenileCrystalGrowths >= JUVENILE_MOLT_THRESHOLD) {
                 return false;
             }
-            this.冷却 = 80 + this.蜗牛.getRandom().nextInt(80);
-            BlockPos 中心位置 = this.蜗牛.blockPosition();
-            for (BlockPos 位置 : BlockPos.betweenClosed(中心位置.offset(-CHORUS_SEARCH_RANGE, -4, -CHORUS_SEARCH_RANGE), 中心位置.offset(CHORUS_SEARCH_RANGE, 10, CHORUS_SEARCH_RANGE))) {
-                BlockState 状态 = this.蜗牛.level().getBlockState(位置);
-                if (状态.is(Blocks.CHORUS_PLANT) || 状态.is(Blocks.CHORUS_FLOWER) && 状态.getValue(ChorusFlowerBlock.AGE) >= ChorusFlowerBlock.DEAD_AGE) {
-                    this.目标 = 位置.immutable();
-                    this.蜗牛.sendDebugMessage("找到可啃食紫颂植株，准备前往：" + 位置.toShortString());
-                    if (状态.is(Blocks.CHORUS_FLOWER)) {
-                        this.蜗牛.sendDebugMessage("检测到紫颂花高度：Y=" + 位置.getY() + "，相对蜗牛高度差=" + (位置.getY() - 中心位置.getY()));
+            this.cooldown = 80 + this.snail.getRandom().nextInt(80);
+            BlockPos center = this.snail.blockPosition();
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-CHORUS_SEARCH_RANGE, -4, -CHORUS_SEARCH_RANGE), center.offset(CHORUS_SEARCH_RANGE, 10, CHORUS_SEARCH_RANGE))) {
+                BlockState state = this.snail.level().getBlockState(pos);
+                if (state.is(Blocks.CHORUS_PLANT) || state.is(Blocks.CHORUS_FLOWER) && state.getValue(ChorusFlowerBlock.AGE) >= ChorusFlowerBlock.DEAD_AGE) {
+                    this.target = pos.immutable();
+                    this.snail.sendDebugMessage("找到可啃食紫颂植株，准备前往：" + pos.toShortString());
+                    if (state.is(Blocks.CHORUS_FLOWER)) {
+                        this.snail.sendDebugMessage("检测到紫颂花高度：Y=" + pos.getY() + "，相对蜗牛高度差=" + (pos.getY() - center.getY()));
                     }
                     return true;
                 }
@@ -426,72 +426,72 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
         // 目标仍是可啃食的紫颂植株时继续移动。
         @Override
         public boolean canContinueToUse() {
-            if (this.目标 == null) {
+            if (this.target == null) {
                 return false;
             }
-            BlockState 状态 = this.蜗牛.level().getBlockState(this.目标);
-            return 状态.is(Blocks.CHORUS_PLANT) || 状态.is(Blocks.CHORUS_FLOWER);
+            BlockState state = this.snail.level().getBlockState(this.target);
+            return state.is(Blocks.CHORUS_PLANT) || state.is(Blocks.CHORUS_FLOWER);
         }
 
         // 开始向成熟紫颂花移动。
         @Override
         public void start() {
-            if (this.目标 != null) {
-                this.蜗牛.sendDebugMessage("开始移动到紫颂采集目标：" + this.目标.toShortString());
-                this.蜗牛.getNavigation().moveTo(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D, 0.7D);
+            if (this.target != null) {
+                this.snail.sendDebugMessage("开始移动到紫颂采集目标：" + this.target.toShortString());
+                this.snail.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 0.7D);
             }
         }
 
         // 靠近后采集整棵紫颂植株。
         @Override
         public void tick() {
-            if (this.目标 == null) {
+            if (this.target == null) {
                 return;
             }
-            this.蜗牛.getLookControl().setLookAt(this.目标.getX() + 0.5D, this.目标.getY() + 0.5D, this.目标.getZ() + 0.5D);
-            if (this.蜗牛.distanceToSqr(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D) <= 6.25D) {
-                this.蜗牛.harvestChorusPlant(this.目标);
-                this.目标 = null;
-                this.蜗牛.getNavigation().stop();
-            } else if (this.蜗牛.getNavigation().isDone()) {
-                this.蜗牛.getNavigation().moveTo(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D, 0.7D);
+            this.snail.getLookControl().setLookAt(this.target.getX() + 0.5D, this.target.getY() + 0.5D, this.target.getZ() + 0.5D);
+            if (this.snail.distanceToSqr(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D) <= 6.25D) {
+                this.snail.harvestChorusPlant(this.target);
+                this.target = null;
+                this.snail.getNavigation().stop();
+            } else if (this.snail.getNavigation().isDone()) {
+                this.snail.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 0.7D);
             }
         }
 
         // 清理目标。
         @Override
         public void stop() {
-            this.目标 = null;
+            this.target = null;
         }
     }
 
     // 驯服蜗牛会去蹭未成熟紫颂花，并直接催生成紫颂树。
     private static final class RubChorusFlowerGoal extends Goal {
-        private final EnderSnail 蜗牛;
+        private final EnderSnail snail;
         @Nullable
-        private BlockPos 目标;
-        private int 冷却;
+        private BlockPos target;
+        private int cooldown;
 
         // 创建紫颂催熟 AI。
-        private RubChorusFlowerGoal(EnderSnail 蜗牛) {
-            this.蜗牛 = 蜗牛;
+        private RubChorusFlowerGoal(EnderSnail snail) {
+            this.snail = snail;
             this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
         }
 
         // 驯服蜗牛间歇寻找玩家种下或附近未成熟的紫颂花。
         @Override
         public boolean canUse() {
-            if (!this.蜗牛.isTame() || this.冷却-- > 0) {
+            if (!this.snail.isTame() || this.cooldown-- > 0) {
                 return false;
             }
-            this.冷却 = 60 + this.蜗牛.getRandom().nextInt(60);
-            BlockPos 中心位置 = this.蜗牛.blockPosition();
-            for (BlockPos 位置 : BlockPos.betweenClosed(中心位置.offset(-CHORUS_SEARCH_RANGE, -3, -CHORUS_SEARCH_RANGE), 中心位置.offset(CHORUS_SEARCH_RANGE, 5, CHORUS_SEARCH_RANGE))) {
-                BlockState 状态 = this.蜗牛.level().getBlockState(位置);
-                if (状态.is(Blocks.CHORUS_FLOWER) && 状态.getValue(ChorusFlowerBlock.AGE) < ChorusFlowerBlock.DEAD_AGE) {
-                    this.目标 = 位置.immutable();
-                    this.蜗牛.sendDebugMessage("找到未成熟紫颂花，准备促进生长：" + 位置.toShortString());
-                    this.蜗牛.sendDebugMessage("检测到紫颂花高度：Y=" + 位置.getY() + "，相对蜗牛高度差=" + (位置.getY() - 中心位置.getY()));
+            this.cooldown = 60 + this.snail.getRandom().nextInt(60);
+            BlockPos center = this.snail.blockPosition();
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-CHORUS_SEARCH_RANGE, -3, -CHORUS_SEARCH_RANGE), center.offset(CHORUS_SEARCH_RANGE, 5, CHORUS_SEARCH_RANGE))) {
+                BlockState state = this.snail.level().getBlockState(pos);
+                if (state.is(Blocks.CHORUS_FLOWER) && state.getValue(ChorusFlowerBlock.AGE) < ChorusFlowerBlock.DEAD_AGE) {
+                    this.target = pos.immutable();
+                    this.snail.sendDebugMessage("找到未成熟紫颂花，准备促进生长：" + pos.toShortString());
+                    this.snail.sendDebugMessage("检测到紫颂花高度：Y=" + pos.getY() + "，相对蜗牛高度差=" + (pos.getY() - center.getY()));
                     return true;
                 }
             }
@@ -501,44 +501,44 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
         // 目标仍是未成熟紫颂花时继续催熟。
         @Override
         public boolean canContinueToUse() {
-            return this.目标 != null && this.蜗牛.level().getBlockState(this.目标).is(Blocks.CHORUS_FLOWER) && this.蜗牛.level().getBlockState(this.目标).getValue(ChorusFlowerBlock.AGE) < ChorusFlowerBlock.DEAD_AGE;
+            return this.target != null && this.snail.level().getBlockState(this.target).is(Blocks.CHORUS_FLOWER) && this.snail.level().getBlockState(this.target).getValue(ChorusFlowerBlock.AGE) < ChorusFlowerBlock.DEAD_AGE;
         }
 
         // 开始向紫颂花移动。
         @Override
         public void start() {
-            if (this.目标 != null) {
-                this.蜗牛.getNavigation().moveTo(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D, 0.75D);
+            if (this.target != null) {
+                this.snail.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 0.75D);
             }
         }
 
         // 靠近后用原版紫颂树生成逻辑催熟。
         @Override
         public void tick() {
-            if (this.目标 == null) {
+            if (this.target == null) {
                 return;
             }
-            this.蜗牛.getLookControl().setLookAt(this.目标.getX() + 0.5D, this.目标.getY() + 0.5D, this.目标.getZ() + 0.5D);
-            if (this.蜗牛.distanceToSqr(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D) <= 4.0D && this.蜗牛.level() instanceof ServerLevel 服务端世界) {
-                if (服务端世界.getBlockState(this.目标).is(Blocks.CHORUS_FLOWER) && 服务端世界.getBlockState(this.目标.below()).is(Blocks.END_STONE)) {
-                    this.蜗牛.sendDebugMessage("开始促进紫颂花生成：" + this.目标.toShortString());
-                    服务端世界.sendParticles(ParticleTypes.PORTAL, this.目标.getX() + 0.5D, this.目标.getY() + 0.75D, this.目标.getZ() + 0.5D, 24, 0.35D, 0.45D, 0.35D, 0.04D);
-                    ChorusFlowerBlock.generatePlant(服务端世界, this.目标, 服务端世界.random, 8);
-                    服务端世界.sendParticles(ParticleTypes.PORTAL, this.目标.getX() + 0.5D, this.目标.getY() + 0.75D, this.目标.getZ() + 0.5D, 32, 0.5D, 0.8D, 0.5D, 0.08D);
+            this.snail.getLookControl().setLookAt(this.target.getX() + 0.5D, this.target.getY() + 0.5D, this.target.getZ() + 0.5D);
+            if (this.snail.distanceToSqr(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D) <= 4.0D && this.snail.level() instanceof ServerLevel serverLevel) {
+                if (serverLevel.getBlockState(this.target).is(Blocks.CHORUS_FLOWER) && serverLevel.getBlockState(this.target.below()).is(Blocks.END_STONE)) {
+                    this.snail.sendDebugMessage("开始促进紫颂花生成：" + this.target.toShortString());
+                    serverLevel.sendParticles(ParticleTypes.PORTAL, this.target.getX() + 0.5D, this.target.getY() + 0.75D, this.target.getZ() + 0.5D, 24, 0.35D, 0.45D, 0.35D, 0.04D);
+                    ChorusFlowerBlock.generatePlant(serverLevel, this.target, serverLevel.random, 8);
+                    serverLevel.sendParticles(ParticleTypes.PORTAL, this.target.getX() + 0.5D, this.target.getY() + 0.75D, this.target.getZ() + 0.5D, 32, 0.5D, 0.8D, 0.5D, 0.08D);
                 } else {
-                    this.蜗牛.sendDebugMessage("促进生长失败：目标不是紫颂花，或下方不是末地石：" + this.目标.toShortString());
+                    this.snail.sendDebugMessage("促进生长失败：目标不是紫颂花，或下方不是末地石：" + this.target.toShortString());
                 }
-                this.目标 = null;
-                this.蜗牛.getNavigation().stop();
-            } else if (this.蜗牛.getNavigation().isDone()) {
-                this.蜗牛.getNavigation().moveTo(this.目标.getX() + 0.5D, this.目标.getY(), this.目标.getZ() + 0.5D, 0.75D);
+                this.target = null;
+                this.snail.getNavigation().stop();
+            } else if (this.snail.getNavigation().isDone()) {
+                this.snail.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 0.75D);
             }
         }
 
         // 清理目标。
         @Override
         public void stop() {
-            this.目标 = null;
+            this.target = null;
         }
     }
 }
