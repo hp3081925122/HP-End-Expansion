@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hp_end_expansion:item/ender_core_shard"
+  }
+}

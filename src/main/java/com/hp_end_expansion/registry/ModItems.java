@@ -2,6 +2,8 @@ package com.hp_end_expansion.registry;
 
 import com.hp_end_expansion.HpEndExpansion;
 import com.hp_end_expansion.world.item.EnderBoxItem;
+import com.hp_end_expansion.world.item.EnderCoreItem;
+import com.hp_end_expansion.world.item.EndShipCompassItem;
 import com.hp_end_expansion.world.item.EnderSnailShellItem;
 import com.hp_end_expansion.world.item.PetBagItem;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -20,9 +22,14 @@ public final class ModItems {
     public static final DeferredItem<DeferredSpawnEggItem> VOID_WHALE_SPAWN_EGG = ITEMS.register("void_whale_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.VOID_WHALE, 0x1D0B2E, 0xC77DFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ENDER_BOX_SPAWN_EGG = ITEMS.register("ender_box_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ENDER_BOX, 0x2A103D, 0xB05CFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ENDER_SNAIL_SPAWN_EGG = ITEMS.register("ender_snail_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ENDER_SNAIL, 0x251038, 0xC786FF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ENDER_FISH_SPAWN_EGG = ITEMS.register("ender_fish_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ENDER_FISH, 0x130A1F, 0xD642F4, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ENDER_NAVIGATOR_SPAWN_EGG = ITEMS.register("ender_navigator_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ENDER_NAVIGATOR, 0x110818, 0xA64DFF, new Item.Properties()));
     public static final DeferredItem<EnderBoxItem> ENDER_BOX = ITEMS.register("ender_box", () -> new EnderBoxItem(new Item.Properties()));
     public static final DeferredItem<PetBagItem> PET_BAG = ITEMS.register("pet_bag", () -> new PetBagItem(new Item.Properties()));
     public static final DeferredItem<EnderSnailShellItem> ENDER_SNAIL_SHELL = ITEMS.register("ender_snail_shell", () -> new EnderSnailShellItem(new Item.Properties()));
+    public static final DeferredItem<Item> ENDER_CORE_SHARD = ITEMS.register("ender_core_shard", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<EndShipCompassItem> END_SHIP_COMPASS = ITEMS.register("end_ship_compass", () -> new EndShipCompassItem(new Item.Properties()));
+    public static final DeferredItem<EnderCoreItem> ENDER_CORE = ITEMS.register("ender_core", () -> new EnderCoreItem(new Item.Properties()));
 
     // 物品注册类只提供静态入口，不允许实例化。
     private ModItems() {
@@ -40,11 +47,16 @@ public final class ModItems {
             event.accept(VOID_WHALE_SPAWN_EGG.get());
             event.accept(ENDER_BOX_SPAWN_EGG.get());
             event.accept(ENDER_SNAIL_SPAWN_EGG.get());
+            event.accept(ENDER_FISH_SPAWN_EGG.get());
+            event.accept(ENDER_NAVIGATOR_SPAWN_EGG.get());
         }
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ENDER_BOX.get());
             event.accept(PET_BAG.get());
             event.accept(ENDER_SNAIL_SHELL.get());
+            event.accept(ENDER_CORE_SHARD.get());
+            event.accept(END_SHIP_COMPASS.get());
+            event.accept(ENDER_CORE.get());
         }
     }
 }

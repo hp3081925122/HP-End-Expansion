@@ -2,6 +2,9 @@ package com.hp_end_expansion.registry;
 
 import com.hp_end_expansion.HpEndExpansion;
 import com.hp_end_expansion.world.entity.EnderBox;
+import com.hp_end_expansion.world.entity.EnderFish;
+import com.hp_end_expansion.world.entity.EnderNavigator;
+import com.hp_end_expansion.world.entity.EnderRift;
 import com.hp_end_expansion.world.entity.EnderSnail;
 import com.hp_end_expansion.world.entity.VoidWhale;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,6 +47,35 @@ public final class ModEntities {
             .updateInterval(3)
             .build("ender_snail"));
 
+    // 末影鱼实体类型，小型虚空游动生物，移动时会随机短距离穿梭。
+    public static final DeferredHolder<EntityType<?>, EntityType<EnderFish>> ENDER_FISH = ENTITIES.register("ender_fish", () -> EntityType.Builder.of(EnderFish::new, MobCategory.CREATURE)
+            .fireImmune()
+            .canSpawnFarFromPlayer()
+            .sized(0.7F, 0.35F)
+            .eyeHeight(0.22F)
+            .clientTrackingRange(8)
+            .updateInterval(2)
+            .build("ender_fish"));
+
+    // 末影领航者实体类型，作为会施法和召唤鱼群的末地精英怪。
+    public static final DeferredHolder<EntityType<?>, EntityType<EnderNavigator>> ENDER_NAVIGATOR = ENTITIES.register("ender_navigator", () -> EntityType.Builder.of(EnderNavigator::new, MobCategory.MONSTER)
+            .fireImmune()
+            .canSpawnFarFromPlayer()
+            .sized(1.9F, 4.5F)
+            .eyeHeight(3.3F)
+            .clientTrackingRange(10)
+            .updateInterval(2)
+            .build("ender_navigator"));
+
+    // 末影裂隙实体类型，用于击杀末影鱼后临时生成的传送入口。
+    public static final DeferredHolder<EntityType<?>, EntityType<EnderRift>> ENDER_RIFT = ENTITIES.register("ender_rift", () -> EntityType.Builder.of(EnderRift::new, MobCategory.MISC)
+            .fireImmune()
+            .noSave()
+            .sized(1.0F, 1.4F)
+            .clientTrackingRange(8)
+            .updateInterval(2)
+            .build("ender_rift"));
+
     // 实体注册类只提供静态入口，不允许实例化。
     private ModEntities() {
     }
@@ -58,11 +90,15 @@ public final class ModEntities {
         event.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
         event.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
         event.put(ENDER_SNAIL.get(), EnderSnail.createAttributes().build());
+        event.put(ENDER_FISH.get(), EnderFish.createAttributes().build());
+        event.put(ENDER_NAVIGATOR.get(), EnderNavigator.createAttributes().build());
     }
 
     // 注册虚空鲸生成条件。
     public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
         event.register(VOID_WHALE.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VoidWhale::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ENDER_SNAIL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderSnail::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ENDER_FISH.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderFish::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ENDER_NAVIGATOR.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderNavigator::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

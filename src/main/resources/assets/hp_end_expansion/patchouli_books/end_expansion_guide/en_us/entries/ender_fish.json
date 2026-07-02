@@ -1,0 +1,40 @@
+{
+  "name": "patchouli.hp_end_expansion.entry.ender_fish.name",
+  "category": "hp_end_expansion:creatures",
+  "icon": "hp_end_expansion:ender_fish_spawn_egg",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "hp_end_expansion:ender_fish",
+      "name": "末影鱼",
+      "scale": 1.25,
+      "offset": 0.05,
+      "rotate": true,
+      "text": "patchouli.hp_end_expansion.entry.ender_fish.page.appearance.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_fish.page.behavior.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_fish.page.behavior.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:ender_core_shard",
+      "title": "patchouli.hp_end_expansion.entry.ender_fish.page.loot.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_fish.page.loot.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:end_ship_compass",
+      "title": "patchouli.hp_end_expansion.entry.ender_fish.page.compass.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_fish.page.compass.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:ender_core",
+      "title": "patchouli.hp_end_expansion.entry.ender_fish.page.core.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_fish.page.core.text"
+    }
+  ]
+}
