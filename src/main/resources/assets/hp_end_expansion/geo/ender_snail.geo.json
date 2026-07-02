@@ -1,0 +1,89 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.hp_end_expansion.ender_snail",
+				"texture_width": 512,
+				"texture_height": 512,
+				"visible_bounds_width": 2.5,
+				"visible_bounds_height": 2.25,
+				"visible_bounds_offset": [0, 0.875, 0]
+			},
+			"bones": [
+				{
+					"name": "root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "body_front",
+					"parent": "root",
+					"pivot": [0, 4, -3],
+					"cubes": [
+						{"origin": [-4, 1, -8], "size": [8, 4, 7], "inflate": 0.08, "uv": [0, 0]}
+					]
+				},
+				{
+					"name": "eye_stalk_left",
+					"parent": "body_front",
+					"pivot": [2.25, 5, -7],
+					"cubes": [
+						{"origin": [1.75, 4.25, -8.25], "size": [1, 5, 1], "inflate": 0.02, "uv": [0, 224]},
+						{"origin": [1.25, 8.75, -8.75], "size": [2, 2, 2], "inflate": 0.02, "uv": [32, 224]}
+					]
+				},
+				{
+					"name": "eye_stalk_right",
+					"parent": "body_front",
+					"pivot": [-2.25, 5, -7],
+					"cubes": [
+						{"origin": [-2.75, 4.25, -8.25], "size": [1, 5, 1], "inflate": 0.02, "uv": [64, 224]},
+						{"origin": [-3.25, 8.75, -8.75], "size": [2, 2, 2], "inflate": 0.02, "uv": [96, 224]}
+					]
+				},
+				{
+					"name": "body_mid",
+					"parent": "root",
+					"pivot": [0, 4, 2],
+					"cubes": [
+						{"origin": [-5, 1, -2], "size": [10, 5, 8], "inflate": 0.08, "uv": [96, 0]}
+					]
+				},
+				{
+					"name": "foot_base",
+					"parent": "root",
+					"pivot": [0, 1, 0],
+					"cubes": [
+						{"origin": [-5.5, 0, -8.5], "size": [11, 2, 15], "inflate": 0.04, "uv": [208, 0]}
+					]
+				},
+				{
+					"name": "shell",
+					"parent": "root",
+					"pivot": [0, 7, 2.5],
+					"cubes": [
+						{"origin": [-5.5, 5, -1.5], "size": [11, 8, 9], "inflate": 0.12, "uv": [0, 96]}
+					]
+				},
+				{
+					"name": "shell_spiral",
+					"parent": "shell",
+					"pivot": [0, 9, -1.75],
+					"cubes": [
+						{"origin": [-3.5, 7, -2.1], "size": [7, 5, 1], "inflate": 0.04, "uv": [144, 96]}
+					]
+				},
+				{
+					"name": "crystals",
+					"parent": "shell",
+					"pivot": [0, 13, 3],
+					"cubes": [
+						{"origin": [-3.5, 12.5, 0.5], "size": [2, 3, 2], "inflate": 0.02, "uv": [224, 96]},
+						{"origin": [1.5, 12.75, 2.5], "size": [2, 3, 2], "inflate": 0.02, "uv": [248, 96]},
+						{"origin": [-0.75, 13, 4.5], "size": [2, 2, 2], "inflate": 0.02, "uv": [272, 96]}
+					]
+				}
+			]
+		}
+	]
+}

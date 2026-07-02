@@ -1,0 +1,32 @@
+{
+  "name": "patchouli.hp_end_expansion.entry.void_whale.name",
+  "category": "hp_end_expansion:creatures",
+  "icon": "hp_end_expansion:void_whale_spawn_egg",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "hp_end_expansion:void_whale",
+      "name": "patchouli.hp_end_expansion.entry.void_whale.entity.name",
+      "scale": 0.45,
+      "offset": 0.15,
+      "rotate": true,
+      "text": "patchouli.hp_end_expansion.entry.void_whale.page.appearance.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.void_whale.page.mechanics.title",
+      "text": "patchouli.hp_end_expansion.entry.void_whale.page.mechanics.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.void_whale.page.pearl.title",
+      "text": "patchouli.hp_end_expansion.entry.void_whale.page.pearl.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.void_whale.page.spawn.title",
+      "text": "patchouli.hp_end_expansion.entry.void_whale.page.spawn.text"
+    }
+  ]
+}

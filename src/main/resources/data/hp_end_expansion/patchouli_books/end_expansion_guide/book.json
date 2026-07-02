@@ -1,0 +1,23 @@
+{
+  "name": "patchouli.hp_end_expansion.end_expansion_guide.name",
+  "landing_text": "patchouli.hp_end_expansion.end_expansion_guide.landing_text",
+  "version": "1",
+  "subtitle": "patchouli.hp_end_expansion.end_expansion_guide.subtitle",
+  "creative_tab": "hp_end_expansion:hp_end_expansion",
+  "show_progress": false,
+  "use_resource_pack": true,
+  "i18n": true,
+  "book_texture": "patchouli:textures/gui/book_purple.png",
+  "model": "patchouli:book_purple",
+  "text_color": "2d1738",
+  "header_color": "6b249a",
+  "nameplate_color": "c786ff",
+  "link_color": "7a38c8",
+  "link_hover_color": "b26dff",
+  "macros": {
+    "$(entity)": "$(#5b1f86)",
+    "$(mechanic)": "$(#2f6f6a)",
+    "$(spawn)": "$(#835c15)",
+    "$(reset)": "$()"
+  }
+}

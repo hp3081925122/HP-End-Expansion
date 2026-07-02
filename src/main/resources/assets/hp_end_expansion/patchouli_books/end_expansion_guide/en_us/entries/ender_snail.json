@@ -1,0 +1,43 @@
+{
+  "name": "patchouli.hp_end_expansion.entry.ender_snail.name",
+  "category": "hp_end_expansion:creatures",
+  "icon": "hp_end_expansion:ender_snail_spawn_egg",
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "hp_end_expansion:ender_snail",
+      "name": "patchouli.hp_end_expansion.entry.ender_snail.entity.name",
+      "scale": 1.0,
+      "offset": 0.0,
+      "rotate": true,
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.appearance.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_snail.page.chorus.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.chorus.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_snail.page.tame.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.tame.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_snail.page.growth.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.growth.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:ender_snail_shell",
+      "title": "patchouli.hp_end_expansion.entry.ender_snail.page.shell.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.shell.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_snail.page.spawn.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_snail.page.spawn.text"
+    }
+  ]
+}
