@@ -17,8 +17,8 @@ public class VoidWhaleRenderer extends GeoEntityRenderer<VoidWhale> {
 
     // 应用实体朝向，并额外修正模型自身朝向轴和俯仰角。
     @Override
-    protected void applyRotations(VoidWhale animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
-        super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
+    protected void applyRotations(VoidWhale animatable, PoseStack poseStack, float 存在刻数, float 旋转偏航, float 局部刻, float nativeScale) {
+        super.applyRotations(animatable, poseStack, 存在刻数, 旋转偏航, 局部刻, nativeScale);
         poseStack.mulPose(Axis.YP.rotationDegrees(-90.0F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(animatable.getXRot()));
     }

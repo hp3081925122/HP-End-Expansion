@@ -13,13 +13,13 @@ public final class ModNetwork {
     }
 
     // 注册网络负载处理事件。
-    public static void register(IEventBus modEventBus) {
-        modEventBus.addListener(ModNetwork::registerPayloads);
+    public static void register(IEventBus 模组事件总线) {
+        模组事件总线.addListener(ModNetwork::registerPayloads);
     }
 
     // 注册客户端发往服务端的虚空鲸传送负载。
-    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
+    private static void registerPayloads(RegisterPayloadHandlersEvent 事件) {
+        PayloadRegistrar registrar = 事件.registrar(PROTOCOL_VERSION);
         registrar.playToServer(VoidWhaleTeleportPayload.TYPE, VoidWhaleTeleportPayload.STREAM_CODEC, VoidWhaleTeleportPayload::handle);
         registrar.playToServer(OpenEnderBoxPayload.TYPE, OpenEnderBoxPayload.STREAM_CODEC, OpenEnderBoxPayload::handle);
     }

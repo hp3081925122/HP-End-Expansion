@@ -2,6 +2,7 @@ package com.hp_end_expansion.registry;
 
 import com.hp_end_expansion.HpEndExpansion;
 import com.hp_end_expansion.world.entity.EnderBox;
+import com.hp_end_expansion.world.entity.EnderSnail;
 import com.hp_end_expansion.world.entity.VoidWhale;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
@@ -36,23 +37,32 @@ public final class ModEntities {
             .updateInterval(3)
             .build("ender_box"));
 
+    // 末影蜗牛实体类型，用于紫颂园丁生物的基础模型和动画。
+    public static final DeferredHolder<EntityType<?>, EntityType<EnderSnail>> ENDER_SNAIL = ENTITIES.register("ender_snail", () -> EntityType.Builder.of(EnderSnail::new, MobCategory.CREATURE)
+            .sized(1.2F, 0.85F)
+            .clientTrackingRange(8)
+            .updateInterval(3)
+            .build("ender_snail"));
+
     // 实体注册类只提供静态入口，不允许实例化。
     private ModEntities() {
     }
 
     // 注册实体延迟注册器。
-    public static void register(IEventBus modEventBus) {
-        ENTITIES.register(modEventBus);
+    public static void register(IEventBus 模组事件总线) {
+        ENTITIES.register(模组事件总线);
     }
 
     // 注册虚空鲸属性。
-    public static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
-        event.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
+    public static void registerAttributes(EntityAttributeCreationEvent 事件) {
+        事件.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
+        事件.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
+        事件.put(ENDER_SNAIL.get(), EnderSnail.createAttributes().build());
     }
 
     // 注册虚空鲸生成条件。
-    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
-        event.register(VOID_WHALE.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VoidWhale::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent 事件) {
+        事件.register(VOID_WHALE.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VoidWhale::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        事件.register(ENDER_SNAIL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderSnail::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

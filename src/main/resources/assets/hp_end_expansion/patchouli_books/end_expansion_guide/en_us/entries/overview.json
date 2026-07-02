@@ -1,0 +1,19 @@
+{
+  "name": "patchouli.hp_end_expansion.entry.overview.name",
+  "category": "hp_end_expansion:creatures",
+  "icon": "hp_end_expansion:void_whale_spawn_egg",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.overview.page.ecology.title",
+      "text": "patchouli.hp_end_expansion.entry.overview.page.ecology.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:pet_bag",
+      "title": "patchouli.hp_end_expansion.entry.overview.page.pet_bag.title",
+      "text": "patchouli.hp_end_expansion.entry.overview.page.pet_bag.text"
+    }
+  ]
+}

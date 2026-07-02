@@ -1,0 +1,33 @@
+{
+  "name": "patchouli.hp_end_expansion.entry.ender_box.name",
+  "category": "hp_end_expansion:creatures",
+  "icon": "hp_end_expansion:ender_box_spawn_egg",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "hp_end_expansion:ender_box",
+      "name": "patchouli.hp_end_expansion.entry.ender_box.entity.name",
+      "scale": 1.0,
+      "offset": 0.0,
+      "rotate": true,
+      "text": "patchouli.hp_end_expansion.entry.ender_box.page.appearance.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_box.page.mechanics.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_box.page.mechanics.text"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "hp_end_expansion:ender_box",
+      "title": "patchouli.hp_end_expansion.entry.ender_box.page.pack.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_box.page.pack.text"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "patchouli.hp_end_expansion.entry.ender_box.page.spawn.title",
+      "text": "patchouli.hp_end_expansion.entry.ender_box.page.spawn.text"
+    }
+  ]
+}

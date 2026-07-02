@@ -2,9 +2,9 @@
   "type": "neoforge:add_spawns",
   "biomes": "#minecraft:is_end",
   "spawners": {
-    "type": "hp_end_expansion:void_whale",
-    "weight": 8,
+    "type": "hp_end_expansion:ender_snail",
+    "weight": 18,
     "minCount": 1,
-    "maxCount": 1
+    "maxCount": 2
   }
 }

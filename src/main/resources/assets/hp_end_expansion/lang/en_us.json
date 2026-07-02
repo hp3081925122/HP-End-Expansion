@@ -1,13 +1,20 @@
 {
   "entity.hp_end_expansion.void_whale": "Void Whale",
   "entity.hp_end_expansion.ender_box": "Ender Box",
+  "entity.hp_end_expansion.ender_snail": "Ender Snail",
   "item.hp_end_expansion.void_whale_spawn_egg": "Void Whale Spawn Egg",
   "item.hp_end_expansion.ender_box_spawn_egg": "Ender Box Spawn Egg",
+  "item.hp_end_expansion.ender_snail_spawn_egg": "Ender Snail Spawn Egg",
   "item.hp_end_expansion.ender_box": "Ender Box",
   "item.hp_end_expansion.ender_box.contents": "%s items stored",
   "item.hp_end_expansion.pet_bag": "Pet Bag",
   "item.hp_end_expansion.pet_bag.empty": "Empty",
   "item.hp_end_expansion.pet_bag.contains": "Contains: %s",
+  "item.hp_end_expansion.ender_snail_shell": "Ender Snail Shell",
+  "item.hp_end_expansion.ender_snail_shell.tooltip": "Craft with armor to teleport away and heal when dying",
+  "item.hp_end_expansion.ender_snail_shell.armor_shells": "Ender Snail Shells: %s",
+  "message.hp_end_expansion.ender_snail_shell_saved": "%s Ender Snail Shell layers saved you from death",
+  "itemGroup.hp_end_expansion": "HP End Expansion",
   "key.categories.hp_end_expansion": "HP End Expansion",
   "key.hp_end_expansion.open_ender_box": "Open Ender Box"
 }
