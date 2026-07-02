@@ -63,15 +63,15 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
     private static final RawAnimation TELEPORT_ANIMATION = RawAnimation.begin().thenPlay("animation.void_whale.teleport");
     // GeckoLib 动画缓存和实体状态。
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private int 驯服进度;
-    private int 闪避冷却;
-    private int 传送冷却;
+    private int tameProgress;
+    private int dodgeCooldown;
+    private int teleportCooldown;
     @Nullable
-    private Vec3 巡游目标;
+    private Vec3 wanderTarget;
 
     // 创建虚空鲸实体，并关闭重力和视锥裁剪。
-    public VoidWhale(EntityType<? extends TamableAnimal> 实体类型, Level 世界) {
-        super(实体类型, 世界);
+    public VoidWhale(EntityType<? extends TamableAnimal> entityType, Level level) {
+        super(entityType, level);
         this.setNoGravity(true);
         this.noCulling = true;
     }
@@ -87,8 +87,8 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
     }
 
     // 限制虚空鲸自然生成在末地较高位置。
-    public static boolean canSpawn(EntityType<VoidWhale> 实体类型, ServerLevelAccessor 世界, MobSpawnType 生成类型, BlockPos 位置, RandomSource random) {
-        return 世界.getLevel().dimension() == Level.END && 位置.getY() >= 世界.getLevel().getMinBuildHeight() + 16;
+    public static boolean canSpawn(EntityType<VoidWhale> entityType, ServerLevelAccessor level, MobSpawnType spawnType, BlockPos pos, RandomSource random) {
+        return level.getLevel().dimension() == Level.END && pos.getY() >= level.getLevel().getMinBuildHeight() + 16;
     }
 
     // 每刻维护无重力、冷却、客户端粒子和服务端自动游动。
@@ -98,12 +98,12 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
         this.setNoGravity(true);
         this.fallDistance = 0.0F;
         // 闪避冷却逐刻减少。
-        if (this.闪避冷却 > 0) {
-            this.闪避冷却--;
+        if (this.dodgeCooldown > 0) {
+            this.dodgeCooldown--;
         }
         // 传送冷却逐刻减少。
-        if (this.传送冷却 > 0) {
-            this.传送冷却--;
+        if (this.teleportCooldown > 0) {
+            this.teleportCooldown--;
         }
         // 客户端只生成视觉粒子，服务端负责自动移动。
         if (this.level().isClientSide) {
@@ -115,10 +115,10 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 自定义飞行移动；被玩家骑乘时交给骑乘控制。
     @Override
-    public void travel(Vec3 移动输入向量) {
+    public void travel(Vec3 travelVector) {
         // 有控制乘客时使用玩家输入控制虚空鲸。
-        if (this.getControllingPassenger() instanceof Player 玩家) {
-            this.travelWithRider(玩家);
+        if (this.getControllingPassenger() instanceof Player player) {
+            this.travelWithRider(player);
             return;
         }
 
@@ -130,16 +130,16 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 处理末影珍珠驯服和主人直接骑乘。
     @Override
-    public InteractionResult mobInteract(Player 玩家, InteractionHand 手) {
-        ItemStack 物品栈 = 玩家.getItemInHand(手);
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
         // 未驯服时，末影珍珠会推进驯服进度。
-        if (!this.isTame() && 物品栈.is(Items.ENDER_PEARL)) {
+        if (!this.isTame() && stack.is(Items.ENDER_PEARL)) {
             if (!this.level().isClientSide) {
-                物品栈.consume(1, 玩家);
-                this.驯服进度++;
+                stack.consume(1, player);
+                this.tameProgress++;
                 // 达到固定进度或满足随机成功时完成驯服。
-                if (this.驯服进度 >= 5 || this.驯服进度 >= 3 && this.random.nextInt(3) == 0) {
-                    this.tame(玩家);
+                if (this.tameProgress >= 5 || this.tameProgress >= 3 && this.random.nextInt(3) == 0) {
+                    this.tame(player);
                     this.setOrderedToSit(false);
                     this.level().broadcastEntityEvent(this, (byte)7);
                     this.setPersistenceRequired();
@@ -151,29 +151,29 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
         }
 
         // 已驯服且属于当前玩家时，直接交互开始骑乘。
-        if (this.isTame() && this.isOwnedBy(玩家)) {
+        if (this.isTame() && this.isOwnedBy(player)) {
             if (!this.level().isClientSide) {
-                玩家.startRiding(this);
+                player.startRiding(this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
-        return super.mobInteract(玩家, 手);
+        return super.mobInteract(player, hand);
     }
 
     // 虚空鲸受到普通伤害时闪避并免疫本次伤害。
     @Override
-    public boolean hurt(DamageSource 伤害来源, float 伤害量) {
+    public boolean hurt(DamageSource source, float amount) {
         // 绕过无敌的伤害仍按原版处理。
-        if (伤害来源.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return super.hurt(伤害来源, 伤害量);
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return super.hurt(source, amount);
         }
 
         // 服务端触发闪避动画和位移。
-        if (!this.level().isClientSide && this.闪避冷却 <= 0) {
-            this.闪避冷却 = 60;
+        if (!this.level().isClientSide && this.dodgeCooldown <= 0) {
+            this.dodgeCooldown = 60;
             this.triggerAnim("main", "dodge");
-            this.dodgeAway(伤害来源.getSourcePosition());
+            this.dodgeAway(source.getSourcePosition());
         }
 
         return false;
@@ -181,8 +181,8 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 死亡时掉落少量末影珍珠。
     @Override
-    protected void dropCustomDeathLoot(ServerLevel 世界, DamageSource 伤害来源, boolean 最近被玩家攻击) {
-        super.dropCustomDeathLoot(世界, 伤害来源, 最近被玩家攻击);
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
         this.spawnAtLocation(new ItemStack(Items.ENDER_PEARL, 1 + this.random.nextInt(3)));
     }
 
@@ -194,26 +194,26 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 末影珍珠作为驯服食物。
     @Override
-    public boolean isFood(ItemStack 物品栈) {
-        return 物品栈.is(Items.ENDER_PEARL);
+    public boolean isFood(ItemStack stack) {
+        return stack.is(Items.ENDER_PEARL);
     }
 
     // 虚空鲸当前不繁殖。
     @Nullable
     @Override
-    public AgeableMob getBreedOffspring(ServerLevel 世界, AgeableMob 另一亲代) {
+    public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         return null;
     }
 
     // 虚空鲸当前不允许交配。
     @Override
-    public boolean canMate(net.minecraft.world.entity.animal.Animal 另一动物) {
+    public boolean canMate(net.minecraft.world.entity.animal.Animal otherAnimal) {
         return false;
     }
 
     // 虚空鲸不会因离玩家太远自动消失。
     @Override
-    public boolean removeWhenFarAway(double 最近玩家距离) {
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         return false;
     }
 
@@ -225,58 +225,58 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
 
     // 虚空鲸免疫摔落伤害。
     @Override
-    public boolean causeFallDamage(float 摔落距离, float 倍率, DamageSource 伤害来源) {
+    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
         return false;
     }
 
     // 空实现避免飞行实体触发落地摔落逻辑。
     @Override
-    protected void checkFallDamage(double 目标Y, boolean 在地面, BlockState 状态, BlockPos 位置) {
+    protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
     }
 
     // 返回当前控制乘客。
     @Nullable
     @Override
     public LivingEntity getControllingPassenger() {
-        Entity 乘客 = this.getFirstPassenger();
-        return 乘客 instanceof LivingEntity livingEntity ? livingEntity : null;
+        Entity passenger = this.getFirstPassenger();
+        return passenger instanceof LivingEntity livingEntity ? livingEntity : null;
     }
 
     // 只允许主人玩家作为唯一乘客。
     @Override
-    protected boolean canAddPassenger(Entity 乘客) {
-        return this.getPassengers().isEmpty() && 乘客 instanceof Player 玩家 && this.isTame() && this.isOwnedBy(玩家);
+    protected boolean canAddPassenger(Entity passenger) {
+        return this.getPassengers().isEmpty() && passenger instanceof Player player && this.isTame() && this.isOwnedBy(player);
     }
 
     // 设置乘客在虚空鲸背上的位置。
     @Override
-    protected void positionRider(Entity 乘客, Entity.MoveFunction 位置回调) {
-        if (this.hasPassenger(乘客)) {
-            位置回调.accept(乘客, this.getX(), this.getY() + 9.0, this.getZ());
+    protected void positionRider(Entity passenger, Entity.MoveFunction callback) {
+        if (this.hasPassenger(passenger)) {
+            callback.accept(passenger, this.getX(), this.getY() + 9.0, this.getZ());
         }
     }
 
     // 保存驯服进度。
     @Override
-    public void addAdditionalSaveData(CompoundTag 复合标签) {
-        super.addAdditionalSaveData(复合标签);
-        复合标签.putInt(TAME_PROGRESS_TAG, this.驯服进度);
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putInt(TAME_PROGRESS_TAG, this.tameProgress);
     }
 
     // 读取驯服进度并恢复无重力状态。
     @Override
-    public void readAdditionalSaveData(CompoundTag 复合标签) {
-        super.readAdditionalSaveData(复合标签);
-        this.驯服进度 = 复合标签.getInt(TAME_PROGRESS_TAG);
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.tameProgress = compound.getInt(TAME_PROGRESS_TAG);
         this.setNoGravity(true);
     }
 
     // 注册主动画控制器和可触发的闪避、传送动画。
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar 控制器注册器) {
-        控制器注册器.add(new AnimationController<>(this, "main", 5, 状态 -> {
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "main", 5, state -> {
             // 移动或被骑乘时播放游动动画，否则播放待机动画。
-            状态.setAnimation(this.isVehicle() || this.getDeltaMovement().lengthSqr() > 0.01 ? SWIM_ANIMATION : IDLE_ANIMATION);
+            state.setAnimation(this.isVehicle() || this.getDeltaMovement().lengthSqr() > 0.01 ? SWIM_ANIMATION : IDLE_ANIMATION);
             return PlayState.CONTINUE;
         }).triggerableAnim("dodge", DODGE_ANIMATION).triggerableAnim("teleport", TELEPORT_ANIMATION));
     }
@@ -288,211 +288,211 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
     }
 
     // 玩家骑乘时消耗主手全部末影珍珠并按水平视线远距离传送。
-    public void tryTeleportFromRider(ServerPlayer 玩家) {
+    public void tryTeleportFromRider(ServerPlayer player) {
         // 冷却中、未骑乘、未驯服或非主人时不允许传送。
-        if (this.传送冷却 > 0 || 玩家.getVehicle() != this || !this.isTame() || !this.isOwnedBy(玩家)) {
+        if (this.teleportCooldown > 0 || player.getVehicle() != this || !this.isTame() || !this.isOwnedBy(player)) {
             return;
         }
 
         // 主手必须持有末影珍珠。
-        ItemStack 物品栈 = 玩家.getMainHandItem();
-        if (!物品栈.is(Items.ENDER_PEARL) || 物品栈.isEmpty()) {
+        ItemStack stack = player.getMainHandItem();
+        if (!stack.is(Items.ENDER_PEARL) || stack.isEmpty()) {
             return;
         }
 
         // 每颗末影珍珠提供 200 格传送距离。
-        int 珍珠数量 = 物品栈.getCount();
-        double 距离 = 珍珠数量 * 200.0;
-        Vec3 视线 = 玩家.getLookAngle();
-        Vec3 水平视线 = new Vec3(视线.x, 0.0, 视线.z);
-        if (水平视线.lengthSqr() < 1.0E-4) {
-            水平视线 = Vec3.directionFromRotation(0.0F, 玩家.getYRot());
+        int pearls = stack.getCount();
+        double distance = pearls * 200.0;
+        Vec3 look = player.getLookAngle();
+        Vec3 horizontalLook = new Vec3(look.x, 0.0, look.z);
+        if (horizontalLook.lengthSqr() < 1.0E-4) {
+            horizontalLook = Vec3.directionFromRotation(0.0F, player.getYRot());
         }
-        Vec3 目标 = this.position().add(水平视线.normalize().scale(距离));
-        ServerLevel 服务端世界 = 玩家.serverLevel();
-        double 目标Y = Mth.clamp(this.getY(), 服务端世界.getMinBuildHeight() + 2.0, 服务端世界.getMaxBuildHeight() - 2.0);
+        Vec3 target = this.position().add(horizontalLook.normalize().scale(distance));
+        ServerLevel serverLevel = player.serverLevel();
+        double y = Mth.clamp(this.getY(), serverLevel.getMinBuildHeight() + 2.0, serverLevel.getMaxBuildHeight() - 2.0);
 
         // 在传送前后生成传送粒子并触发动画。
-        this.sendPortalParticles(服务端世界, this.position(), 80);
-        this.teleportTo(目标.x, 目标Y, 目标.z);
-        玩家.teleportTo(目标.x, 目标.y, 目标.z);
+        this.sendPortalParticles(serverLevel, this.position(), 80);
+        this.teleportTo(target.x, y, target.z);
+        player.teleportTo(target.x, target.y, target.z);
         this.setDeltaMovement(Vec3.ZERO);
-        this.传送冷却 = 40;
+        this.teleportCooldown = 40;
         this.triggerAnim("main", "teleport");
-        this.sendPortalParticles(服务端世界, this.position(), 120);
+        this.sendPortalParticles(serverLevel, this.position(), 120);
 
         // 创造模式不消耗末影珍珠。
-        if (!玩家.getAbilities().instabuild) {
-            物品栈.shrink(珍珠数量);
+        if (!player.getAbilities().instabuild) {
+            stack.shrink(pearls);
         }
     }
 
     // 根据玩家输入控制虚空鲸移动。
-    private void travelWithRider(Player 玩家) {
+    private void travelWithRider(Player player) {
         // 手持末影珍珠骑乘时，虚空鲸获得额外移动倍率。
-        boolean 持有珍珠 = 玩家.getMainHandItem().is(Items.ENDER_PEARL) || 玩家.getOffhandItem().is(Items.ENDER_PEARL);
-        double 珍珠速度倍率 = 持有珍珠 ? 1.5 : 1.0;
+        boolean hasPearl = player.getMainHandItem().is(Items.ENDER_PEARL) || player.getOffhandItem().is(Items.ENDER_PEARL);
+        double pearlSpeedMultiplier = hasPearl ? 1.5 : 1.0;
 
         // 服务端每秒有 2% 概率吃掉骑乘玩家手上的一颗末影珍珠。
-        if (!this.level().isClientSide && 持有珍珠 && this.tickCount % 20 == 0 && this.random.nextFloat() < 0.02F && !玩家.getAbilities().instabuild) {
-            ItemStack 珍珠物品栈 = 玩家.getMainHandItem().is(Items.ENDER_PEARL) ? 玩家.getMainHandItem() : 玩家.getOffhandItem();
-            珍珠物品栈.shrink(1);
+        if (!this.level().isClientSide && hasPearl && this.tickCount % 20 == 0 && this.random.nextFloat() < 0.02F && !player.getAbilities().instabuild) {
+            ItemStack pearlStack = player.getMainHandItem().is(Items.ENDER_PEARL) ? player.getMainHandItem() : player.getOffhandItem();
+            pearlStack.shrink(1);
         }
 
         // 获取玩家视线、侧向、前进、横移和下降输入。
-        Vec3 视线 = 玩家.getLookAngle().normalize();
-        Vec3 侧向 = new Vec3(视线.z, 0.0, -视线.x).normalize();
-        double 前进输入 = 玩家.zza;
-        double 横移输入 = 玩家.xxa;
-        double 下降输入 = 玩家.isShiftKeyDown() ? -RIDER_DESCEND_SPEED : 0.0;
-        Vec3 期望移动 = 视线.scale(前进输入 * RIDER_FORWARD_SPEED * 珍珠速度倍率).add(侧向.scale(横移输入 * RIDER_STRAFE_SPEED * 珍珠速度倍率)).add(0.0, 下降输入 * 珍珠速度倍率, 0.0);
+        Vec3 look = player.getLookAngle().normalize();
+        Vec3 side = new Vec3(look.z, 0.0, -look.x).normalize();
+        double forward = player.zza;
+        double strafe = player.xxa;
+        double descent = player.isShiftKeyDown() ? -RIDER_DESCEND_SPEED : 0.0;
+        Vec3 desired = look.scale(forward * RIDER_FORWARD_SPEED * pearlSpeedMultiplier).add(side.scale(strafe * RIDER_STRAFE_SPEED * pearlSpeedMultiplier)).add(0.0, descent * pearlSpeedMultiplier, 0.0);
 
         // 有移动输入时朝向移动方向，没有移动输入时朝向玩家视线方向。
-        if (期望移动.lengthSqr() > 1.0E-4) {
-            this.updateRotationFromMovement(期望移动, "rider");
+        if (desired.lengthSqr() > 1.0E-4) {
+            this.updateRotationFromMovement(desired, "rider");
         } else {
-            this.setYRot(Mth.wrapDegrees(玩家.getYRot()));
+            this.setYRot(Mth.wrapDegrees(player.getYRot()));
             this.setYBodyRot(this.getYRot());
             this.setYHeadRot(this.getYRot());
-            this.setXRot(玩家.getXRot() * 0.5F);
-            this.debugMovement("rider_look", 视线, this.getYRot(), this.getXRot());
+            this.setXRot(player.getXRot() * 0.5F);
+            this.debugMovement("rider_look", look, this.getYRot(), this.getXRot());
         }
         this.yRotO = this.getYRot();
         this.xRotO = this.getXRot();
 
         // 平滑叠加期望速度，避免骑乘时瞬间变向。
-        this.setDeltaMovement(this.getDeltaMovement().scale(0.55).add(期望移动.scale(0.45)));
+        this.setDeltaMovement(this.getDeltaMovement().scale(0.55).add(desired.scale(0.45)));
         this.move(MoverType.SELF, this.getDeltaMovement());
         this.calculateEntityAnimation(true);
     }
 
     // 服务端自动游动逻辑，包含随机巡游和末影珍珠吸引。
     private void updateWanderMovement() {
-        Player 被吸引玩家 = this.findPearlHolder();
-        LivingEntity 拥有者 = this.getOwner();
-        boolean 需要返回主人 = this.需要返回主人(拥有者);
+        Player attractedPlayer = this.findPearlHolder();
+        LivingEntity owner = this.getOwner();
+        boolean shouldReturnToOwner = this.shouldReturnToOwner(owner);
         // 附近有手持末影珍珠的玩家时，目标改为玩家眼部附近。
-        if (需要返回主人) {
-            this.巡游目标 = 拥有者.getEyePosition().add(0.0, -0.6, 0.0);
-        } else if (被吸引玩家 != null) {
-            this.巡游目标 = 被吸引玩家.getEyePosition().add(0.0, -0.6, 0.0);
+        if (shouldReturnToOwner) {
+            this.wanderTarget = owner.getEyePosition().add(0.0, -0.6, 0.0);
+        } else if (attractedPlayer != null) {
+            this.wanderTarget = attractedPlayer.getEyePosition().add(0.0, -0.6, 0.0);
         }
 
         // 没有目标、接近目标或随机刷新时选择新的巡游目标。
-        if (this.巡游目标 == null || this.distanceToSqr(this.巡游目标) < 9.0 || this.random.nextInt(160) == 0) {
-            this.巡游目标 = this.position().add(
+        if (this.wanderTarget == null || this.distanceToSqr(this.wanderTarget) < 9.0 || this.random.nextInt(160) == 0) {
+            this.wanderTarget = this.position().add(
                     Mth.nextDouble(this.random, -24.0, 24.0),
                     Mth.nextDouble(this.random, -8.0, 8.0),
                     Mth.nextDouble(this.random, -24.0, 24.0)
             );
         }
-        this.巡游目标 = this.clampTargetToOwnerRange(this.巡游目标, 拥有者);
+        this.wanderTarget = this.clampTargetToOwnerRange(this.wanderTarget, owner);
 
         // 限制目标高度，避免游到世界高度边界外。
-        double 目标Y = Mth.clamp(this.巡游目标.y, this.level().getMinBuildHeight() + 8.0, this.level().getMaxBuildHeight() - 8.0);
-        Vec3 目标 = new Vec3(this.巡游目标.x, 目标Y, this.巡游目标.z);
-        Vec3 方向 = 目标.subtract(this.position());
+        double y = Mth.clamp(this.wanderTarget.y, this.level().getMinBuildHeight() + 8.0, this.level().getMaxBuildHeight() - 8.0);
+        Vec3 target = new Vec3(this.wanderTarget.x, y, this.wanderTarget.z);
+        Vec3 direction = target.subtract(this.position());
         // 根据驯服状态和吸引状态选择速度，并朝目标方向移动。
-        if (方向.lengthSqr() > 0.01) {
-            double 速度 = 需要返回主人 || 被吸引玩家 != null ? PEARL_ATTRACT_SPEED : this.isTame() ? TAME_WANDER_SPEED : WILD_WANDER_SPEED;
-            Vec3 移动量 = 方向.normalize().scale(速度);
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.9).add(移动量));
-            this.updateRotationFromMovement(方向, 需要返回主人 ? "owner_return" : 被吸引玩家 != null ? "pearl_attract" : "wander");
+        if (direction.lengthSqr() > 0.01) {
+            double speed = shouldReturnToOwner || attractedPlayer != null ? PEARL_ATTRACT_SPEED : this.isTame() ? TAME_WANDER_SPEED : WILD_WANDER_SPEED;
+            Vec3 motion = direction.normalize().scale(speed);
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.9).add(motion));
+            this.updateRotationFromMovement(direction, shouldReturnToOwner ? "owner_return" : attractedPlayer != null ? "pearl_attract" : "wander");
         }
     }
 
     // 已驯服虚空鲸超过主人半径时优先返回主人附近。
-    private boolean 需要返回主人(@Nullable LivingEntity 拥有者) {
-        return this.isTame() && 拥有者 != null && 拥有者.level() == this.level() && this.distanceToSqr(拥有者) > OWNER_STAY_RANGE * OWNER_STAY_RANGE;
+    private boolean shouldReturnToOwner(@Nullable LivingEntity owner) {
+        return this.isTame() && owner != null && owner.level() == this.level() && this.distanceToSqr(owner) > OWNER_STAY_RANGE * OWNER_STAY_RANGE;
     }
 
     // 已驯服虚空鲸的自动巡游目标不能超出主人附近。
-    private Vec3 clampTargetToOwnerRange(Vec3 目标, @Nullable LivingEntity 拥有者) {
-        if (!this.isTame() || 拥有者 == null || 拥有者.level() != this.level()) {
-            return 目标;
+    private Vec3 clampTargetToOwnerRange(Vec3 target, @Nullable LivingEntity owner) {
+        if (!this.isTame() || owner == null || owner.level() != this.level()) {
+            return target;
         }
 
-        Vec3 主人位置 = 拥有者.position();
-        Vec3 偏移 = 目标.subtract(主人位置);
-        if (偏移.lengthSqr() <= OWNER_TARGET_RANGE * OWNER_TARGET_RANGE) {
-            return 目标;
+        Vec3 ownerPosition = owner.position();
+        Vec3 offset = target.subtract(ownerPosition);
+        if (offset.lengthSqr() <= OWNER_TARGET_RANGE * OWNER_TARGET_RANGE) {
+            return target;
         }
 
-        return 主人位置.add(偏移.normalize().scale(OWNER_TARGET_RANGE));
+        return ownerPosition.add(offset.normalize().scale(OWNER_TARGET_RANGE));
     }
 
     // 查找范围内最近的手持末影珍珠玩家。
     @Nullable
     private Player findPearlHolder() {
         // 只在服务端查找玩家。
-        if (!(this.level() instanceof ServerLevel 服务端世界)) {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
             return null;
         }
 
         // 遍历范围内主手或副手持有末影珍珠的非旁观玩家。
-        double 范围平方 = PEARL_ATTRACT_RANGE * PEARL_ATTRACT_RANGE;
-        Player 最近玩家 = null;
-        double 最近距离 = 范围平方;
-        for (ServerPlayer 玩家 : 服务端世界.getPlayers(玩家 -> !玩家.isSpectator() && (玩家.getMainHandItem().is(Items.ENDER_PEARL) || 玩家.getOffhandItem().is(Items.ENDER_PEARL)))) {
-            double 距离 = this.distanceToSqr(玩家);
+        double rangeSqr = PEARL_ATTRACT_RANGE * PEARL_ATTRACT_RANGE;
+        Player closest = null;
+        double closestDistance = rangeSqr;
+        for (ServerPlayer player : serverLevel.getPlayers(player -> !player.isSpectator() && (player.getMainHandItem().is(Items.ENDER_PEARL) || player.getOffhandItem().is(Items.ENDER_PEARL)))) {
+            double distance = this.distanceToSqr(player);
             // 记录最近的符合条件玩家。
-            if (距离 < 最近距离) {
-                最近玩家 = 玩家;
-                最近距离 = 距离;
+            if (distance < closestDistance) {
+                closest = player;
+                closestDistance = distance;
             }
         }
-        return 最近玩家;
+        return closest;
     }
 
     // 根据移动向量平滑更新 yaw、身体朝向、头部朝向和俯仰角。
-    private void updateRotationFromMovement(Vec3 移动向量, String 伤害来源) {
-        if (移动向量.lengthSqr() > 1.0E-4) {
+    private void updateRotationFromMovement(Vec3 movement, String source) {
+        if (movement.lengthSqr() > 1.0E-4) {
             // 从三维移动向量计算水平朝向和垂直俯仰。
-            double 水平距离 = 移动向量.horizontalDistance();
-            float 目标偏航 = Mth.wrapDegrees((float)(Mth.atan2(移动向量.z, 移动向量.x) * Mth.RAD_TO_DEG) - 90.0F);
-            float 目标俯仰 = Mth.clamp(Mth.wrapDegrees((float)(-(Mth.atan2(移动向量.y, 水平距离) * Mth.RAD_TO_DEG))), -75.0F, 75.0F);
+            double horizontalDistance = movement.horizontalDistance();
+            float targetYaw = Mth.wrapDegrees((float)(Mth.atan2(movement.z, movement.x) * Mth.RAD_TO_DEG) - 90.0F);
+            float targetPitch = Mth.clamp(Mth.wrapDegrees((float)(-(Mth.atan2(movement.y, horizontalDistance) * Mth.RAD_TO_DEG))), -75.0F, 75.0F);
             // 用插值减少朝向突变。
-            float 偏航 = Mth.rotLerp(0.35F, this.getYRot(), 目标偏航);
-            float 俯仰 = Mth.rotLerp(0.35F, this.getXRot(), 目标俯仰);
+            float yaw = Mth.rotLerp(0.35F, this.getYRot(), targetYaw);
+            float pitch = Mth.rotLerp(0.35F, this.getXRot(), targetPitch);
 
             // 同步实体、身体、头部和俯仰角。
-            this.setYRot(偏航);
-            this.setYBodyRot(偏航);
-            this.setYHeadRot(偏航);
-            this.setXRot(俯仰);
-            this.debugMovement(伤害来源, 移动向量, 目标偏航, 目标俯仰);
+            this.setYRot(yaw);
+            this.setYBodyRot(yaw);
+            this.setYHeadRot(yaw);
+            this.setXRot(pitch);
+            this.debugMovement(source, movement, targetYaw, targetPitch);
         }
     }
 
     // 默认关闭的低频移动调试日志。
-    private void debugMovement(String 伤害来源, Vec3 移动向量, float 目标偏航, float 目标俯仰) {
+    private void debugMovement(String source, Vec3 movement, float targetYaw, float targetPitch) {
         if (DEBUG_MOVEMENT && this.tickCount % 40 == 0) {
-            HpEndExpansion.LOGGER.debug("Void whale movement source={} yaw={} bodyYaw={} headYaw={} pitch={} targetYaw={} targetPitch={} motion=({}, {}, {})", 伤害来源, this.getYRot(), this.yBodyRot, this.yHeadRot, this.getXRot(), 目标偏航, 目标俯仰, 移动向量.x, 移动向量.y, 移动向量.z);
+            HpEndExpansion.LOGGER.debug("Void whale movement source={} yaw={} bodyYaw={} headYaw={} pitch={} targetYaw={} targetPitch={} motion=({}, {}, {})", source, this.getYRot(), this.yBodyRot, this.yHeadRot, this.getXRot(), targetYaw, targetPitch, movement.x, movement.y, movement.z);
         }
     }
 
     // 受击时向伤害来源反方向闪避。
-    private void dodgeAway(@Nullable Vec3 来源位置) {
-        Vec3 远离方向 = 来源位置 == null ? this.getLookAngle().reverse() : this.position().subtract(来源位置);
+    private void dodgeAway(@Nullable Vec3 sourcePosition) {
+        Vec3 away = sourcePosition == null ? this.getLookAngle().reverse() : this.position().subtract(sourcePosition);
         // 来源过近或无来源时，随机生成一个闪避方向。
-        if (远离方向.lengthSqr() < 0.01) {
-            远离方向 = new Vec3(this.random.nextDouble() - 0.5, 0.25, this.random.nextDouble() - 0.5);
+        if (away.lengthSqr() < 0.01) {
+            away = new Vec3(this.random.nextDouble() - 0.5, 0.25, this.random.nextDouble() - 0.5);
         }
         // 计算闪避目标，并限制在世界高度内。
-        Vec3 目标 = this.position().add(远离方向.normalize().scale(12.0)).add(0.0, Mth.nextDouble(this.random, -3.0, 5.0), 0.0);
-        double 目标Y = Mth.clamp(目标.y, this.level().getMinBuildHeight() + 3.0, this.level().getMaxBuildHeight() - 3.0);
+        Vec3 target = this.position().add(away.normalize().scale(12.0)).add(0.0, Mth.nextDouble(this.random, -3.0, 5.0), 0.0);
+        double y = Mth.clamp(target.y, this.level().getMinBuildHeight() + 3.0, this.level().getMaxBuildHeight() - 3.0);
         // 服务端执行闪避传送并生成粒子。
-        if (this.level() instanceof ServerLevel 服务端世界) {
-            this.sendPortalParticles(服务端世界, this.position(), 40);
-            this.teleportTo(目标.x, 目标Y, 目标.z);
-            this.sendPortalParticles(服务端世界, this.position(), 60);
+        if (this.level() instanceof ServerLevel serverLevel) {
+            this.sendPortalParticles(serverLevel, this.position(), 40);
+            this.teleportTo(target.x, y, target.z);
+            this.sendPortalParticles(serverLevel, this.position(), 60);
         }
     }
 
     // 向指定位置发送传送粒子。
-    private void sendPortalParticles(ServerLevel 世界, Vec3 位置向量, int 数量) {
-        世界.sendParticles(ParticleTypes.PORTAL, 位置向量.x, 位置向量.y + 1.0, 位置向量.z, 数量, 1.6, 0.9, 1.6, 0.25);
-        世界.sendParticles(ParticleTypes.REVERSE_PORTAL, 位置向量.x, 位置向量.y + 1.0, 位置向量.z, 数量 / 2, 1.2, 0.7, 1.2, 0.12);
+    private void sendPortalParticles(ServerLevel level, Vec3 position, int count) {
+        level.sendParticles(ParticleTypes.PORTAL, position.x, position.y + 1.0, position.z, count, 1.6, 0.9, 1.6, 0.25);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, position.x, position.y + 1.0, position.z, count / 2, 1.2, 0.7, 1.2, 0.12);
     }
 
     // 客户端生成虚空鲸身上的环境粒子。

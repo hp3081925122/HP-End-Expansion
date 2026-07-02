@@ -49,20 +49,20 @@ public final class ModEntities {
     }
 
     // 注册实体延迟注册器。
-    public static void register(IEventBus 模组事件总线) {
-        ENTITIES.register(模组事件总线);
+    public static void register(IEventBus modEventBus) {
+        ENTITIES.register(modEventBus);
     }
 
     // 注册虚空鲸属性。
-    public static void registerAttributes(EntityAttributeCreationEvent 事件) {
-        事件.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
-        事件.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
-        事件.put(ENDER_SNAIL.get(), EnderSnail.createAttributes().build());
+    public static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(VOID_WHALE.get(), VoidWhale.createAttributes().build());
+        event.put(ENDER_BOX.get(), EnderBox.createAttributes().build());
+        event.put(ENDER_SNAIL.get(), EnderSnail.createAttributes().build());
     }
 
     // 注册虚空鲸生成条件。
-    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent 事件) {
-        事件.register(VOID_WHALE.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VoidWhale::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        事件.register(ENDER_SNAIL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderSnail::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+        event.register(VOID_WHALE.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VoidWhale::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ENDER_SNAIL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EnderSnail::canSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

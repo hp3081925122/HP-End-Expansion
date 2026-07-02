@@ -15,20 +15,20 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> HP_END_EXPANSION = CREATIVE_TABS.register("hp_end_expansion", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hp_end_expansion"))
             .icon(() -> new ItemStack(ModItems.VOID_WHALE_SPAWN_EGG.get()))
-            .displayItems((parameters, 输出物品) -> {
-                输出物品.accept(ModItems.VOID_WHALE_SPAWN_EGG.get());
-                输出物品.accept(ModItems.ENDER_BOX_SPAWN_EGG.get());
-                输出物品.accept(ModItems.ENDER_SNAIL_SPAWN_EGG.get());
-                输出物品.accept(ModItems.ENDER_BOX.get());
-                输出物品.accept(ModItems.PET_BAG.get());
-                输出物品.accept(ModItems.ENDER_SNAIL_SHELL.get());
+            .displayItems((parameters, output) -> {
+                output.accept(ModItems.VOID_WHALE_SPAWN_EGG.get());
+                output.accept(ModItems.ENDER_BOX_SPAWN_EGG.get());
+                output.accept(ModItems.ENDER_SNAIL_SPAWN_EGG.get());
+                output.accept(ModItems.ENDER_BOX.get());
+                output.accept(ModItems.PET_BAG.get());
+                output.accept(ModItems.ENDER_SNAIL_SHELL.get());
             })
             .build());
 
     private ModCreativeTabs() {
     }
 
-    public static void register(IEventBus 模组事件总线) {
-        CREATIVE_TABS.register(模组事件总线);
+    public static void register(IEventBus modEventBus) {
+        CREATIVE_TABS.register(modEventBus);
     }
 }
