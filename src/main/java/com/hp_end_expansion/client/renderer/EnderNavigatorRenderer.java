@@ -21,6 +21,6 @@ public class EnderNavigatorRenderer extends GeoEntityRenderer<EnderNavigator> {
     @Override
     protected void applyRotations(EnderNavigator animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
         super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
-        poseStack.mulPose(Axis.XP.rotationDegrees(animatable.getXRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(animatable.getFlightPitch()));
     }
 }
