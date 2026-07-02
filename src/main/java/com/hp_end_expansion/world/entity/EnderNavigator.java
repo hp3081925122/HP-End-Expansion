@@ -45,6 +45,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class EnderNavigator extends PathfinderMob implements GeoEntity {
     // 领航者会把当前攻击动作同步给客户端，方便后面接动画。
     private static final EntityDataAccessor<Integer> DATA_ATTACK_STATE = SynchedEntityData.defineId(EnderNavigator.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_FLIGHT_PITCH = SynchedEntityData.defineId(EnderNavigator.class, EntityDataSerializers.FLOAT);
     // 存档字段记录领航者是否已经召唤过鱼群援军。
     private static final String SUMMONED_REINFORCEMENTS_TAG = "SummonedReinforcements";
     // 存档字段记录领航者撞地后的剩余硬直时间。
@@ -138,6 +139,7 @@ public class EnderNavigator extends PathfinderMob implements GeoEntity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_ATTACK_STATE, ATTACK_STATE_NONE);
+        builder.define(DATA_FLIGHT_PITCH, 0.0F);
     }
 
     // 注册最小索敌和观察目标，移动与施法逻辑主要放在 tick 里手写控制。
@@ -272,6 +274,10 @@ public class EnderNavigator extends PathfinderMob implements GeoEntity {
     // 暴露给后续临时渲染器读取当前攻击状态。
     public int getAttackState() {
         return this.entityData.get(DATA_ATTACK_STATE);
+    }
+
+    public float getFlightPitch() {
+        return this.entityData.get(DATA_FLIGHT_PITCH);
     }
 
     // 统一驱动战斗、巡游和技能释放。
@@ -652,15 +658,15 @@ public class EnderNavigator extends PathfinderMob implements GeoEntity {
     // 根据移动向量更新领航者的水平朝向和俯仰角。
     private void updateRotationFromMovement(Vec3 movement) {
         double horizontal = movement.horizontalDistance();
-        // 领航者模型的面具在负 Z 方向，背翼在正 Z 方向，所以这里把原版移动朝向翻转一百八十度，让头部朝向实际飞行方向。
-        float targetYaw = Mth.wrapDegrees((float)(Mth.atan2(movement.z, movement.x) * Mth.RAD_TO_DEG) + 90.0F);
-        float targetPitch = Mth.clamp(Mth.wrapDegrees((float)(-(Mth.atan2(movement.y, horizontal) * Mth.RAD_TO_DEG))), -55.0F, 55.0F);
+        float targetYaw = Mth.wrapDegrees((float)(Mth.atan2(movement.z, movement.x) * Mth.RAD_TO_DEG) +270F);
+        float targetPitch = Mth.clamp(Mth.wrapDegrees((float)((Mth.atan2(movement.y, horizontal) * Mth.RAD_TO_DEG))), -25.0F, 25.0F);
         float yaw = Mth.rotLerp(0.32F, this.getYRot(), targetYaw);
-        float pitch = Mth.rotLerp(0.32F, this.getXRot(), targetPitch);
+        float pitch = Mth.rotLerp(0.32F, this.getFlightPitch(), -targetPitch);
         this.setYRot(yaw);
         this.setYBodyRot(yaw);
         this.setYHeadRot(yaw);
         this.setXRot(pitch);
+        this.entityData.set(DATA_FLIGHT_PITCH, pitch);
     }
 
     // 用统一方法维护攻击状态和显示时长，方便后续对接动画控制器。
