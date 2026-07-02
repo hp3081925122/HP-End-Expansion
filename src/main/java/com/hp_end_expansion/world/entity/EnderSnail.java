@@ -10,13 +10,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -139,21 +137,15 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
             if (this.isTame() && !this.isBaby()) {
                 if (!this.level().isClientSide) {
                     if (!this.isOwnedBy(player)) {
-                        player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：你不是这只蜗牛的主人"), false);
                         return InteractionResult.CONSUME;
                     }
                     if (!this.canFallInLove()) {
-                        player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛还在繁殖冷却或已经进入爱心状态"), false);
                         return InteractionResult.CONSUME;
                     }
                     stack.consume(1, player);
                     this.setInLove(player);
-                    player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花喂食成功：蜗牛已进入爱心繁殖状态"), false);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
-            }
-            if (!this.level().isClientSide) {
-                player.displayClientMessage(Component.literal("[末影蜗牛调试] 紫颂花右键失败：蜗牛未驯服或还是幼体"), false);
             }
             return InteractionResult.PASS;
         }
@@ -219,7 +211,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         EnderSnail child = ModEntities.ENDER_SNAIL.get().create(level);
         if (child != null) {
-            this.sendDebugMessage("繁殖成功，正在生成幼年末影蜗牛");
             child.setBaby(true);
             child.setTame(true, true);
             if (this.getOwnerUUID() != null) {
@@ -275,15 +266,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
         this.entityData.set(DATA_CHORUS_CRYSTALS, Math.max(0, Math.min(MAX_CHORUS_CRYSTALS, chorusCrystals)));
     }
 
-    // 向附近玩家发送末影蜗牛行为调试消息。
-    private void sendDebugMessage(String message) {
-        if (this.level() instanceof ServerLevel serverLevel) {
-            for (ServerPlayer player : serverLevel.getPlayers(player -> player.distanceToSqr(this) <= 1024.0D)) {
-                player.displayClientMessage(Component.literal("[末影蜗牛调试] " + message), false);
-            }
-        }
-    }
-
     // 末影蜗牛进食后增加紫颂晶簇，幼体累计十次后蜕变成年并掉壳。
     private void growChorusCrystal() {
         if (this.getChorusCrystals() < MAX_CHORUS_CRYSTALS) {
@@ -305,7 +287,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
         if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
         }
-        this.sendDebugMessage("开始啃食并采集紫颂植株：" + start.toShortString());
         Set<BlockPos> visited = new HashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(start.immutable());
@@ -413,10 +394,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
                 BlockState state = this.snail.level().getBlockState(pos);
                 if (state.is(Blocks.CHORUS_PLANT) || state.is(Blocks.CHORUS_FLOWER) && state.getValue(ChorusFlowerBlock.AGE) >= ChorusFlowerBlock.DEAD_AGE) {
                     this.target = pos.immutable();
-                    this.snail.sendDebugMessage("找到可啃食紫颂植株，准备前往：" + pos.toShortString());
-                    if (state.is(Blocks.CHORUS_FLOWER)) {
-                        this.snail.sendDebugMessage("检测到紫颂花高度：Y=" + pos.getY() + "，相对蜗牛高度差=" + (pos.getY() - center.getY()));
-                    }
                     return true;
                 }
             }
@@ -437,7 +414,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
         @Override
         public void start() {
             if (this.target != null) {
-                this.snail.sendDebugMessage("开始移动到紫颂采集目标：" + this.target.toShortString());
                 this.snail.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 0.7D);
             }
         }
@@ -490,8 +466,6 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
                 BlockState state = this.snail.level().getBlockState(pos);
                 if (state.is(Blocks.CHORUS_FLOWER) && state.getValue(ChorusFlowerBlock.AGE) < ChorusFlowerBlock.DEAD_AGE) {
                     this.target = pos.immutable();
-                    this.snail.sendDebugMessage("找到未成熟紫颂花，准备促进生长：" + pos.toShortString());
-                    this.snail.sendDebugMessage("检测到紫颂花高度：Y=" + pos.getY() + "，相对蜗牛高度差=" + (pos.getY() - center.getY()));
                     return true;
                 }
             }
@@ -521,12 +495,9 @@ public class EnderSnail extends TamableAnimal implements GeoEntity {
             this.snail.getLookControl().setLookAt(this.target.getX() + 0.5D, this.target.getY() + 0.5D, this.target.getZ() + 0.5D);
             if (this.snail.distanceToSqr(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D) <= 4.0D && this.snail.level() instanceof ServerLevel serverLevel) {
                 if (serverLevel.getBlockState(this.target).is(Blocks.CHORUS_FLOWER) && serverLevel.getBlockState(this.target.below()).is(Blocks.END_STONE)) {
-                    this.snail.sendDebugMessage("开始促进紫颂花生成：" + this.target.toShortString());
                     serverLevel.sendParticles(ParticleTypes.PORTAL, this.target.getX() + 0.5D, this.target.getY() + 0.75D, this.target.getZ() + 0.5D, 24, 0.35D, 0.45D, 0.35D, 0.04D);
                     ChorusFlowerBlock.generatePlant(serverLevel, this.target, serverLevel.random, 8);
                     serverLevel.sendParticles(ParticleTypes.PORTAL, this.target.getX() + 0.5D, this.target.getY() + 0.75D, this.target.getZ() + 0.5D, 32, 0.5D, 0.8D, 0.5D, 0.08D);
-                } else {
-                    this.snail.sendDebugMessage("促进生长失败：目标不是紫颂花，或下方不是末地石：" + this.target.toShortString());
                 }
                 this.target = null;
                 this.snail.getNavigation().stop();
