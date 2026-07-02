@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:ender_core_shard"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:ender_core"
+  }
+}

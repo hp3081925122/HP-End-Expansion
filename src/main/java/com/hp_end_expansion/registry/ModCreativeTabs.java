@@ -19,9 +19,14 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.VOID_WHALE_SPAWN_EGG.get());
                 output.accept(ModItems.ENDER_BOX_SPAWN_EGG.get());
                 output.accept(ModItems.ENDER_SNAIL_SPAWN_EGG.get());
+                output.accept(ModItems.ENDER_FISH_SPAWN_EGG.get());
+                output.accept(ModItems.ENDER_NAVIGATOR_SPAWN_EGG.get());
                 output.accept(ModItems.ENDER_BOX.get());
                 output.accept(ModItems.PET_BAG.get());
                 output.accept(ModItems.ENDER_SNAIL_SHELL.get());
+                output.accept(ModItems.ENDER_CORE_SHARD.get());
+                output.accept(ModItems.END_SHIP_COMPASS.get());
+                output.accept(ModItems.ENDER_CORE.get());
             })
             .build());
 

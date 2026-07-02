@@ -2,6 +2,9 @@ package com.hp_end_expansion.client;
 
 import com.hp_end_expansion.HpEndExpansion;
 import com.hp_end_expansion.client.renderer.EnderBoxRenderer;
+import com.hp_end_expansion.client.renderer.EnderFishRenderer;
+import com.hp_end_expansion.client.renderer.EnderNavigatorRenderer;
+import com.hp_end_expansion.client.renderer.EnderRiftRenderer;
 import com.hp_end_expansion.client.renderer.EnderSnailRenderer;
 import com.hp_end_expansion.client.renderer.VoidWhaleRenderer;
 import com.hp_end_expansion.network.OpenEnderBoxPayload;
@@ -42,6 +45,9 @@ public final class ClientEvents {
             event.registerEntityRenderer(ModEntities.VOID_WHALE.get(), VoidWhaleRenderer::new);
             event.registerEntityRenderer(ModEntities.ENDER_BOX.get(), EnderBoxRenderer::new);
             event.registerEntityRenderer(ModEntities.ENDER_SNAIL.get(), EnderSnailRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_FISH.get(), EnderFishRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_NAVIGATOR.get(), EnderNavigatorRenderer::new);
+            event.registerEntityRenderer(ModEntities.ENDER_RIFT.get(), EnderRiftRenderer::new);
         }
 
         @SubscribeEvent

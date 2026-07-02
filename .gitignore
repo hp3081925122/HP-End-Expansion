@@ -21,3 +21,5 @@ hs_err_pid*
 run
 dev_reference/
 bin/
+docs/
+net/

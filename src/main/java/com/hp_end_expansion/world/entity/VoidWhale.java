@@ -1,6 +1,5 @@
 package com.hp_end_expansion.world.entity;
 
-import com.hp_end_expansion.HpEndExpansion;
 import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -54,8 +53,6 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
     private static final double RIDER_FORWARD_SPEED = 3;
     private static final double RIDER_STRAFE_SPEED = 2;
     private static final double RIDER_DESCEND_SPEED = 2;
-    // 默认关闭的移动朝向调试开关。
-    private static final boolean DEBUG_MOVEMENT = false;
     // GeckoLib 动画资源名。
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("animation.void_whale.idle");
     private static final RawAnimation SWIM_ANIMATION = RawAnimation.begin().thenLoop("animation.void_whale.swim");
@@ -355,7 +352,6 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
             this.setYBodyRot(this.getYRot());
             this.setYHeadRot(this.getYRot());
             this.setXRot(player.getXRot() * 0.5F);
-            this.debugMovement("rider_look", look, this.getYRot(), this.getXRot());
         }
         this.yRotO = this.getYRot();
         this.xRotO = this.getXRot();
@@ -460,14 +456,6 @@ public class  VoidWhale extends TamableAnimal implements GeoEntity {
             this.setYBodyRot(yaw);
             this.setYHeadRot(yaw);
             this.setXRot(pitch);
-            this.debugMovement(source, movement, targetYaw, targetPitch);
-        }
-    }
-
-    // 默认关闭的低频移动调试日志。
-    private void debugMovement(String source, Vec3 movement, float targetYaw, float targetPitch) {
-        if (DEBUG_MOVEMENT && this.tickCount % 40 == 0) {
-            HpEndExpansion.LOGGER.debug("Void whale movement source={} yaw={} bodyYaw={} headYaw={} pitch={} targetYaw={} targetPitch={} motion=({}, {}, {})", source, this.getYRot(), this.yBodyRot, this.yHeadRot, this.getXRot(), targetYaw, targetPitch, movement.x, movement.y, movement.z);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.hp_end_expansion.event;
 
 import com.hp_end_expansion.HpEndExpansion;
+import com.hp_end_expansion.world.item.EnderCoreItem;
 import com.hp_end_expansion.world.item.EnderSnailShellArmorData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 @EventBusSubscriber(modid = HpEndExpansion.MODID)
@@ -88,6 +90,15 @@ public final class CommonEvents {
         int shellCount = EnderSnailShellArmorData.getShellCount(stack);
         if (shellCount > 0) {
             event.getToolTip().add(Component.translatable("item.hp_end_expansion.ender_snail_shell.armor_shells", shellCount));
+        }
+    }
+
+    // 玩家左键攻击生物时，如果主手是已绑定末影晶核，则把目标传送到绑定位置。
+    @SubscribeEvent
+    public static void onAttackEntity(AttackEntityEvent event) {
+        ItemStack stack = event.getEntity().getMainHandItem();
+        if (stack.getItem() instanceof EnderCoreItem && EnderCoreItem.teleportTargetToBoundLocation(stack, event.getEntity(), event.getTarget())) {
+            event.setCanceled(true);
         }
     }
 }

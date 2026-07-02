@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "tools",
+  "ingredients": [
+    {
+      "item": "minecraft:compass"
+    },
+    {
+      "item": "hp_end_expansion:ender_core_shard"
+    }
+  ],
+  "result": {
+    "id": "hp_end_expansion:end_ship_compass"
+  }
+}
