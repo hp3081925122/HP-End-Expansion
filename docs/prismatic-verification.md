@@ -17,7 +17,7 @@
 | 正式构建与产物 | 通过 | 不带测试开关 clean build，18 秒；JAR 的 356 处资源与源码字节一致、36 个功能类齐全，无测试类/模板/配置，详见日志摘录 |
 | 外部任务终态 | 尚未整体完成 | 2026-09-06 最新两目标均 idle；「悬潮庭」最终消息明确生物、精英、Boss、结构尚未完成，停止运行不等于达到合并条件 |
 | Blockbench MCP 服务 | 在线 | health 返回 status=ok；当前会话未暴露专用工具，尚未进入项目或宣称做过模型检查 |
-| 合并与 Git 推送 | 文档备份已推送，合并未开始 | `b6969d7` 已推送 origin/feature/prismatic-wastes；等待功能最终验证及两外部任务整体完成 |
+| 合并与 Git 推送 | 完整功能已推送，合并未开始 | `10f3c5e1edbd8e979a8d7127dc88491dc4ff7997` 已推送 origin/feature/prismatic-wastes，ls-remote 核验一致；等待两外部任务整体完成 |
 
 ## 实际失败、修复与性能记录
 
@@ -58,4 +58,6 @@ D:/Anaconda2/python.exe tools/prismatic/verify_content.py
 
 ## 最终合并记录
 
-尚未开始。不得在这里预填成功结果。
+尚未开始。2026-09-06 查询时另两个任务均已停止运行，但「悬潮庭」交接明确还有生物、精英、Boss 和结构未完成，未满足用户指定的合并前提。没有修改它们的工作区、强行合并半成品或把停止运行认作完成；最终其他模型的 Blockbench MCP 审查随合并一起保留待办。
+
+本功能代码与资源备份：`10f3c5e1edbd8e979a8d7127dc88491dc4ff7997`，远程分支 `origin/feature/prismatic-wastes`。推送后已通过 `git ls-remote --heads origin refs/heads/feature/prismatic-wastes` 确认远程哈希一致。设计初稿备份 `b6969d7` 同样保留于历史。
