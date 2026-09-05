@@ -1,0 +1,27 @@
+{
+  "structures": [
+    {
+      "structure": "hp_end_expansion:prismatic_waystation",
+      "weight": 4
+    },
+    {
+      "structure": "hp_end_expansion:prismatic_polishing_works",
+      "weight": 2
+    },
+    {
+      "structure": "hp_end_expansion:prismatic_broken_observatory",
+      "weight": 2
+    },
+    {
+      "structure": "hp_end_expansion:prismatic_prism_court",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "separation": 5,
+    "spacing": 12,
+    "type": "minecraft:random_spread",
+    "spread_type": "linear",
+    "salt": 730601
+  }
+}

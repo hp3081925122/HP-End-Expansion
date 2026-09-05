@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "hp_end_expansion:prismatic_chalkstone",
+    "hp_end_expansion:prismatic_chalkstone_bricks",
+    "hp_end_expansion:prismatic_chalkstone_stairs",
+    "hp_end_expansion:prismatic_chalkstone_slab",
+    "hp_end_expansion:prismatic_chalkstone_wall",
+    "hp_end_expansion:prismatic_cracked_bricks",
+    "hp_end_expansion:prismatic_chiseled_chalkstone",
+    "hp_end_expansion:prismatic_lumen_ore",
+    "hp_end_expansion:prismatic_lumen_block",
+    "hp_end_expansion:prismatic_prism_lamp",
+    "hp_end_expansion:prismatic_survey_marker",
+    "hp_end_expansion:prismatic_regent_altar"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "hp_end_expansion:block/prismatic/prism_log"
+    },
+    "axis=x": {
+      "model": "hp_end_expansion:block/prismatic/prism_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
+      "model": "hp_end_expansion:block/prismatic/prism_log",
+      "x": 90
+    }
+  }
+}

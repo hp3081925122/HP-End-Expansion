@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "hp_end_expansion:block/prismatic/survey_marker",
+    "bottom": "hp_end_expansion:block/prismatic/survey_marker",
+    "top": "hp_end_expansion:block/prismatic/survey_marker_top"
+  }
+}

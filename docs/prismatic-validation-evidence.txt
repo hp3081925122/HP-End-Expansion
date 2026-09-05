@@ -1,0 +1,53 @@
+折光荒原自动验收摘录（2026-09-06，独立分支）
+
+以下来自 build/prismatic/gametest-sixth.log；生成种子 0，原版末地噪声生成器，测试专用配置启用结构生成。
+
+[01:15:52] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic native locate verified layout=waystation start=BlockPos{x=3680, y=0, z=3312} box=BoundingBox{minX=3682, minY=54, minZ=3315, maxX=3694, maxY=73, maxZ=3325} loadedChunks=1 locateMs=295.314 totalMs=661.4457
+[01:15:53] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic native locate verified layout=polishing_works start=BlockPos{x=3328, y=0, z=4464} box=BoundingBox{minX=3324, minY=54, minZ=4461, maxX=3348, maxY=73, maxZ=4483} loadedChunks=9 locateMs=149.003 totalMs=740.1518
+[01:15:53] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic native locate verified layout=broken_observatory start=BlockPos{x=3712, y=0, z=4624} box=BoundingBox{minX=3709, minY=51, minZ=4621, maxX=3731, maxY=70, maxZ=4643} loadedChunks=9 locateMs=37.8596 totalMs=424.8082
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic natural court altar context dimension=minecraft:the_end altar=BlockPos{x=2920, y=64, z=5432} bossSpawn=BlockPos{x=2920, y=65, z=5436}
+[01:15:55] [Server thread/INFO] [co.hp.HpEndExpansion/]: Prismatic natural altar verified: altar=BlockPos{x=2920, y=64, z=5432}, nest=BlockPos{x=2920, y=65, z=5436}, boss=36265099-bc01-4928-b0e2-8ceb9678427d, keys=3->2, peaceful=retained, obstruction=retained, repeated=retained
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic native locate verified layout=prism_court start=BlockPos{x=2912, y=0, z=5424} box=BoundingBox{minX=2904, minY=55, minZ=5416, maxX=2936, maxY=74, maxZ=5448} loadedChunks=9 locateMs=1000.0604 totalMs=1566.1889
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic terrain parity verified columns=300 seeds=3 regions=4 batchMs=48.7892 vanillaHeightMs=305.6236
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic natural structure candidate waystation at BlockPos{x=-4600, y=60, z=-3976}; terrainChecks=2, searchMs=15.5863, worstGenerationMs=7.8341
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic natural structure candidate polishing_works at BlockPos{x=664, y=62, z=-3944}; terrainChecks=3, searchMs=39.6987, worstGenerationMs=19.9588
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic natural structure candidate broken_observatory at BlockPos{x=664, y=62, z=-3944}; terrainChecks=3, searchMs=39.993, worstGenerationMs=19.7647
+[01:15:55] [Server thread/INFO] [co.hp.co.pr.te.PrismaticWorldgenTests/]: Prismatic natural structure candidate prism_court at BlockPos{x=3544, y=64, z=-4008}; terrainChecks=5, searchMs=151.7267, worstGenerationMs=54.675
+[01:15:57] [Server thread/INFO] [minecraft/GameTestServer]: ========= 19 GAME TESTS COMPLETE IN 7.764 s ======================
+[01:15:57] [Server thread/INFO] [minecraft/GameTestServer]: All 19 required tests passed :)
+BUILD SUCCESSFUL in 39s
+
+正式构建（未传 -PprismaticTests）：
+> Task :clean
+> Task :createMinecraftArtifacts
+> Task :compileJava
+> Task :generateModMetadata
+> Task :processResources
+> Task :classes
+> Task :jarJar NO-SOURCE
+> Task :jar
+> Task :assemble
+> Task :compileTestJava NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test NO-SOURCE
+> Task :check UP-TO-DATE
+> Task :build
+BUILD SUCCESSFUL in 18s
+
+正式 JAR 与资源审查：
+{
+  "resource_references_checked": 521,
+  "blocks": 27,
+  "materials": 16,
+  "creatures": 11,
+  "production_jar": {
+    "file": "hp_end_expansion-1.0.jar",
+    "sha256": "a2d2c36318a9a57d3a03cdee3b979e5bf3bd9359228c6a51b5ce5e5532876ea6",
+    "matched_resources": 356,
+    "production_classes": 36,
+    "development_files": []
+  },
+  "errors": [],
+  "scope": "Resource linkage and language audit; runtime and rendered appearance require separate evidence."
+}

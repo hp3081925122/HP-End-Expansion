@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hp_end_expansion:prismatic_stripped_prism_log"
+    }
+  ],
+  "result": {
+    "id": "hp_end_expansion:prismatic_prism_planks",
+    "count": 4
+  }
+}

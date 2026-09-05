@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "hp_end_expansion:block/prismatic/dusk_glass"
+  },
+  "render_type": "minecraft:translucent"
+}

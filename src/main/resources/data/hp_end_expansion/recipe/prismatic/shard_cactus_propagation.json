@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hp_end_expansion:prismatic_prism_needle"
+    },
+    {
+      "item": "hp_end_expansion:prismatic_prism_meal"
+    }
+  ],
+  "result": {
+    "id": "hp_end_expansion:prismatic_shard_cactus",
+    "count": 1
+  }
+}

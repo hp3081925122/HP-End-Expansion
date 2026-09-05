@@ -1,0 +1,1230 @@
+{
+  "texture_size": 128,
+  "gutter": 1,
+  "faces": [
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        1,
+        12,
+        16
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        15,
+        1,
+        12,
+        16
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        29,
+        1,
+        16,
+        10
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        47,
+        1,
+        16,
+        10
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        65,
+        1,
+        14,
+        10
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        81,
+        1,
+        14,
+        10
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        97,
+        1,
+        12,
+        10
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        111,
+        1,
+        12,
+        10
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        1,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        6,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        11,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        16,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        21,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        26,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        31,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        36,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        41,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        46,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        51,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        56,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        61,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        66,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        71,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        76,
+        19,
+        3,
+        9
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        81,
+        19,
+        8,
+        8
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        91,
+        19,
+        8,
+        8
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        101,
+        19,
+        7,
+        8
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        110,
+        19,
+        7,
+        8
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        119,
+        19,
+        8,
+        7
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        1,
+        30,
+        8,
+        7
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        11,
+        30,
+        14,
+        6
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        27,
+        30,
+        14,
+        6
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        43,
+        30,
+        10,
+        6
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        55,
+        30,
+        10,
+        6
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        67,
+        30,
+        6,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        75,
+        30,
+        6,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        83,
+        30,
+        6,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        91,
+        30,
+        6,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        99,
+        30,
+        5,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        106,
+        30,
+        5,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        113,
+        30,
+        5,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        120,
+        30,
+        5,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        1,
+        39,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        6,
+        39,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        11,
+        39,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        16,
+        39,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        21,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        25,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        29,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        33,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        37,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        41,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        45,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        49,
+        39,
+        2,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        53,
+        39,
+        6,
+        4
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        61,
+        39,
+        6,
+        4
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        69,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        75,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        81,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        87,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        93,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        99,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        105,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        111,
+        39,
+        4,
+        4
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        117,
+        39,
+        3,
+        4
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        122,
+        39,
+        3,
+        4
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        1,
+        46,
+        6,
+        3
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        9,
+        46,
+        6,
+        3
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        17,
+        46,
+        6,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        25,
+        46,
+        6,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        33,
+        46,
+        6,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        41,
+        46,
+        6,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        49,
+        46,
+        5,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        56,
+        46,
+        5,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        63,
+        46,
+        5,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "horn_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        70,
+        46,
+        5,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        77,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        83,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        89,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        95,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        101,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        107,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        113,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        119,
+        46,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        1,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        7,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        13,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        19,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        25,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        31,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        37,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        43,
+        51,
+        4,
+        3
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        49,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        54,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        59,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        64,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        69,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        74,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        79,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        84,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        89,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        94,
+        51,
+        3,
+        3
+      ],
+      "material": "fur"
+    }
+  ]
+}

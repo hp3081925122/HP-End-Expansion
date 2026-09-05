@@ -1,0 +1,93 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.5,
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 4931672,
+    "water_color": 6323601,
+    "water_fog_color": 3155769,
+    "sky_color": 3155769,
+    "grass_color": 15576144,
+    "foliage_color": 6323601
+  },
+  "carvers": {},
+  "features": [
+    [
+      "hp_end_expansion:prismatic_surface"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "hp_end_expansion:prismatic_vegetation"
+    ],
+    []
+  ],
+  "creature_spawn_probability": 0.08,
+  "spawners": {
+    "monster": [
+      {
+        "weight": 12,
+        "minCount": 1,
+        "type": "minecraft:enderman",
+        "maxCount": 2
+      },
+      {
+        "weight": 22,
+        "minCount": 1,
+        "type": "hp_end_expansion:prismatic_glass_stalker",
+        "maxCount": 2
+      },
+      {
+        "weight": 18,
+        "minCount": 1,
+        "type": "hp_end_expansion:prismatic_needle_spitter",
+        "maxCount": 2
+      },
+      {
+        "weight": 12,
+        "minCount": 1,
+        "type": "hp_end_expansion:prismatic_shardback",
+        "maxCount": 1
+      },
+      {
+        "weight": 14,
+        "minCount": 1,
+        "type": "hp_end_expansion:prismatic_glare_wisp",
+        "maxCount": 2
+      }
+    ],
+    "creature": [
+      {
+        "weight": 12,
+        "minCount": 2,
+        "type": "hp_end_expansion:prismatic_shardling",
+        "maxCount": 4
+      },
+      {
+        "weight": 10,
+        "minCount": 2,
+        "type": "hp_end_expansion:prismatic_prism_hare",
+        "maxCount": 3
+      },
+      {
+        "weight": 7,
+        "minCount": 2,
+        "type": "hp_end_expansion:prismatic_facet_ram",
+        "maxCount": 3
+      },
+      {
+        "weight": 8,
+        "minCount": 1,
+        "type": "hp_end_expansion:prismatic_dusk_moth",
+        "maxCount": 3
+      }
+    ]
+  },
+  "spawn_costs": {}
+}

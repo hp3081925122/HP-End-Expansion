@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "blocks",
+  "ingredient": {
+    "item": "hp_end_expansion:prismatic_chalkstone_bricks"
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_cracked_bricks"
+  },
+  "experience": 0.1,
+  "cookingtime": 200
+}

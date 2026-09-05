@@ -20,12 +20,14 @@
 
 | 任务 | 状态/负责人 | 独占写入 | 只读 | 映射 |
 |---|---|---|---|---|
-| PB1 方块植被与基础集成 | ◐ root | PrismaticContent.java、block/、item/、HpEndExpansion.java、build.gradle、docs 公共表格 | 契约、原版源码 | T1 |
-| PB2 实体 Java 与客户端接入 | ◐ prismatic_entities | PrismaticEntities.java、entity/、client/、docs/prismatic-entities-report.md | 契约、依赖源码 | T2 |
-| PB3 手工视觉资源生成与审查 | ◐ prismatic_assets | assets 下 prismatic 资源、art/prismatic/、tools/prismatic/assets*.py、docs/prismatic-assets-report.md | 契约、设计 | T3 |
-| PB4 世界生成独立实现 | ◐ prismatic_worldgen | worldgen/、content/prismatic/mixin/、hp_end_expansion.prismatic.mixins.json、data 下 prismatic 世界生成与群系/结构标签、docs/prismatic-worldgen-report.md | 冻结的 block/item/type 接口、原版源码 | T4 |
+| PB1 方块植被与基础集成 | ☑ root | PrismaticContent.java、block/、item/、HpEndExpansion.java、build.gradle、docs 公共表格 | 契约、原版源码 | T1 |
+| PB2 实体 Java 与客户端接入 | ☑ prismatic_entities | PrismaticEntities.java、entity/、client/、docs/prismatic-entities-report.md | 契约、依赖源码 | T2 |
+| PB3 手工视觉资源生成与审查 | ☑ prismatic_assets | assets 下 prismatic 资源、art/prismatic/、tools/prismatic/assets*.py、docs/prismatic-assets-report.md | 契约、设计 | T3 |
+| PB4 世界生成独立实现 | ☑ prismatic_worldgen | worldgen/、content/prismatic/mixin/、hp_end_expansion.prismatic.mixins.json、data 下 prismatic 世界生成与群系/结构标签、docs/prismatic-worldgen-report.md | 冻结的 block/item/type 接口、原版源码 | T4 |
 
 Gate B：三者结束后主代理运行 compileJava + processResources，检查全部 11 个实体及 27 个方块资源路径一致。
+
+执行结果：B/C 批已完成。第六轮 19/19 服务端测试通过，正式不带测试开关的 clean build 成功，JAR 内 356 处资源与源码字节一致，36 个功能类存在，测试类/模板/配置均未打包。对应事实见 [验证记录](prismatic-verification.md) 与 [日志摘录](prismatic-validation-evidence.txt)。D 批外部整合等待另两个任务整体完成。
 
 ## C 批：世界与流程集成
 

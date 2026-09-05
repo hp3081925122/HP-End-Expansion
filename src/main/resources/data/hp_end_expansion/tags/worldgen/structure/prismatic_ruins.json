@@ -1,0 +1,9 @@
+{
+  "values": [
+    "hp_end_expansion:prismatic_waystation",
+    "hp_end_expansion:prismatic_polishing_works",
+    "hp_end_expansion:prismatic_broken_observatory",
+    "hp_end_expansion:prismatic_prism_court"
+  ],
+  "replace": false
+}

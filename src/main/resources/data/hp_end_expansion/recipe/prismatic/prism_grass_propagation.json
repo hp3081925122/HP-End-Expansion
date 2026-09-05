@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hp_end_expansion:prismatic_crystal_bud"
+    },
+    {
+      "item": "hp_end_expansion:prismatic_prism_meal"
+    }
+  ],
+  "result": {
+    "id": "hp_end_expansion:prismatic_prism_grass",
+    "count": 1
+  }
+}

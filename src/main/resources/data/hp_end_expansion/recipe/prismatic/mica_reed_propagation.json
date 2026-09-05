@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hp_end_expansion:prismatic_mica_sheet"
+    },
+    {
+      "item": "hp_end_expansion:prismatic_prism_meal"
+    }
+  ],
+  "result": {
+    "id": "hp_end_expansion:prismatic_mica_reed",
+    "count": 1
+  }
+}

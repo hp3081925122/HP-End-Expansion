@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "hp_end_expansion:block/prismatic/prism_slab"
+    },
+    "type=double": {
+      "model": "hp_end_expansion:block/prismatic/prism_planks"
+    },
+    "type=top": {
+      "model": "hp_end_expansion:block/prismatic/prism_slab_top"
+    }
+  }
+}

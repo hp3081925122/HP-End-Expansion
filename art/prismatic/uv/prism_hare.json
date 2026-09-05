@@ -1,0 +1,870 @@
+{
+  "texture_size": 128,
+  "gutter": 1,
+  "faces": [
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        1,
+        6,
+        8
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        9,
+        1,
+        6,
+        8
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        17,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        21,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        25,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        29,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        33,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        37,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        41,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        45,
+        1,
+        2,
+        8
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        49,
+        1,
+        8,
+        7
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        59,
+        1,
+        8,
+        7
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        69,
+        1,
+        6,
+        7
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        77,
+        1,
+        6,
+        7
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        85,
+        1,
+        7,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        94,
+        1,
+        7,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        103,
+        1,
+        5,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        110,
+        1,
+        5,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        117,
+        1,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        121,
+        1,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        125,
+        1,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        1,
+        11,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        5,
+        11,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        9,
+        11,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        13,
+        11,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        17,
+        11,
+        2,
+        6
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        21,
+        11,
+        7,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        30,
+        11,
+        7,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        39,
+        11,
+        5,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        46,
+        11,
+        5,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        53,
+        11,
+        5,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        60,
+        11,
+        5,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        67,
+        11,
+        4,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        73,
+        11,
+        4,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        79,
+        11,
+        4,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        85,
+        11,
+        4,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        91,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        96,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        101,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        106,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        111,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        116,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        121,
+        11,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        1,
+        19,
+        3,
+        5
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        6,
+        19,
+        4,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        12,
+        19,
+        4,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        18,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        23,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        28,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        33,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        38,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "tail",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        43,
+        19,
+        3,
+        3
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        48,
+        19,
+        2,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        52,
+        19,
+        2,
+        3
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        56,
+        19,
+        5,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        63,
+        19,
+        5,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        70,
+        19,
+        5,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        77,
+        19,
+        5,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        84,
+        19,
+        4,
+        2
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        90,
+        19,
+        4,
+        2
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        96,
+        19,
+        4,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_l",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        102,
+        19,
+        4,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        108,
+        19,
+        4,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "hind_r",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        114,
+        19,
+        4,
+        2
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        120,
+        19,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        124,
+        19,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        26,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "ear_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        5,
+        26,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        9,
+        26,
+        2,
+        2
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        13,
+        26,
+        2,
+        2
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        17,
+        26,
+        2,
+        2
+      ],
+      "material": "fur"
+    },
+    {
+      "bone": "fore_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        21,
+        26,
+        2,
+        2
+      ],
+      "material": "fur"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "layout": 2,
+  "terrain_adaptation": "none",
+  "type": "hp_end_expansion:prismatic_ruin",
+  "biomes": "#hp_end_expansion:has_structure/prismatic_ruins"
+}

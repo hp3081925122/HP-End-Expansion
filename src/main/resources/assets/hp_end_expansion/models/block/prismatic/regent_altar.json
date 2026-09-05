@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "hp_end_expansion:block/prismatic/regent_altar",
+    "bottom": "hp_end_expansion:block/prismatic/regent_altar",
+    "top": "hp_end_expansion:block/prismatic/regent_altar_top"
+  }
+}

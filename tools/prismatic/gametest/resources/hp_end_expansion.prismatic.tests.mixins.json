@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.hp_end_expansion.content.prismatic.test.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["PrismaticGameTestServerMixin"],
+  "injectors": {"defaultRequire": 1}
+}
