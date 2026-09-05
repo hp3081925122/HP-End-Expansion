@@ -1,0 +1,654 @@
+{
+  "texture_size": 128,
+  "gutter": 1,
+  "faces": [
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        1,
+        18,
+        17
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        21,
+        1,
+        18,
+        17
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        41,
+        1,
+        14,
+        15
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        57,
+        1,
+        14,
+        15
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        73,
+        1,
+        12,
+        11
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        87,
+        1,
+        12,
+        11
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        101,
+        1,
+        15,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        1,
+        20,
+        15,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        18,
+        20,
+        14,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        34,
+        20,
+        14,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        50,
+        20,
+        8,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        60,
+        20,
+        8,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        70,
+        20,
+        8,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        80,
+        20,
+        8,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "down",
+      "uv": [
+        90,
+        20,
+        6,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "up",
+      "uv": [
+        98,
+        20,
+        6,
+        5
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        106,
+        20,
+        5,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        113,
+        20,
+        5,
+        5
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        120,
+        20,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        1,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        8,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        15,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        22,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        29,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        36,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        43,
+        27,
+        5,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        50,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        56,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        62,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l0",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        68,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        74,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        80,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        86,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_l1",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        92,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        98,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        104,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        110,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r0",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        116,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        122,
+        27,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        1,
+        34,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        7,
+        34,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "leg_r1",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        13,
+        34,
+        4,
+        5
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        19,
+        34,
+        18,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        39,
+        34,
+        18,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        59,
+        34,
+        17,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "carapace",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        78,
+        34,
+        17,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        97,
+        34,
+        12,
+        3
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        111,
+        34,
+        12,
+        3
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        1,
+        41,
+        11,
+        3
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "carapace",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        14,
+        41,
+        11,
+        3
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "north",
+      "uv": [
+        27,
+        41,
+        6,
+        2
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "south",
+      "uv": [
+        35,
+        41,
+        6,
+        2
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "east",
+      "uv": [
+        43,
+        41,
+        5,
+        2
+      ],
+      "material": "amber"
+    },
+    {
+      "bone": "carapace",
+      "cube": 2,
+      "face": "west",
+      "uv": [
+        50,
+        41,
+        5,
+        2
+      ],
+      "material": "amber"
+    }
+  ]
+}

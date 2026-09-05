@@ -1,0 +1,300 @@
+[
+  {
+    "id": "shardling",
+    "bones": 14,
+    "cubes": 19,
+    "faces": 114,
+    "texture": 128,
+    "roles": {
+      "shell": [
+        "shell_0",
+        "shell_1",
+        "shell_2"
+      ],
+      "head": [
+        "head"
+      ],
+      "antenna": [
+        "antenna_l",
+        "antenna_r"
+      ],
+      "leg": [
+        "leg_l0",
+        "leg_l1",
+        "leg_l2",
+        "leg_r0",
+        "leg_r1",
+        "leg_r2"
+      ]
+    }
+  },
+  {
+    "id": "prism_hare",
+    "bones": 10,
+    "cubes": 12,
+    "faces": 72,
+    "texture": 128,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "antenna": [
+        "ear_l",
+        "ear_r"
+      ],
+      "fore": [
+        "fore_l",
+        "fore_r"
+      ],
+      "hind": [
+        "hind_l",
+        "hind_r"
+      ],
+      "tail": [
+        "tail"
+      ]
+    }
+  },
+  {
+    "id": "facet_ram",
+    "bones": 10,
+    "cubes": 17,
+    "faces": 102,
+    "texture": 128,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "horn": [
+        "horn_l",
+        "horn_r"
+      ],
+      "leg": [
+        "leg_l0",
+        "leg_l1",
+        "leg_r0",
+        "leg_r1"
+      ],
+      "tail": [
+        "tail"
+      ]
+    }
+  },
+  {
+    "id": "dusk_moth",
+    "bones": 10,
+    "cubes": 9,
+    "faces": 54,
+    "texture": 128,
+    "roles": {
+      "tail": [
+        "abdomen"
+      ],
+      "head": [
+        "head"
+      ],
+      "antenna": [
+        "antenna_l",
+        "antenna_r"
+      ],
+      "wing_front": [
+        "wing_front_l",
+        "wing_front_r"
+      ],
+      "wing_back": [
+        "wing_back_l",
+        "wing_back_r"
+      ]
+    }
+  },
+  {
+    "id": "glass_stalker",
+    "bones": 10,
+    "cubes": 14,
+    "faces": 84,
+    "texture": 128,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "jaw": [
+        "jaw"
+      ],
+      "leg": [
+        "leg_l0",
+        "leg_l1",
+        "leg_r0",
+        "leg_r1"
+      ],
+      "tail": [
+        "tail_0",
+        "tail_1"
+      ]
+    }
+  },
+  {
+    "id": "needle_spitter",
+    "bones": 13,
+    "cubes": 14,
+    "faces": 84,
+    "texture": 128,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "jaw": [
+        "muzzle"
+      ],
+      "leg": [
+        "leg_0",
+        "leg_1",
+        "leg_2"
+      ],
+      "crown": [
+        "crown"
+      ],
+      "needle": [
+        "needle_0",
+        "needle_1",
+        "needle_2",
+        "needle_3",
+        "needle_4"
+      ]
+    }
+  },
+  {
+    "id": "shardback",
+    "bones": 8,
+    "cubes": 9,
+    "faces": 54,
+    "texture": 128,
+    "roles": {
+      "shell": [
+        "carapace"
+      ],
+      "head": [
+        "head"
+      ],
+      "leg": [
+        "leg_l0",
+        "leg_l1",
+        "leg_r0",
+        "leg_r1"
+      ]
+    }
+  },
+  {
+    "id": "glare_wisp",
+    "bones": 5,
+    "cubes": 8,
+    "faces": 48,
+    "texture": 128,
+    "roles": {
+      "crown": [
+        "ring"
+      ],
+      "spark": [
+        "spark_l",
+        "spark_r"
+      ]
+    }
+  },
+  {
+    "id": "fault_warden",
+    "bones": 11,
+    "cubes": 24,
+    "faces": 144,
+    "texture": 256,
+    "roles": {
+      "shell": [
+        "carapace"
+      ],
+      "head": [
+        "head"
+      ],
+      "jaw": [
+        "jaw"
+      ],
+      "fore": [
+        "leg_l0",
+        "leg_r0"
+      ],
+      "leg": [
+        "leg_l1",
+        "leg_l2",
+        "leg_r1",
+        "leg_r2"
+      ]
+    }
+  },
+  {
+    "id": "mirror_huntress",
+    "bones": 12,
+    "cubes": 20,
+    "faces": 120,
+    "texture": 128,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "crown": [
+        "mirror"
+      ],
+      "leg": [
+        "leg_l",
+        "leg_r"
+      ],
+      "shin": [
+        "shin_l",
+        "shin_r"
+      ],
+      "arm": [
+        "arm_l",
+        "arm_r"
+      ],
+      "scythe": [
+        "scythe_l",
+        "scythe_r"
+      ]
+    }
+  },
+  {
+    "id": "parallax_regent",
+    "bones": 16,
+    "cubes": 26,
+    "faces": 156,
+    "texture": 256,
+    "roles": {
+      "head": [
+        "head"
+      ],
+      "jaw": [
+        "jaw"
+      ],
+      "fore": [
+        "leg_l0",
+        "leg_r0"
+      ],
+      "leg": [
+        "leg_l1",
+        "leg_r1"
+      ],
+      "crown": [
+        "crown"
+      ],
+      "crown_leaf": [
+        "crown_l",
+        "crown_back_l",
+        "crown_r",
+        "crown_back_r"
+      ],
+      "core": [
+        "core"
+      ],
+      "tail": [
+        "tail_0",
+        "tail_1"
+      ]
+    }
+  }
+]

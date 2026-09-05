@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "S": {
+      "item": "hp_end_expansion:prismatic_mica_sheet"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_dusk_glass",
+    "count": 8
+  }
+}

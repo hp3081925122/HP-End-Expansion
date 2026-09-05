@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "hp_end_expansion:block/prismatic/stripped_prism_log",
+    "end": "hp_end_expansion:block/prismatic/stripped_prism_log_top"
+  }
+}

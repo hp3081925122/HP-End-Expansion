@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "hp_end_expansion:prismatic_prism_log",
+    "hp_end_expansion:prismatic_stripped_prism_log",
+    "hp_end_expansion:prismatic_prism_planks",
+    "hp_end_expansion:prismatic_prism_stairs",
+    "hp_end_expansion:prismatic_prism_slab"
+  ]
+}

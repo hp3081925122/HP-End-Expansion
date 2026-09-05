@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.hp_end_expansion.content.prismatic.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["PrismaticEndBiomeSourceMixin"],
+  "injectors": {"defaultRequire": 1}
+}

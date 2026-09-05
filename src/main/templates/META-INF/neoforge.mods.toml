@@ -9,6 +9,11 @@ displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
+[[mixins]]
+config = "hp_end_expansion.prismatic.mixins.json"
+
+${prismatic_test_mixins}
+
 [[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"

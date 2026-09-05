@@ -18,6 +18,12 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
+// 仅显式验证时把测试代码和模板加入运行环境，正式构建不携带测试内容。
+if (providers.gradleProperty('prismaticTests').isPresent()) {
+    sourceSets.main.java.srcDir 'tools/prismatic/gametest/java'
+    sourceSets.main.resources.srcDir 'tools/prismatic/gametest/resources'
+}
+
 repositories {
     flatDir {
         dir 'libs'
@@ -86,6 +92,8 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             mod_version            : mod_version,
             mod_authors            : mod_authors,
             mod_description        : mod_description,
+            prismatic_test_mixins  : providers.gradleProperty('prismaticTests').isPresent()
+                    ? '\n[[mixins]]\nconfig = "hp_end_expansion.prismatic.tests.mixins.json"\n' : '',
     ]
 
     inputs.properties replaceProperties

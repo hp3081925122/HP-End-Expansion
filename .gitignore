@@ -23,3 +23,7 @@ dev_reference/
 bin/
 .eclipse/
 net/
+
+# 资源制作脚本的本地缓存
+__pycache__/
+*.pyc

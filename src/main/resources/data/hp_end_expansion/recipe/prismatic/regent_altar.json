@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LCL",
+    "BBB",
+    "OOO"
+  ],
+  "key": {
+    "L": {
+      "item": "hp_end_expansion:prismatic_lumen_crystal"
+    },
+    "C": {
+      "item": "hp_end_expansion:prismatic_chiseled_chalkstone"
+    },
+    "B": {
+      "item": "hp_end_expansion:prismatic_chalkstone_bricks"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_regent_altar",
+    "count": 1
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "hp_end_expansion:block/prismatic/chalkstone_bricks"
+  }
+}

@@ -1,6 +1,9 @@
 package com.hp_end_expansion;
 
 import com.hp_end_expansion.network.ModNetwork;
+import com.hp_end_expansion.content.prismatic.PrismaticContent;
+import com.hp_end_expansion.content.prismatic.PrismaticEntities;
+import com.hp_end_expansion.content.prismatic.worldgen.PrismaticWorldgen;
 import com.hp_end_expansion.registry.ModCreativeTabs;
 import com.hp_end_expansion.registry.ModEntities;
 import com.hp_end_expansion.registry.ModItems;
@@ -18,6 +21,10 @@ public class HpEndExpansion {
 
     // 模组构造时注册实体、物品、网络和实体事件。
     public HpEndExpansion(IEventBus modEventBus) {
+        // 折光荒原的方块、生态实体与地形通过独立入口接入。
+        PrismaticContent.register(modEventBus);
+        PrismaticEntities.register(modEventBus);
+        PrismaticWorldgen.register(modEventBus);
         ModEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

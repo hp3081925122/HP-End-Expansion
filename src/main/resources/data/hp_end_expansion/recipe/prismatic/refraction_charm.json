@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "HCH",
+    " L "
+  ],
+  "key": {
+    "S": {
+      "item": "hp_end_expansion:prismatic_dusk_silk"
+    },
+    "H": {
+      "item": "hp_end_expansion:prismatic_horn_fragment"
+    },
+    "C": {
+      "item": "hp_end_expansion:prismatic_regent_core"
+    },
+    "L": {
+      "item": "hp_end_expansion:prismatic_lumen_crystal"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_refraction_charm",
+    "count": 1
+  }
+}

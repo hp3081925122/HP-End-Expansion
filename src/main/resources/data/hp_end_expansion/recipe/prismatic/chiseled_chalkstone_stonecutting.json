@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "hp_end_expansion:prismatic_chalkstone"
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_chiseled_chalkstone",
+    "count": 1
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hp_end_expansion:block/prismatic/prism_grass_3"
+  }
+}

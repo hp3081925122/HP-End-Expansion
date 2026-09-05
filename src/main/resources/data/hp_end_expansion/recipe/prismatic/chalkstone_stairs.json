@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:prismatic_chalkstone_bricks"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_chalkstone_stairs",
+    "count": 4
+  }
+}

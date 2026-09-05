@@ -1,0 +1,1446 @@
+{
+  "texture_size": 128,
+  "gutter": 1,
+  "faces": [
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        1,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        5,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        9,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        13,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        17,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        21,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        25,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        29,
+        1,
+        2,
+        16
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        33,
+        1,
+        8,
+        12
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        43,
+        1,
+        8,
+        12
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        53,
+        1,
+        6,
+        12
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        61,
+        1,
+        6,
+        12
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        69,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        74,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        79,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        84,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        89,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        94,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        99,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        104,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        109,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        114,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        119,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        124,
+        1,
+        3,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        1,
+        19,
+        2,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        5,
+        19,
+        2,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        9,
+        19,
+        2,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        13,
+        19,
+        2,
+        10
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        17,
+        19,
+        2,
+        10
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        21,
+        19,
+        2,
+        10
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        25,
+        19,
+        2,
+        10
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        29,
+        19,
+        2,
+        10
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        33,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        37,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        41,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        45,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        49,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        53,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        57,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        61,
+        19,
+        2,
+        10
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        65,
+        19,
+        12,
+        7
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        79,
+        19,
+        12,
+        7
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        93,
+        19,
+        10,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        105,
+        19,
+        10,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        117,
+        19,
+        10,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        1,
+        31,
+        10,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        13,
+        31,
+        8,
+        6
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "body",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        23,
+        31,
+        8,
+        6
+      ],
+      "material": "chitin"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        33,
+        31,
+        6,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        41,
+        31,
+        6,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "east",
+      "uv": [
+        49,
+        31,
+        5,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "west",
+      "uv": [
+        56,
+        31,
+        5,
+        6
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        63,
+        31,
+        2,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        67,
+        31,
+        2,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "north",
+      "uv": [
+        71,
+        31,
+        2,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 0,
+      "face": "south",
+      "uv": [
+        75,
+        31,
+        2,
+        6
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        79,
+        31,
+        1,
+        6
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        82,
+        31,
+        1,
+        6
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        85,
+        31,
+        1,
+        6
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        88,
+        31,
+        1,
+        6
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        91,
+        31,
+        6,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "head",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        99,
+        31,
+        6,
+        5
+      ],
+      "material": "bone"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        107,
+        31,
+        3,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        112,
+        31,
+        3,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        117,
+        31,
+        3,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        122,
+        31,
+        3,
+        5
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        1,
+        39,
+        12,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        15,
+        39,
+        12,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        29,
+        39,
+        8,
+        4
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        39,
+        39,
+        8,
+        4
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        49,
+        39,
+        7,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "body",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        58,
+        39,
+        7,
+        4
+      ],
+      "material": "shell"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        67,
+        39,
+        6,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        75,
+        39,
+        6,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        83,
+        39,
+        6,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        91,
+        39,
+        6,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        99,
+        39,
+        3,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        104,
+        39,
+        3,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        109,
+        39,
+        3,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "arm_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        114,
+        39,
+        3,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        119,
+        39,
+        2,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        123,
+        39,
+        2,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        45,
+        2,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "leg_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        5,
+        45,
+        2,
+        3
+      ],
+      "material": "blue"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        9,
+        45,
+        1,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_l",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        12,
+        45,
+        1,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        15,
+        45,
+        1,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "scythe_r",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        18,
+        45,
+        1,
+        3
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "down",
+      "uv": [
+        21,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "north",
+      "uv": [
+        35,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "south",
+      "uv": [
+        49,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "up",
+      "uv": [
+        63,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "down",
+      "uv": [
+        77,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "north",
+      "uv": [
+        91,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "south",
+      "uv": [
+        105,
+        45,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "up",
+      "uv": [
+        1,
+        50,
+        12,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        15,
+        50,
+        8,
+        2
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        25,
+        50,
+        8,
+        2
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        35,
+        50,
+        5,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        42,
+        50,
+        5,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        49,
+        50,
+        5,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        56,
+        50,
+        5,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "east",
+      "uv": [
+        63,
+        50,
+        4,
+        2
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "head",
+      "cube": 1,
+      "face": "west",
+      "uv": [
+        69,
+        50,
+        4,
+        2
+      ],
+      "material": "violet"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        75,
+        50,
+        3,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        80,
+        50,
+        3,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "north",
+      "uv": [
+        85,
+        50,
+        3,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 1,
+      "face": "south",
+      "uv": [
+        90,
+        50,
+        3,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        95,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        99,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "down",
+      "uv": [
+        103,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 1,
+      "face": "up",
+      "uv": [
+        107,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "east",
+      "uv": [
+        111,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 2,
+      "face": "west",
+      "uv": [
+        115,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "east",
+      "uv": [
+        119,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "mirror",
+      "cube": 3,
+      "face": "west",
+      "uv": [
+        123,
+        50,
+        2,
+        2
+      ],
+      "material": "crystal"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        1,
+        54,
+        2,
+        2
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_l",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        5,
+        54,
+        2,
+        2
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "down",
+      "uv": [
+        9,
+        54,
+        2,
+        2
+      ],
+      "material": "basalt"
+    },
+    {
+      "bone": "shin_r",
+      "cube": 0,
+      "face": "up",
+      "uv": [
+        13,
+        54,
+        2,
+        2
+      ],
+      "material": "basalt"
+    }
+  ]
+}

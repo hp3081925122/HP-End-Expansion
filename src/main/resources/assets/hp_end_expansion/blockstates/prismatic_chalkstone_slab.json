@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "hp_end_expansion:block/prismatic/chalkstone_slab"
+    },
+    "type=double": {
+      "model": "hp_end_expansion:block/prismatic/chalkstone_bricks"
+    },
+    "type=top": {
+      "model": "hp_end_expansion:block/prismatic/chalkstone_slab_top"
+    }
+  }
+}

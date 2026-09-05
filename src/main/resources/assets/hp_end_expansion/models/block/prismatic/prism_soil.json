@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "hp_end_expansion:block/prismatic/prism_soil",
+    "bottom": "hp_end_expansion:block/prismatic/prism_soil",
+    "top": "hp_end_expansion:block/prismatic/prism_soil_top"
+  }
+}

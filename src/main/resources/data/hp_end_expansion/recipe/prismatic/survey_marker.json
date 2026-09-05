@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    " C ",
+    "BBB"
+  ],
+  "key": {
+    "L": {
+      "item": "hp_end_expansion:prismatic_lumen_crystal"
+    },
+    "C": {
+      "item": "hp_end_expansion:prismatic_mica_sheet"
+    },
+    "B": {
+      "item": "hp_end_expansion:prismatic_chalkstone_bricks"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:prismatic_survey_marker",
+    "count": 2
+  }
+}

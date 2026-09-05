@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:prismatic_prism_planks"
+    }
+  },
+  "result": {
+    "id": "minecraft:stick",
+    "count": 4
+  }
+}
