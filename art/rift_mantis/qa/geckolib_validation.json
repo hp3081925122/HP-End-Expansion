@@ -1,0 +1,17 @@
+{
+  "valid": true,
+  "errors": 0,
+  "warnings": 0,
+  "diagnostics": [],
+  "scope": {
+    "project_metadata": true,
+    "bone_names": true,
+    "armor_template": false,
+    "textures": true,
+    "animations": false
+  },
+  "notes": [
+    "Rules are derived from the GeckoLib Blockbench plugin and the GeckoLib 4 runtime's tolerances; no official schema exists.",
+    "Passing these checks does not prove the model renders or animates correctly in game."
+  ]
+}
