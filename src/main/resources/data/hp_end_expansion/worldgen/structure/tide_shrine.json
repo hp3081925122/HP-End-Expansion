@@ -1,0 +1,8 @@
+{
+  "type": "hp_end_expansion:tidelight",
+  "biomes": "#hp_end_expansion:has_structure/tide_shrine",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "whale": false
+}

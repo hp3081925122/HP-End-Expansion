@@ -1,0 +1,95 @@
+{
+  "carvers": {},
+  "downfall": 0.5,
+  "effects": {
+    "fog_color": 932416,
+    "mood_sound": {
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000,
+      "block_search_extent": 8,
+      "offset": 2
+    },
+    "sky_color": 0,
+    "water_color": 3134916,
+    "water_fog_color": 666160,
+    "ambient_sound": "hp_end_expansion:ambient.tidelight_reef.loop",
+    "additions_sound": {
+      "sound": "hp_end_expansion:ambient.tidelight_reef.additions",
+      "tick_chance": 0.0111
+    },
+    "particle": {
+      "options": {
+        "type": "hp_end_expansion:tide_mote"
+      },
+      "probability": 0.012
+    },
+    "music": {
+      "sound": "hp_end_expansion:music.tidelight_reef",
+      "min_delay": 600,
+      "max_delay": 2400,
+      "replace_current_music": true
+    }
+  },
+  "features": [
+    [
+      "hp_end_expansion:tidelight_surface"
+    ],
+    [],
+    [
+      "hp_end_expansion:tidelight_pool"
+    ],
+    [],
+    [
+      "hp_end_expansion:tidelight_spires",
+      "hp_end_expansion:tidelight_arch",
+      "hp_end_expansion:tidelight_floating"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "hp_end_expansion:tidelight_vegetation",
+      "hp_end_expansion:tidelight_curtains"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [
+      {
+        "type": "hp_end_expansion:lantern_jellyfish",
+        "weight": 10,
+        "minCount": 3,
+        "maxCount": 6
+      },
+      {
+        "type": "hp_end_expansion:pearl_hermit_crab",
+        "weight": 6,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "misc": [],
+    "monster": [
+      {
+        "type": "minecraft:enderman",
+        "weight": 5,
+        "minCount": 4,
+        "maxCount": 4
+      },
+      {
+        "type": "hp_end_expansion:reef_eel",
+        "weight": 5,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.5
+}

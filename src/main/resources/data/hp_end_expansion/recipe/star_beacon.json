@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RER",
+    "VVV",
+    "ERE"
+  ],
+  "key": {
+    "R": {
+      "item": "hp_end_expansion:ray_membrane"
+    },
+    "V": {
+      "item": "hp_end_expansion:void_core"
+    },
+    "E": {
+      "item": "minecraft:end_rod"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:star_beacon",
+    "count": 1
+  }
+}

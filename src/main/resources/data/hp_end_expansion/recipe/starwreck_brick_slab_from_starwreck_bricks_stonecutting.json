@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "hp_end_expansion:starwreck_bricks"
+  },
+  "result": {
+    "id": "hp_end_expansion:starwreck_brick_slab",
+    "count": 2
+  }
+}

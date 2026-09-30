@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud"
+    },
+    "facing=west": {
+      "model": "hp_end_expansion:block/large_star_crystal_bud",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

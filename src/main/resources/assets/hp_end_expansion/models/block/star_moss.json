@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "hp_end_expansion:block/star_moss",
+    "side": "hp_end_expansion:block/star_moss_side",
+    "bottom": "hp_end_expansion:block/starwreck_stone"
+  }
+}

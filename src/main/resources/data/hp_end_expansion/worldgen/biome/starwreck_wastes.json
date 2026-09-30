@@ -1,0 +1,96 @@
+{
+  "carvers": {},
+  "downfall": 0.5,
+  "effects": {
+    "fog_color": 3810328,
+    "mood_sound": {
+      "sound": "minecraft:ambient.basalt_deltas.mood",
+      "tick_delay": 6000,
+      "block_search_extent": 8,
+      "offset": 2
+    },
+    "sky_color": 0,
+    "water_color": 4159204,
+    "water_fog_color": 329011,
+    "ambient_sound": "minecraft:ambient.basalt_deltas.loop",
+    "additions_sound": {
+      "sound": "minecraft:ambient.basalt_deltas.additions",
+      "tick_chance": 0.0111
+    },
+    "particle": {
+      "options": {
+        "type": "hp_end_expansion:star_ember"
+      },
+      "probability": 0.006
+    },
+    "music": {
+      "sound": "hp_end_expansion:music.starwreck_wastes",
+      "min_delay": 600,
+      "max_delay": 2400,
+      "replace_current_music": true
+    }
+  },
+  "features": [
+    [
+      "hp_end_expansion:starwreck_surface"
+    ],
+    [],
+    [
+      "hp_end_expansion:large_starwreck_crater",
+      "hp_end_expansion:medium_starwreck_crater",
+      "hp_end_expansion:small_starwreck_crater"
+    ],
+    [],
+    [
+      "minecraft:end_gateway_return",
+      "hp_end_expansion:starwreck_meteor"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "hp_end_expansion:starwreck_vegetation"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [
+      {
+        "type": "hp_end_expansion:ember_moth",
+        "weight": 8,
+        "minCount": 2,
+        "maxCount": 4
+      }
+    ],
+    "axolotls": [],
+    "creature": [
+      {
+        "type": "hp_end_expansion:meteor_tortoise",
+        "weight": 2,
+        "minCount": 1,
+        "maxCount": 1
+      }
+    ],
+    "misc": [],
+    "monster": [
+      {
+        "type": "minecraft:enderman",
+        "weight": 5,
+        "minCount": 4,
+        "maxCount": 4
+      },
+      {
+        "type": "hp_end_expansion:ember_beetle",
+        "weight": 8,
+        "minCount": 2,
+        "maxCount": 4
+      }
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.5
+}

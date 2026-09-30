@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "pod=false": {
+      "model": "hp_end_expansion:block/hanging_glowkelp"
+    },
+    "pod=true": {
+      "model": "hp_end_expansion:block/hanging_glowkelp_pod"
+    }
+  }
+}
