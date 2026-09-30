@@ -1,0 +1,12 @@
+{
+  "feature": "hp_end_expansion:starwreck_meteor",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 8
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

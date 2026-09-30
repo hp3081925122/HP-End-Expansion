@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hp_end_expansion:lumen_coral_branch"
+    }
+  ],
+  "result": {
+    "id": "minecraft:light_blue_dye",
+    "count": 1
+  }
+}

@@ -18,14 +18,21 @@ public final class RiftMantisClientRegistration {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.RIFT_MANTIS.get(), RiftMantisRenderer::new);
+        event.registerEntityRenderer(ModEntities.RIFT_MATRIARCH.get(), RiftMatriarchRenderer::new);
+        event.registerEntityRenderer(ModEntities.VOID_RAY.get(), VoidRayRenderer::new);
+        event.registerEntityRenderer(ModEntities.STAR_DEVOURER.get(), StarDevourerRenderer::new);
+        event.registerEntityRenderer(ModEntities.STAR_CORE.get(), StarCoreRenderer::new);
+        event.registerEntityRenderer(ModEntities.VOID_RAY_VFX.get(), VoidRayVfxRenderer::new);
         event.registerEntityRenderer(ModEntities.RIFT_VFX.get(), RiftVfxRenderer::new);
         event.registerEntityRenderer(ModEntities.RIFT_BLADE.get(), RiftBladeRenderer::new);
         event.registerEntityRenderer(ModEntities.RIFT_FISSURE.get(), RiftFissureRenderer::new);
+        event.registerEntityRenderer(ModEntities.END_MOTE.get(), EndMoteRenderer::new);
     }
 
     // 粒子工厂
     @SubscribeEvent
     public static void registerParticles(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.STAR_EMBER.get(), StarEmberParticle.Provider::new);
         event.registerSpriteSet(ModParticles.RIFT_SPARK.get(), RiftParticles.SparkProvider::new);
         event.registerSpriteSet(ModParticles.RIFT_SHARD.get(), RiftParticles.ShardProvider::new);
     }

@@ -1,0 +1,33 @@
+{
+  "music.starwreck_wastes": {
+    "sounds": [
+      {
+        "name": "hp_end_expansion:music/starwreck_wastes",
+        "stream": true
+      }
+    ]
+  },
+  "music.tidelight_reef": {
+    "sounds": [
+      {
+        "name": "hp_end_expansion:music/tidelight_reef",
+        "stream": true
+      }
+    ]
+  },
+  "ambient.tidelight_reef.loop": {
+    "sounds": [
+      {
+        "name": "hp_end_expansion:ambient/tidelight_reef/loop",
+        "stream": true
+      }
+    ]
+  },
+  "ambient.tidelight_reef.additions": {
+    "sounds": [
+      "hp_end_expansion:ambient/tidelight_reef/additions1",
+      "hp_end_expansion:ambient/tidelight_reef/additions2",
+      "hp_end_expansion:ambient/tidelight_reef/additions3"
+    ]
+  }
+}

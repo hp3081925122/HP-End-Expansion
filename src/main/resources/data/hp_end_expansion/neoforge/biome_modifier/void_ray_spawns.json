@@ -1,0 +1,14 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": [
+    "minecraft:end_highlands",
+    "minecraft:end_midlands",
+    "minecraft:end_barrens"
+  ],
+  "spawners": {
+    "type": "hp_end_expansion:void_ray",
+    "weight": 2,
+    "minCount": 1,
+    "maxCount": 1
+  }
+}

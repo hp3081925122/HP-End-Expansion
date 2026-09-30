@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    "hp_end_expansion:starwreck_stone",
+    "hp_end_expansion:ember_starwreck_stone",
+    "hp_end_expansion:star_moss",
+    "hp_end_expansion:small_star_crystal_bud",
+    "hp_end_expansion:medium_star_crystal_bud",
+    "hp_end_expansion:large_star_crystal_bud",
+    "hp_end_expansion:star_crystal_cluster",
+    "hp_end_expansion:star_crystal_block",
+    "hp_end_expansion:starwreck_bricks",
+    "hp_end_expansion:starwreck_brick_stairs",
+    "hp_end_expansion:starwreck_brick_slab",
+    "hp_end_expansion:starwreck_brick_wall",
+    "hp_end_expansion:reefstone",
+    "hp_end_expansion:glowkelp_reefstone",
+    "hp_end_expansion:tidemarked_reefstone",
+    "hp_end_expansion:lumen_coral_block",
+    "hp_end_expansion:tide_lantern",
+    "hp_end_expansion:reefstone_bricks",
+    "hp_end_expansion:reefstone_brick_stairs",
+    "hp_end_expansion:reefstone_brick_slab",
+    "hp_end_expansion:reefstone_brick_wall",
+    "hp_end_expansion:chiseled_reefstone",
+    "hp_end_expansion:pearl_block",
+    "hp_end_expansion:reef_bone_block"
+  ]
+}

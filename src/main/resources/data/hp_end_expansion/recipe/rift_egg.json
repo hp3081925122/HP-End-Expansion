@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CEC",
+    "CSC"
+  ],
+  "key": {
+    "C": {
+      "item": "hp_end_expansion:rift_carapace"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "S": {
+      "item": "hp_end_expansion:rift_sickle"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:rift_egg",
+    "count": 1
+  }
+}

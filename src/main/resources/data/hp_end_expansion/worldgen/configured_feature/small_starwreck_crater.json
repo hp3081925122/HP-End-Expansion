@@ -1,0 +1,11 @@
+{
+  "type": "hp_end_expansion:starwreck",
+  "config": {
+    "kind": "crater",
+    "radius_min": 4,
+    "radius_max": 6,
+    "depth_min": 2,
+    "depth_max": 3,
+    "ember": 0.15
+  }
+}

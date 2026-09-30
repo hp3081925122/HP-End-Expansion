@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": [
+    "minecraft:end_highlands",
+    "minecraft:end_midlands"
+  ],
+  "spawners": {
+    "type": "hp_end_expansion:end_mote",
+    "weight": 8,
+    "minCount": 2,
+    "maxCount": 5
+  }
+}

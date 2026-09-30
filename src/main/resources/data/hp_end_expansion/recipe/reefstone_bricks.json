@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:reefstone"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:reefstone_bricks",
+    "count": 4
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " PP",
+    "BGP",
+    "B  "
+  ],
+  "key": {
+    "P": {
+      "item": "hp_end_expansion:tide_pearl"
+    },
+    "B": {
+      "item": "hp_end_expansion:reef_bone_block"
+    },
+    "G": {
+      "item": "hp_end_expansion:tidelight_gel"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:tidecall_conch",
+    "count": 1
+  }
+}

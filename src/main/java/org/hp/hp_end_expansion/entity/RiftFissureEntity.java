@@ -31,6 +31,9 @@ public final class RiftFissureEntity extends Entity {
     private static final EntityDataAccessor<Float> WIDTH = SynchedEntityData.defineId(RiftFissureEntity.class, EntityDataSerializers.FLOAT);
 
     private UUID ownerId;
+    // 可被 Boss 覆盖的伤害与击飞
+    private float damage = DAMAGE;
+    private double launch = 0.8D;
 
     public RiftFissureEntity(EntityType<? extends RiftFissureEntity> entityType, Level level) {
         super(entityType, level);
@@ -46,6 +49,13 @@ public final class RiftFissureEntity extends Entity {
         fissure.ownerId = owner.getUUID();
         owner.level().addFreshEntity(fissure);
         return fissure;
+    }
+
+    // 设置地裂伤害与向上击飞力度
+    public RiftFissureEntity withDamage(float value, double upward) {
+        this.damage = value;
+        this.launch = upward;
+        return this;
     }
 
     @Override
@@ -104,7 +114,7 @@ public final class RiftFissureEntity extends Entity {
         AABB area = new AABB(start, end).inflate(radius, 2.0D * this.getWidth(), radius);
         for (LivingEntity target : serverLevel.getEntitiesOfClass(LivingEntity.class, area)) {
             // 跳过施放者与同类
-            if (target instanceof RiftMantisEntity || !target.isAlive()) {
+            if (target instanceof RiftMantisEntity || target instanceof RiftMatriarchEntity || !target.isAlive()) {
                 continue;
             }
             // 计算目标到裂线的水平距离
@@ -118,12 +128,12 @@ public final class RiftFissureEntity extends Entity {
             }
             boolean hurt;
             if (owner instanceof LivingEntity livingOwner) {
-                hurt = target.hurt(this.damageSources().indirectMagic(this, livingOwner), DAMAGE);
+                hurt = target.hurt(this.damageSources().indirectMagic(this, livingOwner), this.damage);
             } else {
-                hurt = target.hurt(this.damageSources().magic(), DAMAGE);
+                hurt = target.hurt(this.damageSources().magic(), this.damage);
             }
             if (hurt) {
-                target.push(0.0D, 0.8D, 0.0D);
+                target.push(0.0D, this.launch, 0.0D);
                 target.hurtMarked = true;
             }
         }

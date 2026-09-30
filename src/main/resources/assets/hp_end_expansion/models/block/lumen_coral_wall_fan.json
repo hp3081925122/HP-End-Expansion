@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/coral_wall_fan",
+  "textures": {
+    "fan": "hp_end_expansion:block/lumen_coral_fan"
+  },
+  "render_type": "minecraft:cutout"
+}

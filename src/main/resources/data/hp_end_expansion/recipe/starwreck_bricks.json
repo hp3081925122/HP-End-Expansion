@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:starwreck_stone"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:starwreck_bricks",
+    "count": 4
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "hp_end_expansion:starwreck",
+  "config": {
+    "kind": "surface"
+  }
+}

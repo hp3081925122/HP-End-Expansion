@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "hp_end_expansion:reefstone_bricks"
+  },
+  "result": {
+    "id": "hp_end_expansion:chiseled_reefstone",
+    "count": 1
+  }
+}

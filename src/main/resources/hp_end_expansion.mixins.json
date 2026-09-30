@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "org.hp.hp_end_expansion.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["EndBiomeSourceMixin", "RandomStateMixin", "NoiseChunkMixin"],
+  "injectors": {"defaultRequire": 1}
+}

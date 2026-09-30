@@ -25,7 +25,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -75,6 +74,8 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     private int tearCooldown = 120;
     // 闪现目的地
     private Vec3 blinkTarget;
+    // 螳后召唤物：无掉落、无经验
+    private boolean minion;
 
     public RiftMantisEntity(EntityType<? extends RiftMantisEntity> entityType, Level level) {
         super(entityType, level);
@@ -93,6 +94,24 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             .add(Attributes.STEP_HEIGHT, 1.25D);
     }
 
+    // 转为螳后召唤物，设置生命上限
+    public void makeMinion(float health) {
+        this.minion = true;
+        this.xpReward = 0;
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+        this.setHealth(health);
+        this.setPersistenceRequired();
+    }
+
+    public boolean isMinion() {
+        return this.minion;
+    }
+
+    @Override
+    protected boolean shouldDropLoot() {
+        return !this.minion && super.shouldDropLoot();
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -108,9 +127,8 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 10.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        // 索敌目标：受击反击与主动攻击玩家
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, RiftMantisEntity.class));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // 受击后反击
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, RiftMantisEntity.class, RiftMatriarchEntity.class));
     }
 
     public int getSkill() {
@@ -349,7 +367,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     private void hitCone(Vec3 forward, double range, double minDot, float damage, double knock) {
         AABB area = this.getBoundingBox().inflate(range, 1.5D, range);
         for (LivingEntity victim : this.level().getEntitiesOfClass(LivingEntity.class, area)) {
-            if (victim == this || victim instanceof RiftMantisEntity || !victim.isAlive()) {
+            if (victim == this || victim instanceof RiftMantisEntity || victim instanceof RiftMatriarchEntity || !victim.isAlive()) {
                 continue;
             }
             Vec3 rel = victim.position().subtract(this.position()).multiply(1.0D, 0.0D, 1.0D);
@@ -401,6 +419,9 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         boolean result = super.hurt(source, amount);
+        if (result && !this.level().isClientSide() && source.getEntity() instanceof Player player) {
+            LOGGER.debug("Rift Mantis {} was damaged by player {}; retaliation target is available", this.getId(), player.getGameProfile().getName());
+        }
         // 空闲状态受击播放短动画
         if (result && !this.level().isClientSide() && !this.isCasting() && this.isAlive()) {
             this.triggerAnim("skill", "hurt");
@@ -461,6 +482,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         tag.putInt("BlinkCooldown", this.blinkCooldown);
         tag.putInt("BladeCooldown", this.bladeCooldown);
         tag.putInt("TearCooldown", this.tearCooldown);
+        tag.putBoolean("Minion", this.minion);
     }
 
     @Override
@@ -469,6 +491,10 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         this.blinkCooldown = tag.getInt("BlinkCooldown");
         this.bladeCooldown = tag.getInt("BladeCooldown");
         this.tearCooldown = tag.getInt("TearCooldown");
+        this.minion = tag.getBoolean("Minion");
+        if (this.minion) {
+            this.xpReward = 0;
+        }
     }
 
     @Override

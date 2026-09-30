@@ -24,6 +24,8 @@ public final class RiftBladeEntity extends Projectile {
     // 飞刃存在上限与伤害
     private static final int MAX_LIFE = 40;
     private static final float DAMAGE = 7.0F;
+    // 可被 Boss 覆盖的伤害值
+    private float damage = DAMAGE;
 
     public RiftBladeEntity(EntityType<? extends RiftBladeEntity> entityType, Level level) {
         super(entityType, level);
@@ -38,6 +40,12 @@ public final class RiftBladeEntity extends Projectile {
         blade.shoot(direction.x, direction.y, direction.z, speed, 0.0F);
         owner.level().addFreshEntity(blade);
         return blade;
+    }
+
+    // 设置飞刃伤害
+    public RiftBladeEntity withDamage(float value) {
+        this.damage = value;
+        return this;
     }
 
     @Override
@@ -77,7 +85,7 @@ public final class RiftBladeEntity extends Projectile {
         Entity owner = this.getOwner();
         // 命中生物：造成魔法伤害并短暂减速
         if (owner instanceof LivingEntity livingOwner && target instanceof LivingEntity livingTarget) {
-            if (livingTarget.hurt(this.damageSources().mobProjectile(this, livingOwner), DAMAGE)) {
+            if (livingTarget.hurt(this.damageSources().mobProjectile(this, livingOwner), this.damage)) {
                 livingTarget.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1), livingOwner);
             }
         }
@@ -93,7 +101,7 @@ public final class RiftBladeEntity extends Projectile {
     @Override
     protected boolean canHitEntity(Entity target) {
         // 不命中持有者及其同类
-        if (target instanceof RiftMantisEntity) {
+        if (target instanceof RiftMantisEntity || target instanceof RiftMatriarchEntity) {
             return false;
         }
         return super.canHitEntity(target);

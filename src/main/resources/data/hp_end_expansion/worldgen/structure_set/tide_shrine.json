@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "hp_end_expansion:tide_shrine",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 24,
+    "separation": 12,
+    "salt": 7318193
+  }
+}

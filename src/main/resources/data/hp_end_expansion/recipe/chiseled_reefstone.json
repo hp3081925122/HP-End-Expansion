@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:reefstone_brick_slab"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:chiseled_reefstone",
+    "count": 1
+  }
+}

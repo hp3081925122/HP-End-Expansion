@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " E ",
+    "SCS",
+    " E "
+  ],
+  "key": {
+    "E": {
+      "item": "hp_end_expansion:ember"
+    },
+    "S": {
+      "item": "hp_end_expansion:starwreck_stone"
+    },
+    "C": {
+      "item": "hp_end_expansion:star_crystal_shard"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:starfall_omen",
+    "count": 1
+  }
+}

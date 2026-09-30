@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": {
+    "hp_end_expansion:ember": {
+      "burn_time": 1200
+    }
+  }
+}

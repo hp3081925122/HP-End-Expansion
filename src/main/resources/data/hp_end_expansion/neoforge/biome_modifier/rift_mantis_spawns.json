@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": [
+    "minecraft:end_highlands",
+    "minecraft:end_midlands"
+  ],
+  "spawners": {
+    "type": "hp_end_expansion:rift_mantis",
+    "weight": 3,
+    "minCount": 1,
+    "maxCount": 1
+  }
+}

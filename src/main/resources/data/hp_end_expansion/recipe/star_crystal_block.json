@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:star_crystal_shard"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:star_crystal_block",
+    "count": 1
+  }
+}

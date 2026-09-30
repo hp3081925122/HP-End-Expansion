@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hp_end_expansion:starwreck_brick_stairs",
+    "hp_end_expansion:reefstone_brick_stairs"
+  ]
+}

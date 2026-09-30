@@ -1,0 +1,12 @@
+{
+  "feature": "hp_end_expansion:small_starwreck_crater",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 3
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

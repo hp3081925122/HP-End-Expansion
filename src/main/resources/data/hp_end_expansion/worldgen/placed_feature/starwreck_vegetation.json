@@ -1,0 +1,8 @@
+{
+  "feature": "hp_end_expansion:starwreck_vegetation",
+  "placement": [
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}
