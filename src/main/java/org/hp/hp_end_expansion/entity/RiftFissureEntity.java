@@ -42,7 +42,13 @@ public final class RiftFissureEntity extends Entity {
 
     // 沿朝向生成一道地裂，起点为 origin
     public static RiftFissureEntity spawn(LivingEntity owner, Vec3 origin, float yaw, float length, float width) {
+        return spawn(owner, origin, yaw, length, width, DAMAGE, 0.8D);
+    }
+
+    public static RiftFissureEntity spawn(LivingEntity owner, Vec3 origin, float yaw, float length, float width, float damage, double upward) {
         RiftFissureEntity fissure = new RiftFissureEntity(ModEntities.RIFT_FISSURE.get(), owner.level());
+        fissure.damage = damage;
+        fissure.launch = upward;
         fissure.moveTo(origin.x, origin.y, origin.z, yaw, 0.0F);
         fissure.entityData.set(LENGTH, length);
         fissure.entityData.set(WIDTH, width);

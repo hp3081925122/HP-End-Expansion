@@ -38,6 +38,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import org.hp.hp_end_expansion.registry.ModParticles;
+import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -411,7 +412,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 continue;
             }
             this.diveHits.add(victim.getId());
-            if (victim.hurt(this.damageSources().mobAttack(this), 15.0F)) {
+            if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.VOID_RAY.damage("diveDamage"))) {
                 // 只向上击飞，避免把玩家推下虚空
                 victim.setDeltaMovement(victim.getDeltaMovement().multiply(0.2D, 0.0D, 0.2D).add(0.0D, 0.6D, 0.0D));
                 victim.hurtMarked = true;
@@ -458,9 +459,9 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 end = entityHit.getLocation();
                 // 每 0.5 秒结算一次，举盾减半
                 if ((t - BEAM_CHARGE) % 10 == 0 && entityHit.getEntity() instanceof LivingEntity victim) {
-                    float damage = 5.0F;
+                    float damage = CombatConfigs.VOID_RAY.damage("beamDamage");
                     if (victim.isBlocking()) {
-                        damage = 2.5F;
+                        damage = CombatConfigs.VOID_RAY.damage("beamBlockedDamage");
                     }
                     victim.hurt(this.damageSources().indirectMagic(this, this), damage);
                 }
@@ -488,7 +489,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         if (t == 8) {
             Vec3 center = this.findVortexCenter(target);
             if (center != null) {
-                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_VORTEX, center, 0.0F, 3.5F, 0, VoidRayVfxEntity.VORTEX_LIFE, this);
+                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_VORTEX, center, 0.0F, 3.5F, 0, VoidRayVfxEntity.VORTEX_LIFE, this, CombatConfigs.VOID_RAY.damage("vortexDamage"), -1.0F);
                 this.playSound(SoundEvents.ILLUSIONER_CAST_SPELL, 2.0F, 0.6F);
                 // 漩涡结束时俯冲刚好可用
                 this.diveCooldown = Math.min(this.diveCooldown, VoidRayVfxEntity.VORTEX_LIFE - 20);
@@ -545,7 +546,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 if (ground == null) {
                     continue;
                 }
-                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_STAR, ground, 0.0F, 2.0F, placed * 4, VoidRayVfxEntity.STAR_LIFE + placed * 4, this);
+                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_STAR, ground, 0.0F, 2.0F, placed * 4, VoidRayVfxEntity.STAR_LIFE + placed * 4, this, CombatConfigs.VOID_RAY.damage("starfallDamage"), -1.0F);
                 placed++;
             }
             if (this.level() instanceof ServerLevel serverLevel) {

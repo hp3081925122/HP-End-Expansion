@@ -16,7 +16,7 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 
 /**
- * 星雨裂隙。位置在落点斜上方，自身不动。
+ * 一道星雨裂隙。位置在自己那颗陨星的落点斜上方，自身不动。
  * 年龄由服务端同步。0 到 {@link #OPEN_TICKS} 张开，接着 {@link FallingStarEntity#FALL_TICKS} 保持张开并放出陨星，再 {@link #CLOSE_TICKS} 闭合。
  */
 public final class StarRiftEntity extends Entity {
@@ -43,9 +43,9 @@ public final class StarRiftEntity extends Entity {
         rift.target = impact;
         rift.moveTo(riftPos.x, riftPos.y, riftPos.z, level.random.nextFloat() * 360, 0);
         level.addFreshEntity(rift);
-        // 玩家在 32～80 格外，音量放大到能听见：一声低沉的撕裂脆响，底下垫紫水晶低鸣
-        level.playSound(null, rift.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.AMBIENT, 5.0F, 0.5F);
-        level.playSound(null, rift.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 4.0F, 0.5F);
+        // 一场里会同时开好几道，音量比单道时收一点，近处仍听得见撕裂声
+        level.playSound(null, rift.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.AMBIENT, 2.5F, 0.5F);
+        level.playSound(null, rift.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 2.0F, 0.5F);
         LogUtils.getLogger().debug("Star rain rift opened at {}, {}", impact.x, impact.z);
     }
 
@@ -121,7 +121,8 @@ public final class StarRiftEntity extends Entity {
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
         entityData.set(AGE, tag.getInt("Age"));
         released = tag.getBoolean("Released");
-        target = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
+        if (tag.contains("TargetX")) target = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
+        else if (tag.contains("AnchorX")) target = new Vec3(tag.getDouble("AnchorX"), tag.getDouble("AnchorY"), tag.getDouble("AnchorZ"));
     }
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putInt("Age", getAge());

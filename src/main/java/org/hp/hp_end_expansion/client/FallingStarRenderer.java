@@ -43,9 +43,12 @@ public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity>
         Vec3 world = entity.getPosition(partialTick).add(CENTER);
         Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(world).normalize();
 
+        poseStack.pushPose();
+        if (entity.isSmall()) poseStack.scale(0.5F, 0.5F, 0.5F);
         renderTail(poseStack, buffers, dir.scale(-1), toCamera, (float) speed, age, emerge);
         renderGlow(poseStack, buffers, age, emerge);
         renderBody(poseStack, buffers, dir, age, emerge);
+        poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffers, light);
     }
 
@@ -87,23 +90,31 @@ public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity>
         poseStack.mulPose(new Quaternionf().rotationAxis(age * 0.18F, (float) spinAxis.x, (float) spinAxis.y, (float) spinAxis.z));
         float scale = 0.55F + 0.45F * emerge;
         poseStack.scale(scale, scale, scale);
+        // 两种 RenderType 不能同时握着缓冲：后取的会结束先取的，再写就会 Not building
         VertexConsumer rock = buffers.getBuffer(StarfallDraw.solid(StarfallDraw.METEOR));
+        for (float[] l : LUMPS) {
+            poseStack.pushPose();
+            placeLump(poseStack, l);
+            poseStack.scale(l[3], l[4], l[5]);
+            cube(poseStack.last(), rock, l[8], l[9], 1, false);
+            poseStack.popPose();
+        }
         VertexConsumer cracks = buffers.getBuffer(StarfallDraw.additive(StarfallDraw.METEOR_GLOW));
         float heat = 0.85F + 0.15F * Mth.sin(age * 1.3F);
         for (float[] l : LUMPS) {
             poseStack.pushPose();
-            poseStack.translate(l[0], l[1], l[2]);
-            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(l[6]));
-            poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(l[7]));
-            poseStack.pushPose();
-            poseStack.scale(l[3], l[4], l[5]);
-            cube(poseStack.last(), rock, l[8], l[9], 1, false);
-            poseStack.popPose();
+            placeLump(poseStack, l);
             poseStack.scale(l[3] * 1.02F, l[4] * 1.02F, l[5] * 1.02F);
             cube(poseStack.last(), cracks, l[8], l[9], heat, true);
             poseStack.popPose();
         }
         poseStack.popPose();
+    }
+
+    private static void placeLump(PoseStack poseStack, float[] lump) {
+        poseStack.translate(lump[0], lump[1], lump[2]);
+        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(lump[6]));
+        poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(lump[7]));
     }
 
     // 单位立方体，每面取 16x16 贴图的一半；本体按朝向压暗做出体积

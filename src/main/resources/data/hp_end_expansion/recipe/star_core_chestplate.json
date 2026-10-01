@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "C C",
+    "CXC",
+    "ECE"
+  ],
+  "key": {
+    "C": {
+      "item": "hp_end_expansion:star_crystal_shard"
+    },
+    "X": {
+      "item": "hp_end_expansion:star_core_ember"
+    },
+    "E": {
+      "item": "hp_end_expansion:ember"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:star_core_chestplate",
+    "count": 1
+  }
+}

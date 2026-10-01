@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
+import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
@@ -51,6 +53,7 @@ import software.bernie.geckolib.animation.RawAnimation;
  * 追击中目标贴身时每 10 秒再踏一次。镐右击龟壳敲下一簇星晶，不激怒它；敲完的晶簇每 5 分钟长回一簇，不繁殖。
  */
 public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEntity {
+    private static final Logger LOGGER = LogUtils.getLogger();
     public static final int MAX_CRYSTALS = 4;
     public static final int REGROW_TICKS = 6000;
     public static final int SHELL_TICKS = 60;
@@ -73,6 +76,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
     private int modeTicks;
     private int regrowTicks;
     private int stompCooldown;
+    private boolean shelledForStarRain;
 
     public MeteorTortoiseEntity(EntityType<? extends MeteorTortoiseEntity> type, Level level) { super(type, level); }
 
@@ -93,6 +97,31 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
     private void setMode(byte mode) { entityData.set(MODE, mode); modeTicks = 0; }
     public boolean isShelled() { return getMode() == SHELLED; }
 
+    @Override public void tick() {
+        updateStarRainShell();
+        super.tick();
+    }
+
+    private void updateStarRainShell() {
+        if (!(level() instanceof ServerLevel server) || !isAlive()) return;
+        if (StarRain.active(server)) {
+            if (!shelledForStarRain) {
+                shelledForStarRain = true;
+                stopTriggeredAnim("action", "stomp");
+                LOGGER.debug("Meteor tortoise entered star rain shelter: entity={}, dimension={}", getId(), server.dimension().location());
+            }
+            setTarget(null);
+            if (!isShelled()) setMode(SHELLED);
+            getNavigation().stop();
+            setDeltaMovement(getDeltaMovement().multiply(0, 1, 0));
+        } else if (shelledForStarRain) {
+            shelledForStarRain = false;
+            setTarget(null);
+            setMode(CALM);
+            LOGGER.debug("Meteor tortoise left star rain shelter: entity={}, dimension={}", getId(), server.dimension().location());
+        }
+    }
+
     @Override protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new HoldStillGoal());
@@ -109,9 +138,10 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
     }
 
     @Override public boolean hurt(DamageSource source, float amount) {
+        updateStarRainShell();
         if (isShelled() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.4F;
         boolean hit = super.hurt(source, amount);
-        if (hit && !level().isClientSide && isAlive() && source.getEntity() instanceof LivingEntity attacker && attacker != this
+        if (hit && !level().isClientSide && !shelledForStarRain && isAlive() && source.getEntity() instanceof LivingEntity attacker && attacker != this
             && !(attacker instanceof Player player && (player.isCreative() || player.isSpectator()))) {
             setTarget(attacker);
             if (getMode() == CALM) setMode(SHELLED);
@@ -121,9 +151,10 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
 
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
-        modeTicks++;
         if (stompCooldown > 0) stompCooldown--;
         if (getCrystals() < MAX_CRYSTALS && ++regrowTicks >= REGROW_TICKS) { regrowTicks = 0; setCrystals(getCrystals() + 1); }
+        if (shelledForStarRain) return;
+        modeTicks++;
         LivingEntity target = getTarget();
         switch (getMode()) {
             case SHELLED -> { if (modeTicks >= SHELL_TICKS) startStomp(); }

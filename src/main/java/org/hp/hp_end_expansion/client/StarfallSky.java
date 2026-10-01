@@ -30,6 +30,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
+import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarImpactEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarRiftEntity;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
@@ -80,21 +81,39 @@ public final class StarfallSky {
         Vec3 nearestRift = null;
         boolean anyImpact = false;
         for (Entity entity : level.getEntitiesOfClass(Entity.class, player.getBoundingBox().inflate(192),
-            x -> x instanceof StarRiftEntity || x instanceof FallingStarEntity || x instanceof StarImpactEntity)) {
+            x -> x instanceof StarRiftEntity || x instanceof FallingStarEntity || x instanceof StarImpactEntity || x instanceof StarChaserEntity)) {
             if (entity instanceof StarRiftEntity r) {
                 target = Math.max(target, StarRiftEntity.openness(r.getAge()));
                 nearestRift = r.position();
             } else if (entity instanceof FallingStarEntity star) {
-                target = 1;
+                target = Math.max(target, star.isSmall() ? 0.75F : 1);
                 Vec3 v = star.getDeltaMovement();
                 if (v.lengthSqr() > 1.0E-4) heading = v.normalize();
             } else if (entity instanceof StarImpactEntity impact) {
                 anyImpact = true;
-                target = Math.max(target, 0.9F);
+                target = Math.max(target, impact.isSmall() ? 0.75F : 0.9F);
                 if (SEEN_IMPACTS.add(impact.getId()) && impact.tickCount < 10) {
                     double d = impact.distanceTo(player);
-                    flash = Math.max(flash, (float) Mth.clamp(1.2 - d / 110, 0.3, 1));
-                    shake = Math.max(shake, (float) Mth.clamp(1 - d / 48, 0, 1));
+                    float k = impact.isSmall() ? 0.4F : 1;
+                    flash = Math.max(flash, k * (float) Mth.clamp(1.2 - d / 110, 0.3, 1));
+                    shake = Math.max(shake, k * (float) Mth.clamp(1 - d / 48, 0, 1));
+                }
+            } else if (entity instanceof StarChaserEntity chaser && chaser.isAlive()) {
+                // 嚎叫之后天空重新染红；嚎叫、撞墙、践踏、过载时震屏
+                if (chaser.getPhase() >= 1) target = Math.max(target, 0.75F);
+                float near = (float) Mth.clamp(1 - chaser.distanceTo(player) / 40, 0, 1);
+                int age = chaser.getClientAge();
+                byte state = chaser.getState();
+                if (state == StarChaserEntity.HOWL && age >= StarChaserEntity.HOWL_ROAR && age < 34) shake = Math.max(shake, 0.55F * near);
+                if (state == StarChaserEntity.STAGGER && age < 3) shake = Math.max(shake, 0.7F * near);
+                if (state == StarChaserEntity.STOMP && age >= StarChaserEntity.STOMP_HIT && age < StarChaserEntity.STOMP_HIT + 3)
+                    shake = Math.max(shake, 0.6F * near);
+                if (state == StarChaserEntity.CHARGE) shake = Math.max(shake, 0.25F * near);
+                if (state == StarChaserEntity.LEAVE && age >= StarChaserEntity.LEAVE_LIFT && age < StarChaserEntity.LEAVE_LIFT + 3)
+                    shake = Math.max(shake, 0.5F * near);
+                if (chaser.overloadAge >= 0 && chaser.overloadAge < 3) {
+                    shake = Math.max(shake, 0.8F * near);
+                    flash = Math.max(flash, 0.6F * near);
                 }
             }
         }

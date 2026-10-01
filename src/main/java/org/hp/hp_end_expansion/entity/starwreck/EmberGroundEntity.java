@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 
 /**
@@ -18,6 +19,7 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 public final class EmberGroundEntity extends Entity {
     public static final int LIFETIME = 40;
     private int age;
+    private int life = LIFETIME;
 
     public EmberGroundEntity(EntityType<? extends EmberGroundEntity> type, Level level) {
         super(type, level);
@@ -43,7 +45,7 @@ public final class EmberGroundEntity extends Entity {
             for (LivingEntity victim : level().getEntitiesOfClass(LivingEntity.class, area, e -> e.isAlive() && !(e instanceof EmberBeetleEntity)))
                 victim.hurt(damageSources().inFire(), 1);
         }
-        if (++age >= LIFETIME) discard();
+        if (++age >= life) discard();
     }
 
     @Override public boolean isPickable() { return false; }
@@ -53,9 +55,14 @@ public final class EmberGroundEntity extends Entity {
     @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putInt("Age", age); }
 
     public static void spawn(ServerLevel level, Entity source, EntityType<EmberGroundEntity> type) {
+        spawn(level, source.position(), type, LIFETIME);
+    }
+
+    public static void spawn(ServerLevel level, Vec3 at, EntityType<EmberGroundEntity> type, int life) {
         EmberGroundEntity ground = type.create(level);
         if (ground == null) return;
-        ground.moveTo(source.getX(), source.getY(), source.getZ(), 0, 0);
+        ground.life = life;
+        ground.moveTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(ground);
     }
 }

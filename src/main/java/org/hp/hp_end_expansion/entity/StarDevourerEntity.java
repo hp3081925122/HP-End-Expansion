@@ -49,6 +49,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
+import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModParticles;
@@ -482,7 +483,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 double r = this.random.nextDouble() * 24.0D;
                 Vec3 ground = this.groundBelow(this.arenaCenter.add(Math.cos(a) * r, 16.0D, Math.sin(a) * r));
                 if (ground != null) {
-                    VoidRayVfxEntity.spawn(serverLevel, VoidRayVfxEntity.KIND_STAR, ground.add(0.0D, 0.05D, 0.0D), 0.0F, 2.0F, 0, VoidRayVfxEntity.STAR_LIFE, this);
+                    VoidRayVfxEntity.spawn(serverLevel, VoidRayVfxEntity.KIND_STAR, ground.add(0.0D, 0.05D, 0.0D), 0.0F, 2.0F, 0, VoidRayVfxEntity.STAR_LIFE, this, CombatConfigs.STAR_DEVOURER.damage("phaseTwoStarDamage"), -1.0F);
                 }
             }
         }
@@ -519,7 +520,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             double a = Math.PI * 2.0D * i / count;
             ray.moveTo(this.getX() + Math.cos(a) * 6.0D, this.getY() + 2.0D, this.getZ() + Math.sin(a) * 6.0D, this.getYRot(), 0.0F);
             ray.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(ray.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
-            ray.makeMinion(40.0F);
+            ray.makeMinion((float) CombatConfigs.STAR_DEVOURER.value("summonMinionHealth"));
             ray.setTarget(this.getTarget());
             serverLevel.addFreshEntity(ray);
             serverLevel.sendParticles(ParticleTypes.PORTAL, ray.getX(), ray.getY() + 0.5D, ray.getZ(), 20, 0.8D, 0.4D, 0.8D, 0.4D);
@@ -658,7 +659,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 // 最后一段落到低点时释放冲击环
                 if (seg == 2 && local == DIVE_WINDUP + (DIVE_CYCLE - DIVE_WINDUP) / 2) {
                     VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, this.diveLow.subtract(0.0D, 0.8D, 0.0D), 0.0F, 6.0F, 0, 12, this);
-                    this.hitCircle(this.diveLow, 6.0D, 10.0F, 0.5D);
+                    this.hitCircle(this.diveLow, 6.0D, CombatConfigs.STAR_DEVOURER.damage("diveImpactDamage"), 0.5D);
                     this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 0.7F);
                 }
             }
@@ -680,7 +681,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 continue;
             }
             this.hitOnce.add(victim.getId());
-            if (victim.hurt(this.damageSources().mobAttack(this), 18.0F)) {
+            if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("diveDamage"))) {
                 victim.setDeltaMovement(victim.getDeltaMovement().multiply(0.2D, 0.0D, 0.2D).add(0.0D, 0.7D, 0.0D));
                 victim.hurtMarked = true;
                 LOGGER.debug("Star Devourer {} dive hit {}", this.getId(), victim.getName().getString());
@@ -729,11 +730,11 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 double k = maxStep / angle;
                 dir = current.scale(1.0D - k).add(wanted.scale(k)).normalize();
             }
-            Vec3 end = this.traceBeam(core, core.add(dir.scale(BEAM_RANGE)), 7.0F, (t - BEAM_CHARGE) % 10 == 0);
+            Vec3 end = this.traceBeam(core, core.add(dir.scale(BEAM_RANGE)), CombatConfigs.STAR_DEVOURER.damage("prismMainDamage"), CombatConfigs.STAR_DEVOURER.damage("prismMainBlockedDamage"), (t - BEAM_CHARGE) % 10 == 0);
             this.entityData.set(BEAM_POINT, end.toVector3f());
             if ((t - BEAM_CHARGE) % 10 == 0) {
                 for (Vec3 subEnd : this.subBeamEnds(core, end)) {
-                    this.traceBeam(end, subEnd, 4.0F, true);
+                    this.traceBeam(end, subEnd, CombatConfigs.STAR_DEVOURER.damage("prismSubDamage"), CombatConfigs.STAR_DEVOURER.damage("prismSubBlockedDamage"), true);
                 }
             }
             if (t % 3 == 0 && this.level() instanceof ServerLevel serverLevel) {
@@ -752,7 +753,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     // 射线判定：返回终点，可选结算伤害（举盾减半）
-    private Vec3 traceBeam(Vec3 from, Vec3 far, float damage, boolean deal) {
+    private Vec3 traceBeam(Vec3 from, Vec3 far, float damage, float blockedDamage, boolean deal) {
         BlockHitResult block = this.level().clip(new ClipContext(from, far, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
         Vec3 end = far;
         if (block.getType() != HitResult.Type.MISS) {
@@ -765,7 +766,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             if (deal && entityHit.getEntity() instanceof LivingEntity victim) {
                 float dealt = damage;
                 if (victim.isBlocking()) {
-                    dealt = damage * 0.5F;
+                    dealt = blockedDamage;
                 }
                 victim.hurt(this.damageSources().indirectMagic(this, this), dealt);
             }
@@ -779,7 +780,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         this.setDeltaMovement(this.getDeltaMovement().scale(0.7D));
         if (t == 12) {
             Vec3 pos = target.position().add(0.0D, 3.0D, 0.0D);
-            VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_BLACK_HOLE, pos, 0.0F, 10.0F, 0, VoidRayVfxEntity.HOLE_LIFE, this);
+            VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_BLACK_HOLE, pos, 0.0F, 10.0F, 0, VoidRayVfxEntity.HOLE_LIFE, this, CombatConfigs.STAR_DEVOURER.damage("holePulseDamage"), CombatConfigs.STAR_DEVOURER.damage("holeCollapseDamage"));
             this.playSound(SoundEvents.WARDEN_SONIC_CHARGE, 3.0F, 0.5F);
         }
         if (t >= 30) {
@@ -807,7 +808,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 if (ground == null) {
                     ground = center;
                 }
-                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_BIG_STAR, ground, 0.0F, 3.0F, i * 3, VoidRayVfxEntity.STAR_LIFE, this);
+                VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_BIG_STAR, ground, 0.0F, 3.0F, i * 3, VoidRayVfxEntity.STAR_LIFE, this, CombatConfigs.STAR_DEVOURER.damage("rainDamage"), CombatConfigs.STAR_DEVOURER.damage("rainStardustDamage"));
             }
             this.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 3.0F, 0.5F);
         }
@@ -855,7 +856,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                     continue;
                 }
                 this.hitOnce.add(victim.getId());
-                if (victim.hurt(this.damageSources().mobAttack(this), 14.0F)) {
+                if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("spinDamage"))) {
                     victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1));
                 }
             }
@@ -914,7 +915,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.starCores.removeIf(core -> !core.isAlive());
             float damage = 0.0F;
             if (this.devourTotal > 0) {
-                damage = 40.0F * this.starCores.size() / this.devourTotal;
+                damage = CombatConfigs.STAR_DEVOURER.damage("devourDamage") * this.starCores.size() / this.devourTotal;
             }
             for (Player player : this.playersInArena(serverLevel)) {
                 player.hurt(this.damageSources().indirectMagic(this, this), damage);

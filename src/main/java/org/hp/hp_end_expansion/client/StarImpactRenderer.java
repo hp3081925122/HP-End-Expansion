@@ -29,6 +29,9 @@ public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
 
     @Override public void render(StarImpactEntity entity, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         float age = entity.tickCount + partialTick;
+        poseStack.pushPose();
+        float scale = entity.scale();
+        poseStack.scale(scale, scale, scale);
         PoseStack.Pose pose = poseStack.last();
         renderScorch(entity, age, pose, buffers);
         renderRing(age, pose, buffers);
@@ -50,6 +53,7 @@ public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
                 0, 0, 1, 1, k, 0.82F * k, 0.55F * k);
             poseStack.popPose();
         }
+        poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffers, light);
     }
 

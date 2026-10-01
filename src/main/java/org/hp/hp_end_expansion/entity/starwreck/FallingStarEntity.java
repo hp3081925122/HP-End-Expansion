@@ -2,6 +2,9 @@ package org.hp.hp_end_expansion.entity.starwreck;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -23,10 +26,16 @@ public final class FallingStarEntity extends Entity {
     public static final int FALL_TICKS = 30;
     public static final float IMPACT_RADIUS = 4;
     public static final float IMPACT_DAMAGE = 8;
+    // 逐星兽召星用的小号陨星：一半大小，从正上方快速落下，不伤逐星兽
+    public static final int SMALL_FALL_TICKS = 10;
+    public static final float SMALL_RADIUS = 2;
+    public static final float SMALL_DAMAGE = 6;
+    private static final EntityDataAccessor<Boolean> SMALL = SynchedEntityData.defineId(FallingStarEntity.class, EntityDataSerializers.BOOLEAN);
     private Vec3 start = Vec3.ZERO;
     private Vec3 target = Vec3.ZERO;
     private int age;
     private boolean impacted;
+    private float damage = -1.0F;
 
     public FallingStarEntity(EntityType<? extends FallingStarEntity> type, Level level) {
         super(type, level);
@@ -35,8 +44,18 @@ public final class FallingStarEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 from, Vec3 to) {
+        spawn(level, from, to, false);
+    }
+
+    public static void spawn(ServerLevel level, Vec3 from, Vec3 to, boolean small) {
+        spawn(level, from, to, small, small ? SMALL_DAMAGE : IMPACT_DAMAGE);
+    }
+
+    public static void spawn(ServerLevel level, Vec3 from, Vec3 to, boolean small, float damage) {
         FallingStarEntity star = StarwreckEntities.FALLING_STAR.get().create(level);
         if (star == null) return;
+        star.damage = damage;
+        star.entityData.set(SMALL, small);
         star.start = from;
         star.target = to;
         star.moveTo(from.x, from.y, from.z, yaw(from, to), 0);
@@ -47,7 +66,9 @@ public final class FallingStarEntity extends Entity {
         return (float) (Mth.atan2(to.z - from.z, to.x - from.x) * Mth.RAD_TO_DEG) - 90;
     }
 
-    @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(SMALL, false); }
+
+    public boolean isSmall() { return entityData.get(SMALL); }
 
     @Override public void tick() {
         super.tick();
@@ -61,7 +82,8 @@ public final class FallingStarEntity extends Entity {
             return;
         }
         age++;
-        float t = Math.min(1F, age / (float) FALL_TICKS);
+        int fall = isSmall() ? SMALL_FALL_TICKS : FALL_TICKS;
+        float t = Math.min(1F, age / (float) fall);
         float eased = t * t;
         Vec3 next = new Vec3(
             Mth.lerp(eased, start.x, target.x),
@@ -70,20 +92,25 @@ public final class FallingStarEntity extends Entity {
         setDeltaMovement(next.subtract(position()));
         setPos(next.x, next.y, next.z);
         setYRot(yaw(start, target));
-        if (age >= FALL_TICKS) impact();
+        if (age >= fall) impact();
     }
 
     private void impact() {
         impacted = true;
         if (level() instanceof ServerLevel server) {
-            AABB area = new AABB(target, target).inflate(IMPACT_RADIUS, 2, IMPACT_RADIUS);
-            for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive)) {
-                if (living.distanceToSqr(target) > IMPACT_RADIUS * IMPACT_RADIUS) continue;
-                if (living.hurt(damageSources().explosion(this, this), IMPACT_DAMAGE))
-                    living.knockback(0.7, getX() - living.getX(), getZ() - living.getZ());
+            boolean small = isSmall();
+            float radius = small ? SMALL_RADIUS : IMPACT_RADIUS;
+            AABB area = new AABB(target, target).inflate(radius, 2, radius);
+            // 逐星兽追着陨星走，唤星者和负星者自己召陨星，任何陨星都砸不伤它们
+            for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, area,
+                    e -> e.isAlive() && !(e instanceof StarChaserEntity) && !(e instanceof StarCallerEntity) && !(e instanceof StarBearerEntity))) {
+                if (living.distanceToSqr(target) > radius * radius) continue;
+                if (living.hurt(damageSources().explosion(this, this), damage >= 0 ? damage : small ? SMALL_DAMAGE : IMPACT_DAMAGE))
+                    living.knockback(small ? 0.5 : 0.7, getX() - living.getX(), getZ() - living.getZ());
             }
-            StarImpactEntity.spawn(server, target, target.subtract(start));
-            server.playSound(null, BlockPos.containing(target), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 5.0F, 0.55F);
+            StarImpactEntity.spawn(server, target, target.subtract(start), small);
+            server.playSound(null, BlockPos.containing(target), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, small ? 2.5F : 5.0F, small ? 0.85F : 0.55F);
+            if (!small) StarRain.onImpact(server, target);
         }
         discard();
     }
@@ -110,14 +137,18 @@ public final class FallingStarEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
+        entityData.set(SMALL, tag.getBoolean("Small"));
         age = tag.getInt("Age");
         impacted = tag.getBoolean("Impacted");
+        damage = tag.contains("Damage") ? tag.getFloat("Damage") : -1.0F;
         start = new Vec3(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ"));
         target = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
     }
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
+        tag.putBoolean("Small", isSmall());
         tag.putInt("Age", age);
         tag.putBoolean("Impacted", impacted);
+        tag.putFloat("Damage", damage);
         tag.putDouble("StartX", start.x);
         tag.putDouble("StartY", start.y);
         tag.putDouble("StartZ", start.z);

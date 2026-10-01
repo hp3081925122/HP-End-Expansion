@@ -18,6 +18,7 @@ import org.hp.hp_end_expansion.registry.ModTidelight;
 import org.hp.hp_end_expansion.registry.TidelightEntities;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 import org.hp.hp_end_expansion.worldgen.StarwreckConfig;
+import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
@@ -51,6 +52,7 @@ public final class Hp_end_expansion {
                 output.accept(ModItems.DEVOURER_WINGS.get());
                 output.accept(ModItems.MATRIARCH_SCYTHE.get());
                 output.accept(ModItems.END_DUST.get());
+                output.accept(ModItems.MOB_DUEL_STICK.get());
             })
             .build()
     );
@@ -65,6 +67,7 @@ public final class Hp_end_expansion {
         TidelightEntities.register(modEventBus);
         TidelightWorldgen.register(modEventBus);
         container.registerConfig(ModConfig.Type.COMMON, StarwreckConfig.SPEC);
+        CombatConfigs.register(modEventBus, container);
         ModParticles.PARTICLE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
