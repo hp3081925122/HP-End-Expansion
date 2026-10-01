@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
+import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModParticles;
@@ -320,7 +321,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             yaw += (this.random.nextFloat() - 0.5F) * 40.0F;
             Vec3 ground = this.groundAt(edge);
             if (ground != null) {
-                RiftFissureEntity.spawn(this, ground, yaw, 9.0F, 1.2F).withDamage(8.0F, 0.6D);
+                RiftFissureEntity.spawn(this, ground, yaw, 9.0F, 1.2F, CombatConfigs.RIFT_MATRIARCH.damage("phaseThreeFissureDamage"), 0.6D);
             }
         }
     }
@@ -413,7 +414,6 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         if (t <= 6 || (t >= 9 && t <= 13) || (t >= 16 && t <= 22)) {
             this.faceTarget(target, 25.0F);
         }
-        float atk = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
         // 前两段：左斩、右斩
         if (t == 5 || t == 12) {
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 0.5F);
@@ -426,7 +426,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             Vec3 forward = this.forwardVec();
             Vec3 center = this.position().add(forward.scale(3.5D)).add(0.0D, 3.2D, 0.0D);
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y, center.z, this.getYRot(), roll, 2.5F, 8);
-            this.hitCone(forward, 6.0D, 0.342D, atk * 14.0F / 18.0F, 0.8D, false);
+            this.hitCone(forward, 6.0D, 0.342D, CombatConfigs.RIFT_MATRIARCH.damage(t == 8 ? "tripleFirstDamage" : "tripleSecondDamage"), 0.8D, false);
         }
         // 第三段：高举前摇 0.6 秒
         if (t == 16) {
@@ -436,7 +436,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             Vec3 forward = this.forwardVec();
             Vec3 center = this.position().add(forward.scale(4.0D)).add(0.0D, 2.4D, 0.0D);
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y, center.z, this.getYRot(), 90.0F, 2.5F, 10);
-            this.hitRect(forward, 7.0D, 1.0D, atk * 22.0F / 18.0F);
+            this.hitRect(forward, 7.0D, 1.0D, CombatConfigs.RIFT_MATRIARCH.damage("tripleFinisherDamage"));
             // 落地短地裂与碎片
             if (this.level() instanceof ServerLevel serverLevel) {
                 for (int i = 2; i <= 7; i++) {
@@ -478,7 +478,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             Vec3 center = this.position().add(forward.scale(3.5D)).add(0.0D, 3.0D, 0.0D);
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y, center.z, this.getYRot(), 25.0F, 2.5F, 8);
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 0.7F);
-            this.hitCone(forward, 6.0D, 0.3D, 16.0F, 0.6D, false);
+            this.hitCone(forward, 6.0D, 0.3D, CombatConfigs.RIFT_MATRIARCH.damage("huntDamage"), 0.6D, false);
         }
         if (t >= 44) {
             this.huntCooldown = this.cd(160);
@@ -536,14 +536,14 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             if (wave == 2 && this.getPhase() >= 2) {
                 Vec3 aim = target.getEyePosition().subtract(0.0D, 0.4D, 0.0D).subtract(origin).normalize();
                 for (int i = -2; i <= 2; i++) {
-                    RiftBladeEntity.launch(this, origin, aim.yRot(i * 11.0F * Mth.DEG_TO_RAD), 1.1F).withDamage(10.0F);
+                    RiftBladeEntity.launch(this, origin, aim.yRot(i * 11.0F * Mth.DEG_TO_RAD), 1.1F, CombatConfigs.RIFT_MATRIARCH.damage("stormBladeDamage"));
                 }
             } else {
                 float offset = wave * 22.5F + this.getYRot();
                 for (int i = 0; i < 8; i++) {
                     float a = (offset + i * 45.0F) * Mth.DEG_TO_RAD;
                     Vec3 dir = new Vec3(-Mth.sin(a), 0.0D, Mth.cos(a));
-                    RiftBladeEntity.launch(this, origin.add(dir.scale(2.0D)), dir, 0.9F).withDamage(10.0F);
+                    RiftBladeEntity.launch(this, origin.add(dir.scale(2.0D)), dir, 0.9F, CombatConfigs.RIFT_MATRIARCH.damage("stormBladeDamage"));
                 }
             }
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 1.3F);
@@ -571,7 +571,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 float yaw = base + i * 72.0F;
                 float rad = yaw * Mth.DEG_TO_RAD;
                 Vec3 start = this.position().add(-Mth.sin(rad) * 2.5D, 0.0D, Mth.cos(rad) * 2.5D);
-                RiftFissureEntity.spawn(this, start, yaw, 16.0F, 1.5F).withDamage(12.0F, 0.9D);
+                RiftFissureEntity.spawn(this, start, yaw, 16.0F, 1.5F, CombatConfigs.RIFT_MATRIARCH.damage("webFissureDamage"), 0.9D);
             }
             if (this.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), this.getX(), this.getY() + 0.3D, this.getZ(), 30, 2.0D, 0.2D, 2.0D, 0.3D);
@@ -608,7 +608,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                     continue;
                 }
                 mantis.moveTo(ground.x, ground.y, ground.z, this.random.nextFloat() * 360.0F, 0.0F);
-                mantis.makeMinion(60.0F);
+                mantis.makeMinion((float) CombatConfigs.RIFT_MATRIARCH.value("summonMinionHealth"));
                 mantis.setTarget(target);
                 serverLevel.addFreshEntity(mantis);
                 RiftVfxEntity.spawn(serverLevel, RiftVfxEntity.KIND_PORTAL, ground.x, ground.y, ground.z, 0.0F, 0.0F, 1.8F, 24);
@@ -676,7 +676,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                     continue;
                 }
                 if (this.fieldTicks % 20 == 0) {
-                    player.hurt(this.damageSources().indirectMagic(this, this), 4.0F);
+                    player.hurt(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("fieldDamage"));
                 }
                 if (this.fieldTicks % 10 == 0 && rel.lengthSqr() > 0.25D) {
                     Vec3 pull = rel.normalize().scale(0.25D);
@@ -742,7 +742,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 dest = c;
             }
             this.teleportTo(dest.x, dest.y, dest.z);
-            this.hitCircle(dest, 6.0D, 25.0F);
+            this.hitCircle(dest, 6.0D, CombatConfigs.RIFT_MATRIARCH.damage("finaleImpactDamage"));
             if (this.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), dest.x, dest.y + 0.3D, dest.z, 60, 3.0D, 0.3D, 3.0D, 0.35D);
             }
@@ -772,7 +772,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             double dx = victim.getX() - closest.x;
             double dz = victim.getZ() - closest.z;
             if (dx * dx + dz * dz <= 1.0D + victim.getBbWidth() * 0.5D) {
-                victim.hurt(this.damageSources().indirectMagic(this, this), 20.0F);
+                victim.hurt(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("finaleLineDamage"));
             }
         }
         // 镰刃弧光沿线排布

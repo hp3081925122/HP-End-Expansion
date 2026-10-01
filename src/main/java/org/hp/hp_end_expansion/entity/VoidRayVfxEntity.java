@@ -51,6 +51,8 @@ public final class VoidRayVfxEntity extends Entity {
     private static final EntityDataAccessor<Integer> DELAY = SynchedEntityData.defineId(VoidRayVfxEntity.class, EntityDataSerializers.INT);
 
     private UUID ownerId;
+    private float damage = -1.0F;
+    private float secondaryDamage = -1.0F;
 
     public VoidRayVfxEntity(EntityType<? extends VoidRayVfxEntity> entityType, Level level) {
         super(entityType, level);
@@ -59,7 +61,13 @@ public final class VoidRayVfxEntity extends Entity {
 
     // 生成特效：delay 为本体开始前的等待 tick，life 包含 delay
     public static VoidRayVfxEntity spawn(Level level, int kind, Vec3 pos, float yaw, float size, int delay, int life, Entity owner) {
+        return spawn(level, kind, pos, yaw, size, delay, life, owner, -1.0F, -1.0F);
+    }
+
+    public static VoidRayVfxEntity spawn(Level level, int kind, Vec3 pos, float yaw, float size, int delay, int life, Entity owner, float damage, float secondaryDamage) {
         VoidRayVfxEntity vfx = new VoidRayVfxEntity(ModEntities.VOID_RAY_VFX.get(), level);
+        vfx.damage = damage;
+        vfx.secondaryDamage = secondaryDamage;
         vfx.moveTo(pos.x, pos.y, pos.z, yaw, 0.0F);
         vfx.entityData.set(KIND, kind);
         vfx.entityData.set(SIZE, size);
@@ -188,9 +196,9 @@ public final class VoidRayVfxEntity extends Entity {
             }
             if (dist < 1.5D && (t - VORTEX_ARM) % 10 == 0) {
                 if (owner instanceof LivingEntity livingOwner) {
-                    victim.hurt(this.damageSources().indirectMagic(this, livingOwner), 3.0F);
+                    victim.hurt(this.damageSources().indirectMagic(this, livingOwner), this.damage >= 0 ? this.damage : 3.0F);
                 } else {
-                    victim.hurt(this.damageSources().magic(), 3.0F);
+                    victim.hurt(this.damageSources().magic(), this.damage >= 0 ? this.damage : 3.0F);
                 }
             }
         }
@@ -232,7 +240,7 @@ public final class VoidRayVfxEntity extends Entity {
             }
             // 坍缩：半径 6 内伤害并向上击飞
             if (last) {
-                if (dist <= 6.0D && this.hurtVictim(serverLevel, victim, 12.0F)) {
+                if (dist <= 6.0D && this.hurtVictim(serverLevel, victim, this.secondaryDamage >= 0 ? this.secondaryDamage : 12.0F)) {
                     victim.setDeltaMovement(victim.getDeltaMovement().multiply(0.3D, 0.0D, 0.3D).add(0.0D, 0.8D, 0.0D));
                     victim.hurtMarked = true;
                 }
@@ -245,7 +253,7 @@ public final class VoidRayVfxEntity extends Entity {
                 victim.hurtMarked = true;
             }
             if (dist < 2.0D && (t - HOLE_ARM) % 10 == 0) {
-                this.hurtVictim(serverLevel, victim, 5.0F);
+                this.hurtVictim(serverLevel, victim, this.damage >= 0 ? this.damage : 5.0F);
             }
         }
         // 吞噬靠近核心的弹射物与掉落物
@@ -276,7 +284,7 @@ public final class VoidRayVfxEntity extends Entity {
                 continue;
             }
             if (victim.position().subtract(this.position()).horizontalDistanceSqr() <= radius * radius) {
-                this.hurtVictim(serverLevel, victim, 2.0F);
+                this.hurtVictim(serverLevel, victim, this.damage >= 0 ? this.damage : 2.0F);
             }
         }
     }
@@ -297,6 +305,7 @@ public final class VoidRayVfxEntity extends Entity {
             if (kind == KIND_BIG_STAR) {
                 damage = 10.0F;
             }
+            if (this.damage >= 0) damage = this.damage;
             boolean hurt = this.hurtVictim(serverLevel, victim, damage);
             if (hurt) {
                 victim.setDeltaMovement(victim.getDeltaMovement().add(0.0D, 0.45D, 0.0D));
@@ -307,7 +316,7 @@ public final class VoidRayVfxEntity extends Entity {
         serverLevel.sendParticles(ModParticles.RIFT_SPARK.get(), this.getX(), this.getY() + 0.3D, this.getZ(), 6, 0.4D, 0.3D, 0.4D, 0.1D);
         serverLevel.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.HOSTILE, 1.2F, 0.7F);
         if (kind == KIND_BIG_STAR) {
-            spawn(serverLevel, KIND_STARDUST, this.position(), 0.0F, radius, 0, DUST_LIFE, owner);
+            spawn(serverLevel, KIND_STARDUST, this.position(), 0.0F, radius, 0, DUST_LIFE, owner, this.secondaryDamage, -1.0F);
         }
     }
 

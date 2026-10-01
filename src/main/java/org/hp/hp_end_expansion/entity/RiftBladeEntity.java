@@ -34,7 +34,12 @@ public final class RiftBladeEntity extends Projectile {
 
     // 从持有者位置向目标方向发射
     public static RiftBladeEntity launch(LivingEntity owner, Vec3 origin, Vec3 direction, float speed) {
+        return launch(owner, origin, direction, speed, DAMAGE);
+    }
+
+    public static RiftBladeEntity launch(LivingEntity owner, Vec3 origin, Vec3 direction, float speed, float damage) {
         RiftBladeEntity blade = new RiftBladeEntity(ModEntities.RIFT_BLADE.get(), owner.level());
+        blade.damage = damage;
         blade.setOwner(owner);
         blade.setPos(origin.x, origin.y, origin.z);
         blade.shoot(direction.x, direction.y, direction.z, speed, 0.0F);

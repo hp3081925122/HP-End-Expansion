@@ -13,6 +13,11 @@ repositories {
     // 配置 GeckoLib 与 CurseForge Maven 仓库
     maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
     maven {
+        name = 'Curios'
+        url = 'https://maven.theillusivec4.top/'
+        content { includeGroup 'top.theillusivec4.curios' }
+    }
+    maven {
         name = 'CurseMaven'
         url = 'https://www.cursemaven.com'
         content { includeGroup 'curse.maven' }
@@ -105,6 +110,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     // 使用 GeckoLib 渲染生物，并在开发运行环境加载 JEI、Jade 与战利品查看
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+    runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
     runtimeOnly 'curse.maven:jei-238222:8792638'
     runtimeOnly 'curse.maven:jade-324717:8591319'
     // Advanced Loot Info 2.3.0（Beta）及其必需库 Advanced Core Info 1.3.0，仅开发环境

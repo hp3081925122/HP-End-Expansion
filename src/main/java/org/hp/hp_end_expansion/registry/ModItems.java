@@ -6,6 +6,7 @@ import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import org.hp.hp_end_expansion.item.MatriarchScytheItem;
+import org.hp.hp_end_expansion.item.MobDuelStickItem;
 import org.hp.hp_end_expansion.item.RiftEggItem;
 import org.hp.hp_end_expansion.item.DevourerWingsItem;
 import org.hp.hp_end_expansion.item.StarBeaconItem;
@@ -16,6 +17,9 @@ import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Hp_end_expansion.MODID);
+    public static final DeferredItem<Item> MOB_DUEL_STICK = ITEMS.register(
+        "mob_duel_stick", () -> new MobDuelStickItem(new Item.Properties().stacksTo(1))
+    );
     public static final DeferredItem<SpawnEggItem> RIFT_MANTIS_SPAWN_EGG = ITEMS.register(
         "rift_mantis_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.RIFT_MANTIS, 0x30283E, 0xB26DE3, new Item.Properties())

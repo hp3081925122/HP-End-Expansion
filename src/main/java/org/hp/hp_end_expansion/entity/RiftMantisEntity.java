@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
+import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -255,7 +256,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             // 弧光特效：左右两道交叉
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y, center.z, this.getYRot(), 18.0F, 1.5F, 8);
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y - 0.225D, center.z, this.getYRot(), -18.0F, 1.35F, 8);
-            this.hitCone(forward, 5.1D, 0.35D, (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE), 0.6D);
+            this.hitCone(forward, 5.1D, 0.35D, CombatConfigs.RIFT_MANTIS.damage("slashDamage"), 0.6D);
         }
         if (t >= 18) {
             this.slashCooldown = 20;
@@ -286,7 +287,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             Vec3 center = this.position().add(forward.scale(2.25D)).add(0.0D, 1.8D, 0.0D);
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_SLASH, center.x, center.y, center.z, this.getYRot(), 25.0F, 1.65F, 8);
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.8F);
-            this.hitCone(forward, 4.8D, 0.3D, (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.2F, 0.4D);
+            this.hitCone(forward, 4.8D, 0.3D, CombatConfigs.RIFT_MANTIS.damage("blinkDamage"), 0.4D);
         }
         if (t >= 28) {
             this.blinkCooldown = 100;
@@ -333,7 +334,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             Vec3 aim = target.getEyePosition().subtract(0.0D, 0.4D, 0.0D).subtract(origin).normalize();
             for (int i = -1; i <= 1; i++) {
                 Vec3 dir = aim.yRot(i * 12.0F * Mth.DEG_TO_RAD);
-                RiftBladeEntity.launch(this, origin, dir, 1.1F);
+                RiftBladeEntity.launch(this, origin, dir, 1.1F, CombatConfigs.RIFT_MANTIS.damage("bladeDamage"));
             }
             this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.4F);
         }
@@ -351,7 +352,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         if (t == 14) {
             Vec3 forward = this.forwardVec();
             Vec3 start = this.position().add(forward.scale(2.1D));
-            RiftFissureEntity.spawn(this, start, this.getYRot(), 12.0F, 1.5F);
+            RiftFissureEntity.spawn(this, start, this.getYRot(), 12.0F, 1.5F, CombatConfigs.RIFT_MANTIS.damage("tearDamage"), 0.8D);
             if (this.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), start.x, start.y + 0.2D, start.z, 13, 0.75D, 0.15D, 0.75D, 0.22D);
             }

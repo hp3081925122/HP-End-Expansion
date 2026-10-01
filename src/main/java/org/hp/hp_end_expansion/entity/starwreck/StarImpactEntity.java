@@ -1,6 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -19,6 +21,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
 public final class StarImpactEntity extends Entity {
     public static final int LIFE = 100;
     public static final int RING_TICKS = 14;
+    private static final EntityDataAccessor<Boolean> SMALL = SynchedEntityData.defineId(StarImpactEntity.class, EntityDataSerializers.BOOLEAN);
     /** 客户端缓存：焦痕每一格地表相对落点的高度，渲染器第一次用时填。 */
     public float[] ground;
 
@@ -28,8 +31,13 @@ public final class StarImpactEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 at, Vec3 flight) {
+        spawn(level, at, flight, false);
+    }
+
+    public static void spawn(ServerLevel level, Vec3 at, Vec3 flight, boolean small) {
         StarImpactEntity impact = StarwreckEntities.STAR_IMPACT.get().create(level);
         if (impact == null) return;
+        impact.entityData.set(SMALL, small);
         float yaw = (float) (Mth.atan2(-flight.x, flight.z) * Mth.RAD_TO_DEG);
         float pitch = (float) (-Mth.atan2(flight.y, flight.horizontalDistance()) * Mth.RAD_TO_DEG);
         impact.moveTo(at.x, at.y, at.z, yaw, pitch);
@@ -42,7 +50,12 @@ public final class StarImpactEntity extends Entity {
         return (FallingStarEntity.IMPACT_RADIUS + 0.3F) * (1 - (1 - t) * (1 - t) * (1 - t));
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(SMALL, false); }
+
+    public boolean isSmall() { return entityData.get(SMALL); }
+
+    /** 画面整体缩放：小号陨星的热浪、焦痕、碎石都按冲击半径缩小。 */
+    public float scale() { return isSmall() ? FallingStarEntity.SMALL_RADIUS / FallingStarEntity.IMPACT_RADIUS : 1; }
 
     @Override public void tick() {
         super.tick();
@@ -56,29 +69,30 @@ public final class StarImpactEntity extends Entity {
     private void clientEffects() {
         Level level = level();
         RandomSource r = random;
+        float k = scale();
         if (tickCount == 1) {
             // 碎石贴地滚开，火星顺着热浪往外甩，全都压在 2 格以内
-            for (int i = 0; i < 26; i++) {
-                double a = r.nextDouble() * Math.PI * 2, s = 0.18 + r.nextDouble() * 0.26;
+            for (int i = 0; i < 26 * k; i++) {
+                double a = r.nextDouble() * Math.PI * 2, s = (0.18 + r.nextDouble() * 0.26) * k;
                 level.addParticle(ModParticles.STAR_DEBRIS.get(), getX(), getY() + 0.3, getZ(),
                     Math.cos(a) * s, 0.06 + r.nextDouble() * 0.12, Math.sin(a) * s);
             }
-            for (int i = 0; i < 40; i++) {
-                double a = r.nextDouble() * Math.PI * 2, s = 0.2 + r.nextDouble() * 0.3;
+            for (int i = 0; i < 40 * k; i++) {
+                double a = r.nextDouble() * Math.PI * 2, s = (0.2 + r.nextDouble() * 0.3) * k;
                 level.addParticle(ModParticles.STAR_EMBER.get(), getX(), getY() + 0.15, getZ(),
                     Math.cos(a) * s, 0.02 + r.nextDouble() * 0.06, Math.sin(a) * s);
             }
         }
         if (tickCount < RING_TICKS) {
-            float radius = ringRadius(tickCount);
+            float radius = ringRadius(tickCount) * k;
             for (int i = 0; i < 5; i++) {
                 double a = r.nextDouble() * Math.PI * 2;
                 level.addParticle(ModParticles.STAR_EMBER.get(), getX() + Math.cos(a) * radius, getY() + 0.1, getZ() + Math.sin(a) * radius,
                     Math.cos(a) * 0.05, 0.01, Math.sin(a) * 0.05);
             }
         }
-        if (tickCount < LIFE - 30 && r.nextFloat() < 0.7F) {
-            double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * 2.6;
+        if (tickCount < LIFE - 30 && r.nextFloat() < 0.7F * k) {
+            double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * 2.6 * k;
             level.addParticle(ModParticles.STAR_EMBER.get(), getX() + Math.cos(a) * d, getY() + 0.05, getZ() + Math.sin(a) * d, 0, 0, 0);
         }
     }
