@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {"rolls": 1, "conditions": [{"condition": "minecraft:killed_by_player"}], "entries": [{"type": "minecraft:item", "name": "hp_end_expansion:sky_fragment",
+      "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 4, "max": 6}}]}]},
+    {"rolls": 1, "conditions": [{"condition": "minecraft:killed_by_player"}], "entries": [{"type": "minecraft:item", "name": "hp_end_expansion:star_core_ember",
+      "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 2, "max": 4}}]}]},
+    {"rolls": 1, "conditions": [{"condition": "minecraft:killed_by_player"}], "entries": [{"type": "minecraft:item", "name": "hp_end_expansion:star_crystal_shard",
+      "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 8, "max": 16}}]}]},
+    {"rolls": 1, "conditions": [{"condition": "minecraft:killed_by_player"}], "entries": [{"type": "minecraft:item", "name": "hp_end_expansion:starfall_omen"}]},
+    {"rolls": 1, "conditions": [{"condition": "minecraft:killed_by_player"}], "entries": [{"type": "minecraft:item", "name": "hp_end_expansion:sky_eye"}]}
+  ]
+}

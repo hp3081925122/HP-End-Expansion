@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {"item": "hp_end_expansion:starfall_omen"},
+    {"item": "hp_end_expansion:star_core_ember"},
+    {"item": "hp_end_expansion:star_core_ember"},
+    {"item": "hp_end_expansion:star_crystal_shard"},
+    {"item": "hp_end_expansion:star_crystal_shard"},
+    {"item": "hp_end_expansion:star_crystal_shard"},
+    {"item": "hp_end_expansion:star_crystal_shard"}
+  ],
+  "result": {"id": "hp_end_expansion:sky_eye_omen", "count": 1}
+}

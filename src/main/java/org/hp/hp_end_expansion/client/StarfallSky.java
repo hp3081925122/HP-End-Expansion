@@ -30,6 +30,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
+import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarImpactEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarRiftEntity;
@@ -48,6 +49,8 @@ public final class StarfallSky {
     private static final List<Streak> STREAKS = new ArrayList<>();
     private static final Set<Integer> SEEN_IMPACTS = new HashSet<>();
     private static float ambient, ambientO, event, eventO, flash, flashO, shake;
+    // 裂天之主注视蓄力时整片天压暗的程度
+    private static float gaze, gazeO, gazeTarget;
     private static Vec3 rift;
     private static Vec3 heading = new Vec3(0, -1, 0);
     private static long ticks;
@@ -66,7 +69,10 @@ public final class StarfallSky {
         ambientO = ambient;
         eventO = event;
         flashO = flash;
+        gazeO = gaze;
+        gazeTarget = 0;
         if (level == null || player == null || level.dimension() != Level.END) {
+            gaze = 0;
             ambient = event = flash = shake = 0;
             STREAKS.clear();
             SEEN_IMPACTS.clear();
@@ -81,7 +87,15 @@ public final class StarfallSky {
         Vec3 nearestRift = null;
         boolean anyImpact = false;
         for (Entity entity : level.getEntitiesOfClass(Entity.class, player.getBoundingBox().inflate(192),
-            x -> x instanceof StarRiftEntity || x instanceof FallingStarEntity || x instanceof StarImpactEntity || x instanceof StarChaserEntity)) {
+            x -> x instanceof StarRiftEntity || x instanceof FallingStarEntity || x instanceof StarImpactEntity || x instanceof StarChaserEntity
+                || x instanceof SkyrenderEntity)) {
+            if (entity instanceof SkyrenderEntity boss) {
+                if (boss.isAlive()) skyrender(boss, player);
+                if (boss.isAlive()) target = Math.max(target, 1);
+                // 第三阶段坑上方那道不合拢的长缝，按星雨裂隙的方式把那片天照亮
+                if (boss.isAlive() && boss.getPhase() >= 3) nearestRift = boss.getAnchor().add(0, SkyrenderEntity.SKY_TEAR_HEIGHT, 0);
+                continue;
+            }
             if (entity instanceof StarRiftEntity r) {
                 target = Math.max(target, StarRiftEntity.openness(r.getAge()));
                 nearestRift = r.position();
@@ -118,6 +132,9 @@ public final class StarfallSky {
             }
         }
         if (!anyImpact) SEEN_IMPACTS.clear();
+        // 压暗来得慢、退得快：释放后约半秒回亮
+        if (gaze < gazeTarget) gaze = gazeTarget;
+        else gaze = approach(gaze, gazeTarget, 0.12F);
         rift = nearestRift != null ? nearestRift : rift;
         // 来得快、退得慢：落地后大约 7 秒才回到平时
         event = event < target ? approach(event, target, 0.07F) : approach(event, target, 0.007F);
@@ -133,6 +150,40 @@ public final class StarfallSky {
         for (Iterator<Streak> it = STREAKS.iterator(); it.hasNext(); ) {
             Streak s = it.next();
             if (++s.age >= s.life) it.remove();
+        }
+    }
+
+    /** 裂天之主：落地、跃袭落地、尾锤、人立怒吼和裂天撕开天幕时震屏；注视蓄力时天空跟着压暗。 */
+    private static void skyrender(SkyrenderEntity boss, LocalPlayer player) {
+        float near = (float) Mth.clamp(1 - boss.distanceTo(player) / 60, 0.15, 1);
+        int age = boss.getClientAge();
+        byte state = boss.getState();
+        if (state == SkyrenderEntity.ROAR && boss.getPhase() <= 1 && age < 3) {
+            shake = Math.max(shake, near);
+            flash = Math.max(flash, 0.5F * near);
+        }
+        if (state == SkyrenderEntity.LEAP && age >= SkyrenderEntity.LEAP_LAND && age < SkyrenderEntity.LEAP_LAND + 3) shake = Math.max(shake, 0.8F * near);
+        if (state == SkyrenderEntity.TAIL && age >= SkyrenderEntity.TAIL_HIT && age < SkyrenderEntity.TAIL_HIT + 3) shake = Math.max(shake, 0.5F * near);
+        if (state == SkyrenderEntity.PHASE_UP && age >= 16 && age < 30) shake = Math.max(shake, 0.45F * near);
+        if (state == SkyrenderEntity.REND && age >= SkyrenderEntity.REND_TEAR && age < SkyrenderEntity.REND_TEAR + 3) {
+            shake = Math.max(shake, 0.4F * near);
+            flash = Math.max(flash, 0.3F * near);
+        }
+        if (state == SkyrenderEntity.GAZE && age < boss.gazeCharge()) gazeTarget = Math.max(gazeTarget, age / (float) boss.gazeCharge());
+        // 天陨：起势时天压到全黑，坠星时越压越震，落地一闪一震
+        if (state == SkyrenderEntity.METEOR) {
+            float wide = (float) Mth.clamp(1 - boss.distanceTo(player) / 90, 0.4, 1);
+            if (age < SkyrenderEntity.METEOR_HIT + 2) gazeTarget = Math.max(gazeTarget, Mth.clamp(age / 30F, 0, 1));
+            if (age == SkyrenderEntity.METEOR_TEAR || age == SkyrenderEntity.METEOR_TEAR + 15) shake = Math.max(shake, 0.4F * wide);
+            if (age >= SkyrenderEntity.METEOR_DROP && age < SkyrenderEntity.METEOR_HIT) {
+                float k = (age - SkyrenderEntity.METEOR_DROP) / (float) (SkyrenderEntity.METEOR_HIT - SkyrenderEntity.METEOR_DROP);
+                // 前面只是低沉的颤，最后一秒越压越猛，落地前已经震得看不稳
+                shake = Math.max(shake, (0.12F + 0.95F * k * k * k * k) * wide);
+            }
+            if (age >= SkyrenderEntity.METEOR_HIT && age < SkyrenderEntity.METEOR_HIT + 4) {
+                shake = Math.max(shake, 1.45F * wide);
+                flash = Math.max(flash, wide);
+            }
         }
     }
 
@@ -160,7 +211,8 @@ public final class StarfallSky {
         if (mc.level == null || mc.level.dimension() != Level.END) return;
         float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
         float amb = Mth.lerp(pt, ambientO, ambient), ev = Mth.lerp(pt, eventO, event), fl = Mth.lerp(pt, flashO, flash);
-        if (amb + ev + fl < 0.003F && STREAKS.isEmpty()) return;
+        float gz = Mth.lerp(pt, gazeO, gaze);
+        if (amb + ev + fl + gz < 0.003F && STREAKS.isEmpty()) return;
         Matrix4f m = new Matrix4f(e.getModelViewMatrix());
         Vec3 cam = e.getCamera().getPosition();
         float time = ticks + pt;
@@ -190,7 +242,13 @@ public final class StarfallSky {
         for (Streak s : STREAKS) streak(b, m, s, pt);
         draw(b);
 
+        // 3. 注视蓄力：整片天压成近黑，只剩它的眼睛在世界里发光
         RenderSystem.defaultBlendFunc();
+        if (gz > 0.002F) {
+            BufferBuilder dark = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            box(dark, m, 0.01F, 0.0F, 0.01F, 0.75F * gz);
+            draw(dark);
+        }
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
@@ -284,10 +342,19 @@ public final class StarfallSky {
         float pt = (float) e.getPartialTick();
         float ev = Mth.lerp(pt, eventO, event), fl = Mth.lerp(pt, flashO, flash);
         float k = Math.min(1, 0.55F * ev + 0.6F * fl);
-        if (k <= 0.001F) return;
-        e.setRed(Mth.lerp(k, e.getRed(), 0.42F + 0.4F * fl));
-        e.setGreen(Mth.lerp(k, e.getGreen(), 0.12F + 0.25F * fl));
-        e.setBlue(Mth.lerp(k, e.getBlue(), 0.05F + 0.1F * fl));
+        if (k > 0.001F) {
+            e.setRed(Mth.lerp(k, e.getRed(), 0.42F + 0.4F * fl));
+            e.setGreen(Mth.lerp(k, e.getGreen(), 0.12F + 0.25F * fl));
+            e.setBlue(Mth.lerp(k, e.getBlue(), 0.05F + 0.1F * fl));
+        }
+        // 注视蓄力时雾色一起压暗
+        float gz = Mth.lerp(pt, gazeO, gaze);
+        if (gz > 0.001F) {
+            float dim = 1 - 0.7F * gz;
+            e.setRed(e.getRed() * dim);
+            e.setGreen(e.getGreen() * dim);
+            e.setBlue(e.getBlue() * dim);
+        }
     }
 
     // 落地震屏，强度随距离衰减，跟随“画面扭曲效果”设置

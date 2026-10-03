@@ -22,6 +22,7 @@ import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
+import org.hp.hp_end_expansion.compat.TerrablenderCompat;
 
 @Mod(Hp_end_expansion.MODID)
 public final class Hp_end_expansion {
@@ -67,6 +68,7 @@ public final class Hp_end_expansion {
         TidelightEntities.register(modEventBus);
         TidelightWorldgen.register(modEventBus);
         container.registerConfig(ModConfig.Type.COMMON, StarwreckConfig.SPEC);
+        TerrablenderCompat.registerListener();
         CombatConfigs.register(modEventBus, container);
         ModParticles.PARTICLE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);

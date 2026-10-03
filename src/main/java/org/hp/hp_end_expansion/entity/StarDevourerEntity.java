@@ -1102,7 +1102,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENDER_DRAGON_DEATH;
+        return null;
     }
 
     @Override
