@@ -38,6 +38,7 @@ import org.hp.hp_end_expansion.entity.starwreck.EmberGroundEntity;
 import org.hp.hp_end_expansion.entity.starwreck.EmberMothEntity;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
 import org.hp.hp_end_expansion.entity.starwreck.MeteorTortoiseEntity;
+import org.hp.hp_end_expansion.entity.starwreck.SkyMeteorEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarBearerEntity;
 import org.hp.hp_end_expansion.entity.starwreck.BearerVfxEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarShardEntity;
@@ -49,6 +50,9 @@ import org.hp.hp_end_expansion.entity.starwreck.StarImpactEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarMarkEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarRain;
 import org.hp.hp_end_expansion.entity.starwreck.StarRiftEntity;
+import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
+import org.hp.hp_end_expansion.entity.starwreck.SkyShardEntity;
+import org.hp.hp_end_expansion.item.SkyEyeOmenItem;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 
 // 星骸荒原生物：实体类型、属性、刷怪蛋、掉落物、生成位置规则（设计文档第 9 节）。生成权重写在群系 JSON 里
@@ -93,6 +97,16 @@ public final class StarwreckEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<StarFlailEntity>> STAR_FLAIL = TYPES.register("star_flail",
         () -> EntityType.Builder.<StarFlailEntity>of(StarFlailEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).noSummon()
             .clientTrackingRange(10).updateInterval(1).build("hp_end_expansion:star_flail"));
+    // 裂天之主：四足星骸巨兽，碰撞箱只包身躯，头另有部件判定；天幕碎片不存档
+    public static final DeferredHolder<EntityType<?>, EntityType<SkyrenderEntity>> SKYRENDER = TYPES.register("skyrender",
+        () -> EntityType.Builder.of(SkyrenderEntity::new, MobCategory.MONSTER).sized(3.4F, 3.8F).eyeHeight(2.4F).fireImmune()
+            .clientTrackingRange(10).updateInterval(2).build("hp_end_expansion:skyrender"));
+    public static final DeferredHolder<EntityType<?>, EntityType<SkyShardEntity>> SKY_SHARD = TYPES.register("sky_shard",
+        () -> EntityType.Builder.<SkyShardEntity>of(SkyShardEntity::new, MobCategory.MISC).sized(1.5F, 3.0F).noSummon().noSave().fireImmune()
+            .clientTrackingRange(12).updateInterval(20).build("hp_end_expansion:sky_shard"));
+    public static final DeferredHolder<EntityType<?>, EntityType<SkyMeteorEntity>> SKY_METEOR = TYPES.register("sky_meteor",
+        () -> EntityType.Builder.<SkyMeteorEntity>of(SkyMeteorEntity::new, MobCategory.MISC).sized(1F, 1F).noSummon().noSave().fireImmune()
+            .clientTrackingRange(16).updateInterval(20).build("hp_end_expansion:sky_meteor"));
 
     public static final DeferredItem<Item> EMBER_SCALE_DUST = ModItems.ITEMS.register("ember_scale_dust", () -> new Item(new Item.Properties()));
     // 燃料时长见 data/neoforge/data_maps/item/furnace_fuels.json
@@ -118,8 +132,16 @@ public final class StarwreckEntities {
     public static final DeferredItem<SpawnEggItem> CALLER_EGG = ModItems.ITEMS.register("star_caller_spawn_egg", () -> new SpawnEggItem(STAR_CALLER.get(), 0x4C403B, 0xF7CE62, new Item.Properties()));
     public static final DeferredItem<SpawnEggItem> MARTYR_EGG = ModItems.ITEMS.register("star_martyr_spawn_egg", () -> new SpawnEggItem(STAR_MARTYR.get(), 0x615A70, 0xF7CE62, new Item.Properties()));
     public static final DeferredItem<SpawnEggItem> BEARER_EGG = ModItems.ITEMS.register("star_bearer_spawn_egg", () -> new SpawnEggItem(STAR_BEARER.get(), 0x3E3A48, 0xE8A23A, new Item.Properties()));
+    public static final DeferredItem<Item> SKY_EYE_OMEN = ModItems.ITEMS.register("sky_eye_omen",
+        () -> new SkyEyeOmenItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
+    public static final DeferredItem<Item> SKY_FRAGMENT = ModItems.ITEMS.register("sky_fragment",
+        () -> new Item(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+    public static final DeferredItem<Item> SKY_EYE = ModItems.ITEMS.register("sky_eye",
+        () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
+    // 只给调试用，不进创造物品栏：正式召唤要走天瞳兆石的仪式
+    public static final DeferredItem<SpawnEggItem> SKYRENDER_EGG = ModItems.ITEMS.register("skyrender_spawn_egg", () -> new SpawnEggItem(SKYRENDER.get(), 0x0B1024, 0xFFB46A, new Item.Properties()));
     // 创造物品栏顺序：掉落物在前，刷怪蛋在后
-    public static final List<DeferredItem<? extends Item>> ITEMS = List.of(EMBER_SCALE_DUST, EMBER, STARFALL_OMEN, STAR_CORE_EMBER, STAR_CORE_CHESTPLATE, MOTH_EGG, BEETLE_EGG, TORTOISE_EGG, CHASER_EGG, CALLER_EGG, MARTYR_EGG, BEARER_EGG);
+    public static final List<DeferredItem<? extends Item>> ITEMS = List.of(EMBER_SCALE_DUST, EMBER, STARFALL_OMEN, STAR_CORE_EMBER, STAR_CORE_CHESTPLATE, SKY_EYE_OMEN, SKY_FRAGMENT, SKY_EYE, MOTH_EGG, BEETLE_EGG, TORTOISE_EGG, CHASER_EGG, CALLER_EGG, MARTYR_EGG, BEARER_EGG);
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -138,6 +160,7 @@ public final class StarwreckEntities {
         event.put(STAR_CALLER.get(), StarCallerEntity.createAttributes().build());
         event.put(STAR_MARTYR.get(), StarMartyrEntity.createAttributes().build());
         event.put(STAR_BEARER.get(), StarBearerEntity.createAttributes().build());
+        event.put(SKYRENDER.get(), SkyrenderEntity.createAttributes().build());
     }
 
     private static void placements(RegisterSpawnPlacementsEvent event) {

@@ -19,6 +19,12 @@ public final class StarwreckMusic {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || minecraft.player == null || minecraft.level.dimension() != Level.END) return;
         if (event.getOriginalMusic().equals(Musics.END_BOSS) || event.getMusic() == null || !event.getMusic().equals(event.getOriginalMusic())) return;
+        // 裂天之主在 96 格内存活时换成首领战音乐
+        if (!minecraft.level.getEntitiesOfClass(org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity.class,
+                minecraft.player.getBoundingBox().inflate(96.0), net.minecraft.world.entity.Entity::isAlive).isEmpty()) {
+            event.setMusic(Musics.END_BOSS);
+            return;
+        }
         if (minecraft.level.getBiome(minecraft.player.blockPosition()).is(StarwreckWorldgen.BIOME)) {
             event.setMusic(new Music(ModStarwreck.MUSIC, 600, 2400, true));
         }

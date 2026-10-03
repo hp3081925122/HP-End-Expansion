@@ -26,6 +26,7 @@ import org.hp.hp_end_expansion.entity.RiftMatriarchEntity;
 import org.hp.hp_end_expansion.entity.StarCoreEntity;
 import org.hp.hp_end_expansion.entity.StarDevourerEntity;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
+import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
 
 public final class CombatConfigs {
@@ -82,7 +83,26 @@ public final class CombatConfigs {
         .damage("waveDamage", 6, "践踏震荡波伤害")
         .damage("summonStarDamage", 6, "召星技能每颗小陨星伤害，仅传给逐星兽自己的召星")
         .finish();
-    private static final List<Settings> ALL = List.of(RIFT_MANTIS, RIFT_MATRIARCH, VOID_RAY, STAR_DEVOURER, STAR_CHASER);
+    public static final Settings SKYRENDER = new Settings("skyrender", "裂天之主", 800, 15, 14, 0.3, 48, 1, 0)
+        .health("maxHealthEasy", 640, "简单难度生命上限；普通难度使用 maxHealth")
+        .health("maxHealthHard", 1000, "困难难度生命上限")
+        .damage("goreDamage", 15, "角挑伤害，第三阶段连挑每下都是这个值")
+        .damage("rakeDamage", 12, "裂爪横扫伤害")
+        .damage("tearDamage", 6, "爪扫后空中裂痕合拢的伤害")
+        .damage("tailDamage", 14, "尾锤伤害")
+        .damage("leapDamage", 18, "跃袭落地伤害")
+        .damage("shardDamage", 8, "天幕坠片插地伤害，第三阶段天上零星坠片同值")
+        .damage("gazeDamage", 24, "注视伤害")
+        .damage("rendDamage", 10, "裂天每片碎片伤害")
+        .damage("landDamage", 10, "召唤时坠落落地伤害")
+        .damage("exhaustedMultiplier", 1.3, "注视后喘息时身体受伤倍率")
+        .damage("eyeMultiplier", 1.6, "注视后喘息时打头的受伤倍率")
+        .damage("explosionMultiplier", 0.25, "爆炸伤害额外倍率")
+        .damage("maxHitFraction", 0.05, "单次受伤上限，占最大生命的比例")
+        .damage("meteorTrigger", 0.5, "天陨的触发血线，占最大生命的比例；第二阶段只放一次")
+        .damage("meteorHealthRatio", 0.5, "天陨落地后场内玩家的生命变为当前的多少，直接改血、不致死")
+        .finish();
+    private static final List<Settings> ALL = List.of(RIFT_MANTIS, RIFT_MATRIARCH, VOID_RAY, STAR_DEVOURER, STAR_CHASER, SKYRENDER);
 
     private CombatConfigs() {}
 
@@ -130,6 +150,14 @@ public final class CombatConfigs {
             settings = STAR_CHASER;
             Difficulty difficulty = mob.level().getDifficulty();
             health = settings.value(difficulty == Difficulty.EASY ? "maxHealthEasy" : difficulty == Difficulty.HARD ? "maxHealthHard" : "maxHealth");
+        } else if (mob instanceof SkyrenderEntity) {
+            // 裂天之主按难度取三档生命
+            settings = SKYRENDER;
+            Difficulty difficulty = mob.level().getDifficulty();
+            String key = "maxHealth";
+            if (difficulty == Difficulty.EASY) key = "maxHealthEasy";
+            else if (difficulty == Difficulty.HARD) key = "maxHealthHard";
+            health = settings.value(key);
         } else if (mob instanceof StarCoreEntity) {
             float ratio = mob.getHealth() / mob.getMaxHealth();
             set(mob, Attributes.MAX_HEALTH, STAR_DEVOURER.value("starCoreHealth"));

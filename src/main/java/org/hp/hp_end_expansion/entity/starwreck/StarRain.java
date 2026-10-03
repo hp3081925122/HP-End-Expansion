@@ -66,6 +66,8 @@ public final class StarRain {
             }
             if (now < next) continue;
             if (watchers(level).isEmpty()) continue;
+            // 裂天之主战斗期间不自然开星雨
+            if (SkyrenderEntity.present(level)) { NEXT.put(level.dimension(), now + RETRY); continue; }
             if (!begin(level)) NEXT.put(level.dimension(), now + RETRY);
         }
     }

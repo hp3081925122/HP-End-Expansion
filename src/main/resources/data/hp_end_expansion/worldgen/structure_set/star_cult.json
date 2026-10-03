@@ -1,0 +1,22 @@
+{
+  "structures": [
+    {
+      "structure": "hp_end_expansion:star_cult_observatory",
+      "weight": 5
+    },
+    {
+      "structure": "hp_end_expansion:star_cult_canticle_hall",
+      "weight": 3
+    },
+    {
+      "structure": "hp_end_expansion:star_cult_sky_altar",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 42,
+    "separation": 20,
+    "salt": 9427117
+  }
+}
