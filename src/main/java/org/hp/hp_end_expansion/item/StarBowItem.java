@@ -3,6 +3,8 @@ package org.hp.hp_end_expansion.item;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -30,6 +32,11 @@ public final class StarBowItem extends BowItem {
 
     public StarBowItem(Item.Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return super.getName(stack).withStyle(ChatFormatting.GOLD);
     }
 
     @Override
