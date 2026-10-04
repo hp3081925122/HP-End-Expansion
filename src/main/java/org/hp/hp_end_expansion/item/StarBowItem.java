@@ -36,7 +36,7 @@ public final class StarBowItem extends BowItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        return super.getName(stack).withStyle(ChatFormatting.GOLD);
+        return Component.translatable(getDescriptionId(stack)).withStyle(ChatFormatting.GOLD);
     }
 
     @Override
