@@ -25,6 +25,8 @@ public final class ModParticles {
     // 负星者的负光招式：吸光的虚蚀微粒、青白星芒
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BEARER_VOID = PARTICLE_TYPES.register("bearer_void", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BEARER_GLINT = PARTICLE_TYPES.register("bearer_glint", () -> new SimpleParticleType(false));
+    // 群星之弓蓄力：星流、聚能环和满蓄力脉冲（只在客户端生成）
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STAR_CHARGE = PARTICLE_TYPES.register("star_charge", () -> new SimpleParticleType(true));
     // 裂天之主：天幕碎屑
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SKY_MOTE = PARTICLE_TYPES.register("sky_mote", () -> new SimpleParticleType(true));
 

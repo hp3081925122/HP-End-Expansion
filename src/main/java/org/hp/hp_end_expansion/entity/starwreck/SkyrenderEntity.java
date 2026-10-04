@@ -63,6 +63,7 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
+import top.theillusivec4.curios.api.CuriosApi;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -97,7 +98,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     /** 打断击退的初速度（格/拍），之后按 (1-t/14)^1.5 衰减。 */
     private static final double STAGGER_SPEED = 1.1, STAGGER_HOP = 0.25;
     /** 天陨的星从坑外 METEOR_RANGE 格、METEOR_HEIGHT 格高的天裂里斜着砸进坑心：远处先探出一小块，再朝玩家越压越大。 */
-    public static final double METEOR_HEIGHT = 150, METEOR_RANGE = 300;
+    public static final double METEOR_HEIGHT = 120, METEOR_RANGE = 220;
     /** 渲染缩放，以及服务端估算的眼睛位置（离脚底的高度、离身体中心的前伸距离，单位格）。 */
     public static final float MODEL_SCALE = 1.75F;
     public static final double EYE_FORWARD = 3.6, EYE_UP = 2.4, RIFT_HEIGHT = 34, SKY_TEAR_HEIGHT = 26;
@@ -135,7 +136,9 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     private static final RawAnimation A_STAGGER = RawAnimation.begin().thenPlay("animation.skyrender.staggered");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private final ServerBossEvent bossEvent = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_20);
+    // 血条名字包一层固定翻译键（译文就是 %s），客户端靠这个键认出它换成自绘血条（SkyrenderBossBar），改名牌也照样认得
+    public static final String BAR_KEY = "bossbar.hp_end_expansion.skyrender";
+    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable(BAR_KEY, getDisplayName()), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_20);
     private final SkyrenderPart head;
     private final PartEntity<?>[] parts;
 
@@ -235,11 +238,11 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     public Vec3 eyeCenter() { return position().add(forward().scale(EYE_FORWARD)).add(0, EYE_UP, 0); }
 
     // ---------- 召唤 ----------
-    /** 天瞳兆石调用：在坑底找一块站得下的地方当落点，本体在落点正上方的裂口里待命，开始约 12 秒的仪式。 */
-    @Nullable public static SkyrenderEntity summon(ServerLevel level, Vec3 craterCenter, double craterRadius, Player summoner) {
+    /** 天瞳兆石调用：在指定区域找一块站得下的地方当落点，本体在落点正上方的裂口里待命，开始约 12 秒的仪式。 */
+    @Nullable public static SkyrenderEntity summon(ServerLevel level, Vec3 arenaCenter, double arenaRadius, Player summoner) {
         SkyrenderEntity boss = StarwreckEntities.SKYRENDER.get().create(level);
         if (boss == null) return null;
-        boss.setupArena(craterCenter, craterRadius, false);
+        boss.setupArena(arenaCenter, arenaRadius, false);
         Vec3 land = boss.findLandingSpot(summoner.position());
         if (land == null) return null;
         boss.entityData.set(ANCHOR, land.toVector3f());
@@ -250,7 +253,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         level.addFreshEntity(boss);
         boss.spawnCultists(level, land);
         level.playSound(null, land.x, land.y, land.z, SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 4, 0.5F);
-        LOGGER.debug("Skyrender ritual started: center={}, radius={}, landing={}", craterCenter, craterRadius, land);
+        LOGGER.debug("Skyrender ritual started: center={}, radius={}, landing={}", arenaCenter, arenaRadius, land);
         return boss;
     }
 
@@ -264,17 +267,17 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         return result;
     }
 
-    private void setupArena(Vec3 craterCenter, double craterRadius, boolean here) {
-        center = craterCenter;
-        radius = craterRadius;
-        floorY = craterCenter.y;
+    private void setupArena(Vec3 arenaCenter, double arenaRadius, boolean here) {
+        center = arenaCenter;
+        radius = arenaRadius;
+        floorY = arenaCenter.y;
         if (!here && level() instanceof ServerLevel) {
             // 坑底高度：中心附近一圈取最低的地面
             double best = Double.MAX_VALUE;
             for (int i = 0; i < 8; i++) {
                 double a = Math.PI * 2 * i / 8;
-                int x = Mth.floor(craterCenter.x + Math.cos(a) * craterRadius * 0.45);
-                int z = Mth.floor(craterCenter.z + Math.sin(a) * craterRadius * 0.45);
+                int x = Mth.floor(arenaCenter.x + Math.cos(a) * arenaRadius * 0.45);
+                int z = Mth.floor(arenaCenter.z + Math.sin(a) * arenaRadius * 0.45);
                 best = Math.min(best, level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z));
             }
             floorY = best;
@@ -440,7 +443,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             case SHARDS -> { if (stateTicks == SHARDS_CAST) castShards(level, fighters); }
             case GAZE -> tickGaze(level, fighters);
             case REND -> tickRend(level, target);
-            case METEOR -> tickMeteor(level, fighters);
+            case METEOR -> tickMeteor(level);
             case STAGGER -> tickStagger(level);
             default -> {}
         }
@@ -611,9 +614,12 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     }
 
     // ---------- 阶段 ----------
+    /** 进第二、第三阶段的血量比例，血条上的两道刻痕也用它。 */
+    public static final float PHASE2_AT = 0.6F, PHASE3_AT = 0.25F;
+
     private float threshold(byte phase) {
-        if (phase == 1) return 0.6F;
-        if (phase == 2) return 0.25F;
+        if (phase == 1) return PHASE2_AT;
+        if (phase == 2) return PHASE3_AT;
         return 0;
     }
 
@@ -657,25 +663,26 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     private boolean checkMeteor() {
         if (meteorUsed || getPhase() != 2 || getHealth() > getMaxHealth() * meteorTrigger()) return false;
         startState(METEOR);
+        List<LivingEntity> targets = meteorTargets();
         if (level() instanceof ServerLevel level) {
             Vec3 at = new Vec3(center.x, floorY, center.z);
-            // 星从玩家对面的天上来：取玩家指向坑心的平均方向，没有玩家就放在首领背后
             Vec3 from = Vec3.ZERO;
-            for (Player p : fighters()) from = from.add(new Vec3(center.x - p.getX(), 0, center.z - p.getZ()).normalize());
+            for (LivingEntity target : targets) from = from.add(new Vec3(center.x - target.getX(), 0, center.z - target.getZ()).normalize());
             if (from.lengthSqr() < 0.04) from = forward().scale(-1);
             float fromYaw = (float) Math.toDegrees(Math.atan2(from.z, from.x));
-            // 星要大到一进画面就占一大块天，落地前一秒撑满整个视野：半径约等于坑半径
             SkyMeteorEntity.spawn(level, at, (float) Math.max(24, radius * 0.9), (float) radius, fromYaw);
         }
         playSound(SoundEvents.WITHER_SPAWN, 10, 0.5F);
-        for (Player p : fighters()) p.displayClientMessage(Component.translatable("message.hp_end_expansion.skyrender.meteor"), true);
+        for (LivingEntity target : targets) {
+            if (target instanceof Player player) player.displayClientMessage(Component.translatable("message.hp_end_expansion.skyrender.meteor"), true);
+        }
         LOGGER.debug("Skyrender meteor started: health={}/{}", getHealth(), getMaxHealth());
         return true;
     }
 
     private static float meteorTrigger() { return (float) stat("meteorTrigger"); }
 
-    private void tickMeteor(ServerLevel level, List<Player> fighters) {
+    private void tickMeteor(ServerLevel level) {
         int t = stateTicks;
         // 撕天：两只前爪各撕一下
         if (t == METEOR_TEAR || t == METEOR_TEAR + 15) playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 8, 0.5F);
@@ -689,7 +696,12 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
                 level.sendParticles(ModParticles.STAR_EMBER.get(), p.x, floorY + 10 + random.nextDouble() * 14, p.z, 0, 0, -1, 0, 0.15);
             }
         }
-        if (t == METEOR_HIT) meteorImpact(level, fighters);
+        if (t == METEOR_HIT) meteorImpact(level, meteorTargets());
+        // 第二次爆闪
+        if (t == METEOR_HIT + 14) {
+            playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.45F);
+            playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 8, 0.35F);
+        }
         // 余烬：碎屑往上飘回天裂
         if (t > METEOR_HIT && t < METEOR_LEN && t % 2 == 0) {
             Vec3 p = ring(center, 0, radius * 0.8);
@@ -698,15 +710,18 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         if (t == METEOR_LEN) playSound(SoundEvents.BEACON_DEACTIVATE, 6, 0.5F);
     }
 
-    /** 星落地：场内每个玩家的生命变成当前的一半。直接改血，不走伤害，护甲、抗性、不死图腾都不管用，也不会致死。 */
-    private void meteorImpact(ServerLevel level, List<Player> fighters) {
+    private void meteorImpact(ServerLevel level, List<LivingEntity> targets) {
         meteorUsed = true;
         float ratio = (float) stat("meteorHealthRatio");
-        for (Player p : fighters) {
-            p.setHealth(p.getHealth() * ratio);
-            level.getChunkSource().broadcastAndSend(p, new ClientboundHurtAnimationPacket(p));
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.PLAYER_HURT, SoundSource.PLAYERS, 1, 0.8F);
-            push(p, p.position().subtract(center), 1.0, 0.4);
+        for (LivingEntity target : targets) {
+            target.setHealth(target.getHealth() * ratio);
+            level.getChunkSource().broadcastAndSend(target, new ClientboundHurtAnimationPacket(target));
+            if (target instanceof Player player) {
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_HURT, SoundSource.PLAYERS, 1, 0.8F);
+            } else {
+                level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.RAVAGER_HURT, SoundSource.HOSTILE, 1, 0.8F);
+            }
+            push(target, target.position().subtract(center), 1.0, 0.4);
         }
         playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.5F);
         playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.6F);
@@ -719,7 +734,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             double r = radius * (0.35 + 0.45 * random.nextDouble());
             groundBurst(level, ground(floor.add(Math.cos(a) * r, 0, Math.sin(a) * r)), 1.5F, 18);
         }
-        LOGGER.debug("Skyrender meteor impact: players={}, ratio={}", fighters.size(), ratio);
+        LOGGER.debug("Skyrender meteor impact: targets={}, ratio={}", targets.size(), ratio);
     }
 
     // ---------- 选招 ----------
@@ -1165,6 +1180,15 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             && !(e instanceof Player p && (p.isCreative() || p.isSpectator())) && !e.getTags().contains("skyrender_ritual"));
     }
 
+    private List<LivingEntity> meteorTargets() {
+        double r = radius + 16;
+        AABB area = new AABB(center, center).inflate(r, 48, r);
+        return level().getEntitiesOfClass(LivingEntity.class, area, e -> e != this && e.isAlive()
+            && !(e instanceof Player p && (p.isCreative() || p.isSpectator()))
+            && !e.getTags().contains("skyrender_ritual")
+            && e.position().subtract(center).horizontalDistanceSqr() <= r * r);
+    }
+
     private static void push(LivingEntity e, Vec3 dir, double horizontal, double up) {
         Vec3 flat = new Vec3(dir.x, 0, dir.z);
         if (flat.lengthSqr() < 1.0E-4) flat = new Vec3(1, 0, 0);
@@ -1207,6 +1231,9 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         if (invulnerableNow() || isDeadOrDying()) return false;
         Player attacker = source.getEntity() instanceof Player player ? player : null;
         boolean eyeVulnerable = onHead && getState() == GAZE && stateTicks < gazeCharge() && attacker != null;
+        if (source.getDirectEntity() instanceof StarBoltEntity bolt && bolt.getOwner() instanceof Player player
+            && CuriosApi.getCuriosInventory(player)
+                .map(handler -> handler.isEquipped(StarwreckEntities.HOLY_STAR.get())).orElse(false)) amount *= 2.0F;
         if (source.is(DamageTypeTags.IS_EXPLOSION)) amount *= (float) stat("explosionMultiplier");
         // 注视后喘息：全身受伤加倍率，打头更多
         if (isExhausted()) {
@@ -1325,7 +1352,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         setNoGravity(false);
         if (tag.getBoolean("Ritual") && arenaReady) setPos(land);
         if (level() instanceof ServerLevel level) clearCultists(level);
-        if (hasCustomName()) bossEvent.setName(getDisplayName());
+        if (hasCustomName()) bossEvent.setName(Component.translatable(BAR_KEY, getDisplayName()));
     }
 
     // ---------- 动画 ----------

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "#E#",
+    "EBE",
+    "#E#"
+  ],
+  "key": {
+    "#": {
+      "item": "hp_end_expansion:star_crystal_block"
+    },
+    "E": {
+      "item": "hp_end_expansion:ember_scale_dust"
+    },
+    "B": {
+      "item": "minecraft:bow"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:star_bow",
+    "count": 1
+  }
+}

@@ -39,6 +39,7 @@ public final class Hp_end_expansion {
                 ModTidelight.ITEMS.forEach(item -> output.accept(item.get()));
                 StarwreckEntities.ITEMS.forEach(item -> output.accept(item.get()));
                 output.accept(ModStarwreck.STAR_CRYSTAL_SHARD.get());
+                output.accept(ModStarwreck.STAR_BOW.get());
                 output.accept(ModItems.END_MOTE_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_MANTIS_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_MATRIARCH_SPAWN_EGG.get());

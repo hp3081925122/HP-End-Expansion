@@ -8,7 +8,7 @@
 |---|---|
 | ID | `hp_end_expansion:starwreck_wastes` |
 | 类型 | 外岛地表群系，在选中区域连片替换末地高地、中地和荒地 |
-| 进度位置 | 击败末影龙后；噬星鳐王的召唤地（星坠平台） |
+| 进度位置 | 击败末影龙后；噬星鳐王相关内容 |
 | 核心资源 | 星晶碎片、星骸岩系建材、余烬花 |
 | 专属生物 | 余烬蛾、余烬甲虫、陨壳龟（第 9 节）。逐星兽只随星雨落地出现，设定见第 9.5 节，代码未写 |
 | 视觉识别 | 远看是紫黑虚空里的一块暖色高地；近看是连片陨坑与发光坑壁 |
@@ -328,10 +328,10 @@
 | 群系 | `biome/starwreck_wastes.json` |
 | 配置地物 | `configured_feature/` 下的地表、各类陨坑、残骸、晶巢、植被、灰滩 |
 | 放置地物 | `placed_feature/` 下对应的每一项 |
-| 结构 | `structure/starfall_crater.json`、`structure/star_platform.json` |
-| 结构集 | `structure_set/` 下对应的两项 |
-| 结构模板 | `data/hp_end_expansion/structure/starwreck/giant_meteor.nbt`；直接由结构片段放置，平台程序生成，不使用拼图模板池 |
-| 群系标签 | `tags/worldgen/biome/has_structure/` 下的两个结构标签 |
+| 结构 | `structure/starfall_crater.json` |
+| 结构集 | `structure_set/starfall_crater.json` |
+| 结构模板 | `data/hp_end_expansion/structure/starwreck/giant_meteor.nbt`；直接由结构片段放置，不使用拼图模板池 |
+| 群系标签 | `tags/worldgen/biome/has_structure/starfall_crater.json` |
 
 生物生成直接写在群系 JSON 里，不走群系修改器。
 
@@ -368,7 +368,7 @@
 | 星晶是否可再生 | 做"星晶母岩"让星晶芽缓慢生长 / 只在世界生成时产出 | 方块层面只在世界生成时产出；陨壳龟提供少量、有上限的再生来源 |
 | 星晶碎片用途 | 光学用途（仿望远镜）、附魔或锻造材料、噬星鳐王相关合成 | 至少接入噬星鳐王的召唤物，或它的掉落物升级 |
 | 余烬鳞粉、余烬用途 | 烟火之星染料、酿造材料、燃料 | 余烬做燃料；余烬鳞粉待定 |
-| 星引信标的使用限制 | 末地任意位置 / 只能在星坠平台使用 | 只能在星坠平台使用，让结构有存在意义 |
+| 星引信标的使用限制 | 末地任意位置 | 末地任意位置 |
 | 背景音乐 | 保持末地音乐 / 用 `SelectMusicEvent` 换曲 | 换曲，音频已做好 |
 
 ## 12. 实现顺序

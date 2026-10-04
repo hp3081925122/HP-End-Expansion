@@ -34,11 +34,12 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ProjectileDeflection;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -413,22 +414,10 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         return (float) Math.toDegrees(Math.acos(Mth.clamp(dot, -1, 1)));
     }
 
-    private boolean frontGuard(float angle) { return !isEnraged() && !isVulnerable() && angle < 60; }
-
-    // 正面的弹射物交给原版弹反：箭在命中前就被反弹，不会先走 hurt 再被原版二次反向
-    @Override public ProjectileDeflection deflection(Projectile projectile) {
-        if (frontGuard(angleFrom(projectile.position()))) {
-            playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F);
-            return ProjectileDeflection.REVERSE;
-        }
-        return super.deflection(projectile);
-    }
-
     @Override public boolean hurt(DamageSource source, float amount) {
         if (source.getDirectEntity() instanceof FallingStarEntity || source.getDirectEntity() instanceof StarShardEntity) return false;
         float angle = attackAngle(source);
         boolean projectile = source.getDirectEntity() instanceof Projectile;
-        if (projectile && frontGuard(angle)) return false;
         if (isVulnerable()) amount *= 1.5F;
         else if (isEnraged()) amount *= 1.25F;
         else if (angle < 60) amount *= 0.3F;
@@ -458,12 +447,15 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     }
 
     private void shatter() {
+        Vec3 intactStarAt = position().add(forward().scale(-0.5)).add(0, 2.1, 0);
         entityData.set(STAR_BROKEN, true);
         entityData.set(STAR_HEALTH, 0F);
         vulnerable = VULNERABLE;
         wantFlame = false;
         Vec3 at = starPos();
         if (level() instanceof ServerLevel server) {
+            if (server.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT) && random.nextFloat() < 0.3F)
+                dropHolyStar(server, intactStarAt);
             BearerVfxEntity.spawn(server, BearerVfxEntity.SHATTER, at, yBodyRot, 1, 0);
             for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(4), e -> e.isAlive() && !isKin(e))) {
                 if (living.distanceToSqr(at) > 9) continue;
@@ -637,11 +629,21 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
 
     @Override protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
-        if (!isStarBroken() || !(source.getEntity() instanceof Player player)) return;
+        if (!isStarBroken()) {
+            if (level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) dropHolyStar(level, position());
+            return;
+        }
+        if (!(source.getEntity() instanceof Player player)) return;
         var looting = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING);
         int levelBonus = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getWeaponItem());
         if (random.nextFloat() < 0.15F + 0.05F * levelBonus)
             spawnAtLocation(new ItemStack(StarwreckEntities.STAR_CORE_EMBER.get()));
+    }
+
+    private void dropHolyStar(ServerLevel level, Vec3 at) {
+        ItemEntity item = new ItemEntity(level, at.x, at.y, at.z, new ItemStack(StarwreckEntities.HOLY_STAR.get()));
+        item.setDefaultPickUpDelay();
+        level.addFreshEntity(item);
     }
 
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.AMETHYST_BLOCK_CHIME; }

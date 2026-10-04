@@ -51,6 +51,15 @@
     },
     {
       "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "hp_end_expansion:starcall_pendant"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
       "conditions": [
         {
           "condition": "minecraft:killed_by_player"

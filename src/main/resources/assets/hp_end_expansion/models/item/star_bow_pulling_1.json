@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/bow",
+  "textures": {
+    "layer0": "hp_end_expansion:item/star_bow_pulling_1"
+  }
+}

@@ -16,6 +16,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.*;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.block.*;
+import org.hp.hp_end_expansion.item.StarBowItem;
 
 public final class ModStarwreck {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Hp_end_expansion.MODID);
@@ -38,6 +39,8 @@ public final class ModStarwreck {
     public static final DeferredBlock<SlabBlock> STARWRECK_BRICK_SLAB = block("starwreck_brick_slab", () -> new SlabBlock(stone().sound(SoundType.NETHER_BRICKS)));
     public static final DeferredBlock<WallBlock> STARWRECK_BRICK_WALL = block("starwreck_brick_wall", () -> new WallBlock(stone().sound(SoundType.NETHER_BRICKS)));
     public static final DeferredItem<Item> STAR_CRYSTAL_SHARD = ModItems.ITEMS.register("star_crystal_shard", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<StarBowItem> STAR_BOW = ModItems.ITEMS.register("star_bow",
+        () -> new StarBowItem(new Item.Properties().durability(384).fireResistant()));
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC = SOUNDS.register("music.starwreck_wastes", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "music.starwreck_wastes")));
 
     private static BlockBehaviour.Properties stone() {

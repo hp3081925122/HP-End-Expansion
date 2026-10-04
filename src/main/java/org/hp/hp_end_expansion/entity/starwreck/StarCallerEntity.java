@@ -67,7 +67,7 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return createMonsterAttributes().add(Attributes.MAX_HEALTH, 28).add(Attributes.ARMOR, 2)
+        return createMonsterAttributes().add(Attributes.MAX_HEALTH, 56).add(Attributes.ARMOR, 2)
             .add(Attributes.MOVEMENT_SPEED, 0.24).add(Attributes.FOLLOW_RANGE, 24).add(Attributes.KNOCKBACK_RESISTANCE, 0.3);
     }
 
