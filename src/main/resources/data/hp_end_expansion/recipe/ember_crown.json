@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "EEE",
+    "EXE",
+    "EEE"
+  ],
+  "key": {
+    "E": {
+      "item": "hp_end_expansion:emberbloom"
+    },
+    "X": {
+      "item": "hp_end_expansion:star_crystal_block"
+    }
+  },
+  "result": {
+    "id": "hp_end_expansion:ember_crown",
+    "count": 1
+  }
+}
