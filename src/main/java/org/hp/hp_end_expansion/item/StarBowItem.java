@@ -13,6 +13,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -175,6 +176,7 @@ public final class StarBowItem extends BowItem {
         if (crit) bolt.setCritArrow(true);
         if (damageMultiplier != 1.0F) bolt.setBaseDamage(bolt.getBaseDamage() * damageMultiplier);
         if (extra) {
+            bolt.pickup = AbstractArrow.Pickup.DISALLOWED;
             bolt.setHoming(true);
             bolt.setBaseDamage(bolt.getBaseDamage() * 0.5D);
         }
