@@ -31,13 +31,20 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.Hp_end_expansion;
+import org.hp.hp_end_expansion.item.EmberCrownItem;
 import org.hp.hp_end_expansion.item.StarCoreChestplateItem;
 import org.hp.hp_end_expansion.item.StarfallOmenItem;
+import org.hp.hp_end_expansion.item.HolyStarItem;
+import org.hp.hp_end_expansion.item.StarcallPendantItem;
+import org.hp.hp_end_expansion.item.SkyEyeItem;
+import org.hp.hp_end_expansion.item.SkyrenderHornItem;
+import org.hp.hp_end_expansion.item.UnstableRemnantStarItem;
 import org.hp.hp_end_expansion.entity.starwreck.EmberBeetleEntity;
 import org.hp.hp_end_expansion.entity.starwreck.EmberGroundEntity;
 import org.hp.hp_end_expansion.entity.starwreck.EmberMothEntity;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
 import org.hp.hp_end_expansion.entity.starwreck.MeteorTortoiseEntity;
+import org.hp.hp_end_expansion.entity.starwreck.StarBoltEntity;
 import org.hp.hp_end_expansion.entity.starwreck.SkyMeteorEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarBearerEntity;
 import org.hp.hp_end_expansion.entity.starwreck.BearerVfxEntity;
@@ -91,6 +98,10 @@ public final class StarwreckEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BearerVfxEntity>> BEARER_VFX = TYPES.register("bearer_vfx",
         () -> EntityType.Builder.<BearerVfxEntity>of(BearerVfxEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).noSummon().noSave().fireImmune()
             .clientTrackingRange(10).updateInterval(20).build("hp_end_expansion:bearer_vfx"));
+    // 群星之弓的星晶矢：尺寸和同步频率照原版箭
+    public static final DeferredHolder<EntityType<?>, EntityType<StarBoltEntity>> STAR_BOLT = TYPES.register("star_bolt",
+        () -> EntityType.Builder.<StarBoltEntity>of(StarBoltEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.13F)
+            .clientTrackingRange(4).updateInterval(20).build("hp_end_expansion:star_bolt"));
     public static final DeferredHolder<EntityType<?>, EntityType<StarShardEntity>> STAR_SHARD = TYPES.register("star_shard",
         () -> EntityType.Builder.<StarShardEntity>of(StarShardEntity::new, MobCategory.MISC).sized(0.4F, 0.4F).noSummon().noSave().fireImmune()
             .clientTrackingRange(10).updateInterval(1).build("hp_end_expansion:star_shard"));
@@ -116,6 +127,14 @@ public final class StarwreckEntities {
     // 逐星兽必掉，胸核冷却后的残块
     public static final DeferredItem<Item> STAR_CORE_EMBER = ModItems.ITEMS.register("star_core_ember",
         () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant()));
+    public static final DeferredItem<StarcallPendantItem> STARCALL_PENDANT = ModItems.ITEMS.register("starcall_pendant",
+        () -> new StarcallPendantItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<EmberCrownItem> EMBER_CROWN = ModItems.ITEMS.register("ember_crown",
+        () -> new EmberCrownItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<UnstableRemnantStarItem> UNSTABLE_REMNANT_STAR = ModItems.ITEMS.register("unstable_remnant_star",
+        () -> new UnstableRemnantStarItem(new Item.Properties().rarity(Rarity.RARE).stacksTo(1).fireResistant()));
+    public static final DeferredItem<HolyStarItem> HOLY_STAR = ModItems.ITEMS.register("holy_star",
+        () -> new HolyStarItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
     public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS = DeferredRegister.create(Registries.ARMOR_MATERIAL, Hp_end_expansion.MODID);
     // 数值对齐下界合金胸甲；贴图层只在 GeckoLib 渲染失效时才会用到
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> STAR_CORE = ARMOR_MATERIALS.register("star_core", () -> new ArmorMaterial(
@@ -136,12 +155,13 @@ public final class StarwreckEntities {
         () -> new SkyEyeOmenItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
     public static final DeferredItem<Item> SKY_FRAGMENT = ModItems.ITEMS.register("sky_fragment",
         () -> new Item(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
-    public static final DeferredItem<Item> SKY_EYE = ModItems.ITEMS.register("sky_eye",
-        () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
-    // 只给调试用，不进创造物品栏：正式召唤要走天瞳兆石的仪式
+    public static final DeferredItem<SkyEyeItem> SKY_EYE = ModItems.ITEMS.register("sky_eye",
+        () -> new SkyEyeItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
+    public static final DeferredItem<SkyrenderHornItem> SKYRENDER_HORN = ModItems.ITEMS.register("skyrender_horn",
+        () -> new SkyrenderHornItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
     public static final DeferredItem<SpawnEggItem> SKYRENDER_EGG = ModItems.ITEMS.register("skyrender_spawn_egg", () -> new SpawnEggItem(SKYRENDER.get(), 0x0B1024, 0xFFB46A, new Item.Properties()));
     // 创造物品栏顺序：掉落物在前，刷怪蛋在后
-    public static final List<DeferredItem<? extends Item>> ITEMS = List.of(EMBER_SCALE_DUST, EMBER, STARFALL_OMEN, STAR_CORE_EMBER, STAR_CORE_CHESTPLATE, SKY_EYE_OMEN, SKY_FRAGMENT, SKY_EYE, MOTH_EGG, BEETLE_EGG, TORTOISE_EGG, CHASER_EGG, CALLER_EGG, MARTYR_EGG, BEARER_EGG);
+    public static final List<DeferredItem<? extends Item>> ITEMS = List.of(EMBER_SCALE_DUST, EMBER, STARFALL_OMEN, STAR_CORE_EMBER, STARCALL_PENDANT, EMBER_CROWN, UNSTABLE_REMNANT_STAR, HOLY_STAR, STAR_CORE_CHESTPLATE, SKY_EYE_OMEN, SKY_FRAGMENT, SKY_EYE, SKYRENDER_HORN, MOTH_EGG, BEETLE_EGG, TORTOISE_EGG, CHASER_EGG, CALLER_EGG, MARTYR_EGG, BEARER_EGG, SKYRENDER_EGG);
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -149,7 +169,6 @@ public final class StarwreckEntities {
         bus.addListener(StarwreckEntities::attributes);
         bus.addListener(StarwreckEntities::placements);
         NeoForge.EVENT_BUS.addListener(StarRain::tick);
-        NeoForge.EVENT_BUS.addListener(StarCoreChestplateItem::onDamaged);
     }
 
     private static void attributes(EntityAttributeCreationEvent event) {

@@ -76,6 +76,7 @@ public final class StarwreckEntityRenderers {
         event.registerSpriteSet(ModParticles.BEARER_SHARD.get(), sprites -> new BearerParticle.Provider(sprites, BearerParticle.Kind.SHARD));
         event.registerSpriteSet(ModParticles.BEARER_VOID.get(), sprites -> new BearerParticle.Provider(sprites, BearerParticle.Kind.VOID));
         event.registerSpriteSet(ModParticles.BEARER_GLINT.get(), sprites -> new BearerParticle.Provider(sprites, BearerParticle.Kind.GLINT));
+        event.registerSpriteSet(ModParticles.STAR_CHARGE.get(), StarChargeParticle.Provider::new);
     }
 
     private static final class Renderer<T extends Mob & GeoEntity> extends GeoEntityRenderer<T> {

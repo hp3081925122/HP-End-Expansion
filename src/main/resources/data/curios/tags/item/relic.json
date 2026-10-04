@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "hp_end_expansion:unstable_remnant_star",
+    "hp_end_expansion:holy_star",
+    "hp_end_expansion:starcall_pendant",
+    "hp_end_expansion:ember_crown",
+    "hp_end_expansion:sky_eye",
+    "hp_end_expansion:skyrender_horn"
+  ]
+}

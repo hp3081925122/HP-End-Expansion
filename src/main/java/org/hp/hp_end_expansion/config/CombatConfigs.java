@@ -100,7 +100,7 @@ public final class CombatConfigs {
         .damage("explosionMultiplier", 0.25, "爆炸伤害额外倍率")
         .damage("maxHitFraction", 0.05, "单次受伤上限，占最大生命的比例")
         .damage("meteorTrigger", 0.5, "天陨的触发血线，占最大生命的比例；第二阶段只放一次")
-        .damage("meteorHealthRatio", 0.5, "天陨落地后场内玩家的生命变为当前的多少，直接改血、不致死")
+        .damage("meteorHealthRatio", 0.5, "天陨落地后场内生物的生命变为当前的多少，直接改血、不致死")
         .finish();
     private static final List<Settings> ALL = List.of(RIFT_MANTIS, RIFT_MATRIARCH, VOID_RAY, STAR_DEVOURER, STAR_CHASER, SKYRENDER);
 

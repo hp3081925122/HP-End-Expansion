@@ -1,8 +1,0 @@
-{
-  "type": "hp_end_expansion:star_cult",
-  "biomes": "#hp_end_expansion:has_structure/star_cult",
-  "step": "surface_structures",
-  "spawn_overrides": {},
-  "terrain_adaptation": "none",
-  "variant": "observatory"
-}

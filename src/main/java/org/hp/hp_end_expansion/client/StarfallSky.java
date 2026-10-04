@@ -184,6 +184,8 @@ public final class StarfallSky {
                 shake = Math.max(shake, 1.45F * wide);
                 flash = Math.max(flash, wide);
             }
+            // 第二次爆闪
+            if (age >= SkyrenderEntity.METEOR_HIT + 14 && age < SkyrenderEntity.METEOR_HIT + 17) shake = Math.max(shake, 0.9F * wide);
         }
     }
 

@@ -32,3 +32,10 @@ type = "required"
 versionRange = "${geckolib_version_range}"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "curios"
+type = "required"
+versionRange = "[9.5.1,)"
+ordering = "AFTER"
+side = "BOTH"
