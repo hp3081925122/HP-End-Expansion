@@ -1,7 +1,14 @@
 {
   "variants": {
-    "": {
-      "model": "hp_end_expansion:block/hanging_glowkelp_plant"
-    }
+    "": [
+      {
+        "model": "hp_end_expansion:block/hanging_glowkelp_plant",
+        "weight": 3
+      },
+      {
+        "model": "hp_end_expansion:block/hanging_glowkelp_plant_dark",
+        "weight": 7
+      }
+    ]
   }
 }

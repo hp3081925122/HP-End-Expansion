@@ -58,35 +58,9 @@
   "spawners": {
     "ambient": [],
     "axolotls": [],
-    "creature": [
-      {
-        "type": "hp_end_expansion:lantern_jellyfish",
-        "weight": 10,
-        "minCount": 3,
-        "maxCount": 6
-      },
-      {
-        "type": "hp_end_expansion:pearl_hermit_crab",
-        "weight": 6,
-        "minCount": 1,
-        "maxCount": 2
-      }
-    ],
+    "creature": [],
     "misc": [],
-    "monster": [
-      {
-        "type": "minecraft:enderman",
-        "weight": 5,
-        "minCount": 4,
-        "maxCount": 4
-      },
-      {
-        "type": "hp_end_expansion:reef_eel",
-        "weight": 5,
-        "minCount": 1,
-        "maxCount": 2
-      }
-    ],
+    "monster": [],
     "underground_water_creature": [],
     "water_ambient": [],
     "water_creature": []

@@ -200,17 +200,6 @@ public final class TidelightFeature extends Feature<TidelightFeature.Settings> {
                 if (at.getY() > 30 && t.reef(at) && t.level.isEmptyBlock(at) && plant.defaultBlockState().canSurvive(t.level, at)) t.put(at, plant.defaultBlockState());
             }
         }
-        int chorusAttempts = random.nextInt(5);
-        for (int i = 0; i < chorusAttempts; i++) {
-            if (random.nextInt(3) != 0) continue;
-            int x = minX + 4 + random.nextInt(8), z = minZ + 4 + random.nextInt(8);
-            BlockPos at = new BlockPos(x, TidelightTerrain.surface(t.level, x, z), z);
-            BlockState ground = t.level.getBlockState(at);
-            if (t.reef(at) && (ground.is(Blocks.END_STONE) || ReefstoneBlock.isReef(ground)) && t.level.isEmptyBlock(at.above())) {
-                t.put(at, Blocks.END_STONE.defaultBlockState());
-                ChorusFlowerBlock.generatePlant(t.level, at.above(), random, 8);
-            }
-        }
     }
     private void curtains(TidelightTerrain t, int minX, int minZ, RandomSource random) {
         for (int x = minX; x < minX + 16; x++) for (int z = minZ; z < minZ + 16; z++) {
