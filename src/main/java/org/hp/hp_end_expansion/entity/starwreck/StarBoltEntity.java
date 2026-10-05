@@ -16,10 +16,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.item.StarCoreChestplateItem;
 import org.hp.hp_end_expansion.registry.ModParticles;
@@ -136,7 +138,8 @@ public class StarBoltEntity extends AbstractArrow {
     private LivingEntity homingTarget() {
         if (homingTargetId < 0) return null;
         Entity entity = level().getEntity(homingTargetId);
-        if (entity instanceof LivingEntity living && validHomingTarget(living) && distanceToSqr(living) <= HOMING_RANGE * HOMING_RANGE * 4.0D) {
+        if (entity instanceof LivingEntity living && validHomingTarget(living)
+            && distanceToSqr(living) <= HOMING_RANGE * HOMING_RANGE * 4.0D && hasHomingLineOfSight(living)) {
             return living;
         }
         homingTargetId = -1;
@@ -147,7 +150,14 @@ public class StarBoltEntity extends AbstractArrow {
         Entity owner = getOwner();
         return level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(HOMING_RANGE), this::validHomingTarget)
             .stream().filter(entity -> owner == null || !entity.isAlliedTo(owner))
+            .filter(this::hasHomingLineOfSight)
             .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+    }
+
+    private boolean hasHomingLineOfSight(LivingEntity target) {
+        Vec3 from = position();
+        Vec3 to = target.getEyePosition();
+        return level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType() == HitResult.Type.MISS;
     }
 
     private boolean validHomingTarget(LivingEntity entity) {

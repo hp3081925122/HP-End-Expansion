@@ -279,7 +279,7 @@
 
 ### 9.5 逐星兽
 
-设计已移到 [star_chaser_design.md](star_chaser_design.md)，以那份为准。这里原先的设定作废。
+设计已移到 [star_chaser_design.md](生物/star_chaser_design.md)，以那份为准。这里原先的设定作废。
 
 ### 9.6 唤星者
 
@@ -303,7 +303,7 @@
 
 ### 9.8 负星者
 
-坠星教团的精英：高大的重甲朝圣者，背着一座装着燃烧坠星的圣龛。正面很硬，背上的圣星是弱点，打碎后硬直再狂暴。完整设定见 [star_bearer_design.md](star_bearer_design.md)，以那份为准。
+坠星教团的精英：高大的重甲朝圣者，背着一座装着燃烧坠星的圣龛。正面很硬，背上的圣星是弱点，打碎后硬直再狂暴。完整设定见 [star_bearer_design.md](生物/star_bearer_design.md)，以那份为准。
 
 ## 10. 技术方案
 

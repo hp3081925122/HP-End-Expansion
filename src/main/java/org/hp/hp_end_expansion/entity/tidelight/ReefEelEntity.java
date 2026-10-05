@@ -59,7 +59,15 @@ public final class ReefEelEntity extends Monster implements GeoEntity {
             Player player = level().getNearestPlayer(getX(), getY(), getZ(), 6, p -> p instanceof Player candidate && !candidate.isCreative() && !candidate.isSpectator() && candidate.isAlive());
             if (player != null && player.position().distanceToSqr(home) <= 256 && getSensing().hasLineOfSight(player)) { setTarget(player); target = player; }
         }
-        if (target == null) { moveControl.setWantedPosition(home.x, home.y, home.z, 0.6); return; }
+        if (target == null) {
+            if (position().distanceToSqr(home) < 0.04D) {
+                moveControl.setWantedPosition(getX(), getY(), getZ(), 0.0D);
+                setDeltaMovement(Vec3.ZERO);
+            } else {
+                moveControl.setWantedPosition(home.x, home.y, home.z, 0.6);
+            }
+            return;
+        }
         getLookControl().setLookAt(target, 45, 45);
         if (phaseTicks > 0) phaseTicks--;
         int phase = attackPhase();

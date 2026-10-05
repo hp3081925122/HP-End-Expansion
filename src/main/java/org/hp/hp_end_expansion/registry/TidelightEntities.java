@@ -21,17 +21,20 @@ public final class TidelightEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<LanternJellyfishEntity>> LANTERN_JELLYFISH = TYPES.register("lantern_jellyfish", () -> EntityType.Builder.of(LanternJellyfishEntity::new, MobCategory.CREATURE).sized(0.8F, 1.2F).clientTrackingRange(8).build("hp_end_expansion:lantern_jellyfish"));
     public static final DeferredHolder<EntityType<?>, EntityType<PearlHermitCrabEntity>> PEARL_HERMIT_CRAB = TYPES.register("pearl_hermit_crab", () -> EntityType.Builder.of(PearlHermitCrabEntity::new, MobCategory.CREATURE).sized(0.6F, 0.5F).clientTrackingRange(8).build("hp_end_expansion:pearl_hermit_crab"));
     public static final DeferredHolder<EntityType<?>, EntityType<ReefEelEntity>> REEF_EEL = TYPES.register("reef_eel", () -> EntityType.Builder.of(ReefEelEntity::new, MobCategory.MONSTER).sized(0.8F, 0.6F).clientTrackingRange(8).build("hp_end_expansion:reef_eel"));
+    public static final DeferredHolder<EntityType<?>, EntityType<ReefCrystalBeastEntity>> REEF_CRYSTAL_BEAST = TYPES.register("reef_crystal_beast", () -> EntityType.Builder.of(ReefCrystalBeastEntity::new, MobCategory.MONSTER).sized(2.0F, 2.3F).eyeHeight(1.4F).clientTrackingRange(10).build("hp_end_expansion:reef_crystal_beast"));
     public static final DeferredItem<SpawnEggItem> JELLYFISH_EGG = ModItems.ITEMS.register("lantern_jellyfish_spawn_egg", () -> new SpawnEggItem(LANTERN_JELLYFISH.get(), 0x17495A, 0xBDFFF0, new Item.Properties()));
     public static final DeferredItem<SpawnEggItem> CRAB_EGG = ModItems.ITEMS.register("pearl_hermit_crab_spawn_egg", () -> new SpawnEggItem(PEARL_HERMIT_CRAB.get(), 0x76878A, 0xC4B6E6, new Item.Properties()));
     public static final DeferredItem<SpawnEggItem> EEL_EGG = ModItems.ITEMS.register("reef_eel_spawn_egg", () -> new SpawnEggItem(REEF_EEL.get(), 0x15242B, 0x4FDCCB, new Item.Properties()));
+    public static final DeferredItem<SpawnEggItem> CRYSTAL_BEAST_EGG = ModItems.ITEMS.register("reef_crystal_beast_spawn_egg", () -> new SpawnEggItem(REEF_CRYSTAL_BEAST.get(), 0x1F353B, 0x96ECDE, new Item.Properties()));
     public static void register(IEventBus bus) {
         TYPES.register(bus); bus.addListener(TidelightEntities::attributes); bus.addListener(TidelightEntities::placements);
-        ModTidelight.ITEMS.add(JELLYFISH_EGG); ModTidelight.ITEMS.add(CRAB_EGG); ModTidelight.ITEMS.add(EEL_EGG);
+        ModTidelight.ITEMS.add(JELLYFISH_EGG); ModTidelight.ITEMS.add(CRAB_EGG); ModTidelight.ITEMS.add(EEL_EGG); ModTidelight.ITEMS.add(CRYSTAL_BEAST_EGG);
     }
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(LANTERN_JELLYFISH.get(), LanternJellyfishEntity.createAttributes().build());
         event.put(PEARL_HERMIT_CRAB.get(), PearlHermitCrabEntity.createAttributes().build());
         event.put(REEF_EEL.get(), ReefEelEntity.createAttributes().build());
+        event.put(REEF_CRYSTAL_BEAST.get(), ReefCrystalBeastEntity.createAttributes().build());
     }
     private static void placements(RegisterSpawnPlacementsEvent event) {
         event.register(LANTERN_JELLYFISH.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, TidelightEntities::spawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
