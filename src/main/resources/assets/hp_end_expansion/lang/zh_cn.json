@@ -36,6 +36,8 @@
   "tooltip.hp_end_expansion.devourer_wings": "滑翔时按潜行键向前冲刺，冷却 6 秒",
   "entity.hp_end_expansion.end_mote": "末晶萤",
   "item.hp_end_expansion.end_mote_spawn_egg": "末晶萤刷怪蛋",
+  "entity.hp_end_expansion.lantern_jellyfish": "灯水母",
+  "item.hp_end_expansion.lantern_jellyfish_spawn_egg": "灯水母刷怪蛋",
   "item.hp_end_expansion.end_dust": "末晶尘",
   "block.hp_end_expansion.starwreck_stone": "星骸岩",
   "block.hp_end_expansion.ember_starwreck_stone": "余烬星骸岩",

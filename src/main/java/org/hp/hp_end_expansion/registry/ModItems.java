@@ -41,6 +41,10 @@ public final class ModItems {
         "end_mote_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.END_MOTE, 0x1A0A2E, 0x9FE8FF, new Item.Properties())
     );
+    public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
+        "lantern_jellyfish_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.LANTERN_JELLYFISH, 0x17495A, 0xBDFFF0, new Item.Properties())
+    );
     // 末晶萤掉落：末晶尘
     public static final DeferredItem<Item> END_DUST = ITEMS.register(
         "end_dust",

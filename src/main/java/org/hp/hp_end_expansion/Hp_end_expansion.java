@@ -40,6 +40,7 @@ public final class Hp_end_expansion {
                 output.accept(ModStarwreck.STAR_CRYSTAL_SHARD.get());
                 output.accept(ModStarwreck.STAR_BOW.get());
                 output.accept(ModItems.END_MOTE_SPAWN_EGG.get());
+                output.accept(ModItems.LANTERN_JELLYFISH_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_MANTIS_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_MATRIARCH_SPAWN_EGG.get());
                 output.accept(ModItems.VOID_RAY_SPAWN_EGG.get());
