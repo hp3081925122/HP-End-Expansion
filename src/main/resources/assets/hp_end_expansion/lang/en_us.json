@@ -36,6 +36,8 @@
   "tooltip.hp_end_expansion.devourer_wings": "While gliding, press Sneak to dash forward. Cooldown: 6 seconds.",
   "entity.hp_end_expansion.end_mote": "End Mote",
   "item.hp_end_expansion.end_mote_spawn_egg": "End Mote Spawn Egg",
+  "entity.hp_end_expansion.lantern_jellyfish": "Lantern Jellyfish",
+  "item.hp_end_expansion.lantern_jellyfish_spawn_egg": "Lantern Jellyfish Spawn Egg",
   "item.hp_end_expansion.end_dust": "End Dust",
   "block.hp_end_expansion.starwreck_stone": "Starwreck Stone",
   "block.hp_end_expansion.ember_starwreck_stone": "Ember Starwreck Stone",

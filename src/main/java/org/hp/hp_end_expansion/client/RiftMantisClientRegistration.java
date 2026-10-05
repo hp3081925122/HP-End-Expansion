@@ -27,6 +27,7 @@ public final class RiftMantisClientRegistration {
         event.registerEntityRenderer(ModEntities.RIFT_BLADE.get(), RiftBladeRenderer::new);
         event.registerEntityRenderer(ModEntities.RIFT_FISSURE.get(), RiftFissureRenderer::new);
         event.registerEntityRenderer(ModEntities.END_MOTE.get(), EndMoteRenderer::new);
+        event.registerEntityRenderer(ModEntities.LANTERN_JELLYFISH.get(), LanternJellyfishRenderer::new);
     }
 
     // 粒子工厂

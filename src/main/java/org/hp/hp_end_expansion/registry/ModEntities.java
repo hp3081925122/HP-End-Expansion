@@ -1,11 +1,16 @@
 package org.hp.hp_end_expansion.registry;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -13,6 +18,7 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.Hp_end_expansion;
+import org.hp.hp_end_expansion.block.tidelight.ReefstoneBlock;
 import org.hp.hp_end_expansion.entity.EndMoteEntity;
 import org.hp.hp_end_expansion.entity.RiftBladeEntity;
 import org.hp.hp_end_expansion.entity.RiftFissureEntity;
@@ -23,6 +29,8 @@ import org.hp.hp_end_expansion.entity.StarCoreEntity;
 import org.hp.hp_end_expansion.entity.StarDevourerEntity;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
 import org.hp.hp_end_expansion.entity.VoidRayVfxEntity;
+import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
+import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 
 public final class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Hp_end_expansion.MODID);
@@ -65,6 +73,13 @@ public final class ModEntities {
             .sized(0.5F, 0.5F)
             .clientTrackingRange(8)
             .build("hp_end_expansion:end_mote")
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<LanternJellyfishEntity>> LANTERN_JELLYFISH = ENTITY_TYPES.register(
+        "lantern_jellyfish",
+        () -> EntityType.Builder.of(LanternJellyfishEntity::new, MobCategory.CREATURE)
+            .sized(0.8F, 1.2F)
+            .clientTrackingRange(8)
+            .build("hp_end_expansion:lantern_jellyfish")
     );
     // 吞星星核
     public static final DeferredHolder<EntityType<?>, EntityType<StarCoreEntity>> STAR_CORE = ENTITY_TYPES.register(
@@ -140,6 +155,7 @@ public final class ModEntities {
         event.put(STAR_DEVOURER.get(), StarDevourerEntity.createAttributes().build());
         event.put(STAR_CORE.get(), StarCoreEntity.createAttributes().build());
         event.put(END_MOTE.get(), EndMoteEntity.createAttributes().build());
+        event.put(LANTERN_JELLYFISH.get(), LanternJellyfishEntity.createAttributes().build());
     }
 
     // 地面生成规则：沿用怪物的黑暗生成检测
@@ -152,5 +168,17 @@ public final class ModEntities {
         // 末晶萤：地面生成，无亮度限制
         event.register(END_MOTE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             PathfinderMob::checkMobSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(LANTERN_JELLYFISH.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::lanternJellyfishSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    }
+
+    private static <T extends Mob> boolean lanternJellyfishSpawn(EntityType<T> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getBiome(pos).is(TidelightWorldgen.BIOME)
+            && ReefstoneBlock.isReef(level.getBlockState(pos.below()));
     }
 }
