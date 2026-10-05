@@ -21,6 +21,7 @@ public final class TidelightClient {
         event.registerEntityRenderer(TidelightEntities.LANTERN_JELLYFISH.get(), context -> new TidelightEntityRenderer<>(context, "lantern_jellyfish", 0.25F));
         event.registerEntityRenderer(TidelightEntities.PEARL_HERMIT_CRAB.get(), context -> new TidelightEntityRenderer<>(context, "pearl_hermit_crab", 0.2F));
         event.registerEntityRenderer(TidelightEntities.REEF_EEL.get(), context -> new TidelightEntityRenderer<>(context, "reef_eel", 0.3F));
+        event.registerEntityRenderer(TidelightEntities.REEF_CRYSTAL_BEAST.get(), ReefCrystalBeastRenderer::new);
     }
     @SubscribeEvent public static void music(SelectMusicEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
