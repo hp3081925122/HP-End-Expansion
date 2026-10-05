@@ -148,8 +148,8 @@
         }
       },
       "neoforge_data": {
-        "block_light": 15,
-        "sky_light": 15,
+        "block_light": 12,
+        "sky_light": 12,
         "ambient_occlusion": false
       }
     }

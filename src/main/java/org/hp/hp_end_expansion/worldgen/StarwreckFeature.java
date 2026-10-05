@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChorusFlowerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
@@ -97,14 +96,6 @@ public final class StarwreckFeature extends Feature<StarwreckFeature.Settings> {
                     int sy=StarwreckTerrain.surface(level,x+dx,z+dz);
                     BlockPos p=new BlockPos(x+dx,sy,z+dz);
                     if(dx*dx+dz*dz<=r*r && sy<=cy && sy>=cy-2 && level.getBiome(p).is(StarwreckWorldgen.BIOME) && level.isEmptyBlock(p.above()) && terrain(level.getBlockState(p.below()))) terrain.put(x+dx,sy,z+dz,ModStarwreck.METEOR_ASH.get().defaultBlockState());
-                }
-            }
-            if(random.nextInt(4)==0) {
-                int px=minX+random.nextInt(16),pz=minZ+random.nextInt(16),py=StarwreckTerrain.surface(level,px,pz);
-                BlockPos p=new BlockPos(px,py,pz);
-                if(level.getBiome(p).is(StarwreckWorldgen.BIOME) && level.getBlockState(p).is(ModStarwreck.STARWRECK_STONE.get()) && level.isEmptyBlock(p.above())) {
-                    terrain.put(px,py,pz,Blocks.END_STONE.defaultBlockState());
-                    ChorusFlowerBlock.generatePlant(level,p.above(),random,8);
                 }
             }
             return true;

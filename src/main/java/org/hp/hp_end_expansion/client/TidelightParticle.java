@@ -1,10 +1,13 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public final class TidelightParticle extends TextureSheetParticle {
+    private static final double MOTE_RISE = 0.25;
+    private static final double BUBBLE_RISE = 0.3;
     private final SpriteSet sprites;
     private final double phase;
     private final boolean bubble;
@@ -17,6 +20,8 @@ public final class TidelightParticle extends TextureSheetParticle {
     }
     @Override public void tick() {
         xd = Math.sin(age * 0.12 + phase) * 0.006; zd = Math.cos(age * 0.1 + phase) * 0.006;
+        var player = Minecraft.getInstance().player;
+        yd = player != null && player.getXRot() < -45F ? (bubble ? BUBBLE_RISE : MOTE_RISE) : (bubble ? 0.025 : 0.012);
         super.tick();
         if (removed) return;
         int remaining = lifetime - age;

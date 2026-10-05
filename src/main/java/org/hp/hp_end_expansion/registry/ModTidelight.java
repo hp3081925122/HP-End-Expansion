@@ -55,8 +55,6 @@ public final class ModTidelight {
     public static final DeferredItem<BlockItem> GLOWKELP_POD = item("glowkelp_pod", () -> new BlockItem(HANGING_GLOWKELP.get(), new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.1F).effect(() -> new MobEffectInstance(MobEffects.NIGHT_VISION, 200), 1).build())));
     public static final DeferredItem<Item> TIDELIGHT_GEL = simpleItem("tidelight_gel");
     public static final DeferredItem<Item> REEF_EEL_SCALE = simpleItem("reef_eel_scale");
-    public static final DeferredItem<Item> TIDECALL_CONCH = simpleItem("tidecall_conch");
-    public static final DeferredItem<Item> WHALESONG_HEART = simpleItem("whalesong_heart");
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC = sound("music.tidelight_reef");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_LOOP = sound("ambient.tidelight_reef.loop");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_ADDITIONS = sound("ambient.tidelight_reef.additions");

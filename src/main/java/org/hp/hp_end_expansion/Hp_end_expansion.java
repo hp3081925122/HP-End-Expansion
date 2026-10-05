@@ -15,7 +15,6 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.hp.hp_end_expansion.registry.ModTidelight;
-import org.hp.hp_end_expansion.registry.TidelightEntities;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 import org.hp.hp_end_expansion.worldgen.StarwreckConfig;
 import org.hp.hp_end_expansion.config.CombatConfigs;
@@ -66,7 +65,6 @@ public final class Hp_end_expansion {
         StarwreckEntities.register(modEventBus);
         StarwreckWorldgen.register(modEventBus);
         ModTidelight.register(modEventBus);
-        TidelightEntities.register(modEventBus);
         TidelightWorldgen.register(modEventBus);
         container.registerConfig(ModConfig.Type.COMMON, StarwreckConfig.SPEC);
         TerrablenderCompat.registerListener();
