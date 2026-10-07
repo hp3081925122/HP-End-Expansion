@@ -26,7 +26,7 @@ public final class StarCoreRenderer extends EntityRenderer<StarCoreEntity> {
         poseStack.translate(0.0D, 0.6D, 0.0D);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
         poseStack.mulPose(Axis.ZP.rotationDegrees(age * 6.0F));
-        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.STAR));
+        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = 1.1F * pulse;
         float bright = 1.0F;
         if (entity.hurtTime > 0) {
@@ -40,6 +40,6 @@ public final class StarCoreRenderer extends EntityRenderer<StarCoreEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(StarCoreEntity entity) {
-        return VoidRayDraw.STAR;
+        return VoidRayDraw.TIDE_STAR;
     }
 }

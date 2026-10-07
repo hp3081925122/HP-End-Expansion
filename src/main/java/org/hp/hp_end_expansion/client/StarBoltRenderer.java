@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
@@ -100,9 +101,11 @@ public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
         float fs = (crit ? 0.5F : 0.38F) * tw * (stuck ? 0.7F : 1);
         float fb = tw * pulse * (crit ? 1.2F : 1);
         Vec3 tip = dir.scale(h * 0.9);
-        VertexConsumer fv = buffers.getBuffer(StarfallDraw.additive(FLARE));
-        StarfallDraw.quad(world, fv, tip.add(right.scale(-fs)).add(up.scale(fs)), tip.add(right.scale(fs)).add(up.scale(fs)),
-            tip.add(right.scale(fs)).add(up.scale(-fs)), tip.add(right.scale(-fs)).add(up.scale(-fs)), 0, 0, 1, 1, fb, fb, fb);
+        if (!ModList.get().isLoaded("punchy")) {
+            VertexConsumer fv = buffers.getBuffer(StarfallDraw.additive(FLARE));
+            StarfallDraw.quad(world, fv, tip.add(right.scale(-fs)).add(up.scale(fs)), tip.add(right.scale(fs)).add(up.scale(fs)),
+                tip.add(right.scale(fs)).add(up.scale(-fs)), tip.add(right.scale(-fs)).add(up.scale(-fs)), 0, 0, 1, 1, fb, fb, fb);
+        }
 
         renderTrail(e, world, buffers, pt, crit);
         super.render(e, yaw, pt, ps, buffers, light);

@@ -135,7 +135,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Integer> BROKEN_CORES = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
-    private final ServerBossEvent bossEvent = new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_20);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_20);
 
     // 技能冷却
     private int spiralCooldown = 60;
@@ -382,8 +382,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                     double a = this.random.nextDouble() * Math.PI * 2.0D;
                     Vec3 head = this.position().add(0.0D, 2.5D, 0.0D);
                     Vec3 from = head.add(Math.cos(a) * 12.0D, (this.random.nextDouble() - 0.5D) * 8.0D, Math.sin(a) * 12.0D);
-                    Vec3 v = head.subtract(from).scale(0.08D);
-                    this.level().addParticle(ParticleTypes.PORTAL, from.x, from.y, from.z, v.x, v.y, v.z);
+                    Vec3 v = head.subtract(from).scale(0.14D);
+                    this.level().addParticle(ModParticles.TIDE_SPARK.get(), from.x, from.y, from.z, v.x, v.y, v.z);
                 }
             }
             return;
@@ -523,7 +523,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             ray.makeMinion((float) CombatConfigs.STAR_DEVOURER.value("summonMinionHealth"));
             ray.setTarget(this.getTarget());
             serverLevel.addFreshEntity(ray);
-            serverLevel.sendParticles(ParticleTypes.PORTAL, ray.getX(), ray.getY() + 0.5D, ray.getZ(), 20, 0.8D, 0.4D, 0.8D, 0.4D);
+            serverLevel.sendParticles(ModParticles.TIDE_SHARD.get(), ray.getX(), ray.getY() + 0.5D, ray.getZ(), 20, 0.8D, 0.4D, 0.8D, 0.4D);
         }
         LOGGER.debug("Star Devourer {} summoned {} guards", this.getId(), count);
     }
@@ -639,6 +639,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 this.diveLow = ground.add(0.0D, 0.8D, 0.0D);
                 this.diveTo = ground.add(dir.scale(10.0D)).add(0.0D, 6.0D, 0.0D);
                 this.hitOnce.clear();
+                LOGGER.debug("Star Devourer {} dive path height delta {} blocks", this.getId(), this.getY() - this.diveLow.y);
                 this.playSound(SoundEvents.PHANTOM_SWOOP, 2.0F, 0.5F);
             }
             if (local < DIVE_WINDUP) {
@@ -649,13 +650,13 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 this.setDeltaMovement(this.diveFrom.subtract(this.position()).scale(0.2D));
                 this.faceTarget(this.diveLow, 12.0F);
             } else {
-                // 俯冲：沿二次贝塞尔曲线从起点经低点到终点
+                // 俯冲：沿分段平滑路径从起点经过低点到终点
                 float p = (float) (local - DIVE_WINDUP) / (DIVE_CYCLE - DIVE_WINDUP);
-                float q = 1.0F - p;
-                Vec3 wanted = this.diveFrom.scale(q * q).add(this.diveLow.scale(2.0F * q * p)).add(this.diveTo.scale(p * p));
-                this.setDeltaMovement(wanted.subtract(this.position()));
+                Vec3 wanted = divePath(this.diveFrom, this.diveLow, this.diveTo, p);
+                Vec3 motion = wanted.subtract(this.position());
+                this.setDeltaMovement(motion);
                 this.faceTarget(this.diveTo, 20.0F);
-                this.diveHitCheck();
+                this.diveHitCheck(motion);
                 // 最后一段落到低点时释放冲击环
                 if (seg == 2 && local == DIVE_WINDUP + (DIVE_CYCLE - DIVE_WINDUP) / 2) {
                     VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, this.diveLow.subtract(0.0D, 0.8D, 0.0D), 0.0F, 6.0F, 0, 12, this);
@@ -673,9 +674,22 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         }
     }
 
+    private static Vec3 divePath(Vec3 from, Vec3 low, Vec3 to, float progress) {
+        if (progress <= 0.5F) {
+            double t = smoothStep(progress * 2.0F);
+            return from.lerp(low, t);
+        }
+        double t = smoothStep((progress - 0.5F) * 2.0F);
+        return low.lerp(to, t);
+    }
+
+    private static double smoothStep(float progress) {
+        return progress * progress * (3.0D - 2.0D * progress);
+    }
+
     // 俯冲命中：每段每个目标只结算一次
-    private void diveHitCheck() {
-        AABB area = this.getBoundingBox().inflate(1.5D, 1.0D, 1.5D);
+    private void diveHitCheck(Vec3 motion) {
+        AABB area = this.getBoundingBox().expandTowards(motion).inflate(1.5D, 1.0D, 1.5D);
         for (LivingEntity victim : this.level().getEntitiesOfClass(LivingEntity.class, area)) {
             if (this.isAlly(victim) || this.hitOnce.contains(victim.getId())) {
                 continue;
@@ -1083,7 +1097,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         // 死亡动画 3 秒后消散
         if (this.deathTime >= 60 && !this.level().isClientSide() && !this.isRemoved()) {
             if (this.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.PORTAL, this.getX(), this.getY() + 2.0D, this.getZ(), 150, 3.0D, 2.0D, 3.0D, 0.5D);
+                serverLevel.sendParticles(ModParticles.TIDE_SHARD.get(), this.getX(), this.getY() + 2.0D, this.getZ(), 150, 3.0D, 2.0D, 3.0D, 0.5D);
             }
             this.level().broadcastEntityEvent(this, (byte) 60);
             this.remove(RemovalReason.KILLED);

@@ -30,11 +30,11 @@ public final class ModItems {
     );
     public static final DeferredItem<SpawnEggItem> VOID_RAY_SPAWN_EGG = ITEMS.register(
         "void_ray_spawn_egg",
-        () -> new DeferredSpawnEggItem(ModEntities.VOID_RAY, 0x231D30, 0xB26DE3, new Item.Properties())
+        () -> new DeferredSpawnEggItem(ModEntities.VOID_RAY, 0x15242B, 0x4FDCCB, new Item.Properties())
     );
     public static final DeferredItem<SpawnEggItem> STAR_DEVOURER_SPAWN_EGG = ITEMS.register(
         "star_devourer_spawn_egg",
-        () -> new DeferredSpawnEggItem(ModEntities.STAR_DEVOURER, 0x171622, 0xCB70D8, new Item.Properties())
+        () -> new DeferredSpawnEggItem(ModEntities.STAR_DEVOURER, 0x0D161C, 0xBDFFF0, new Item.Properties())
     );
 
     public static final DeferredItem<SpawnEggItem> END_MOTE_SPAWN_EGG = ITEMS.register(
@@ -44,6 +44,10 @@ public final class ModItems {
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.LANTERN_JELLYFISH, 0x17495A, 0xBDFFF0, new Item.Properties())
+    );
+    public static final DeferredItem<SpawnEggItem> TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG = ITEMS.register(
+        "tide_remnant_hermit_crab_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDE_REMNANT_HERMIT_CRAB, 0xD7C89D, 0x247C83, new Item.Properties())
     );
     // 末晶萤掉落：末晶尘
     public static final DeferredItem<Item> END_DUST = ITEMS.register(
@@ -93,7 +97,7 @@ public final class ModItems {
     // 鳐王掉落：鳐王之翼
     public static final DeferredItem<Item> DEVOURER_WINGS = ITEMS.register(
         "devourer_wings",
-        () -> new DevourerWingsItem(new Item.Properties().rarity(Rarity.EPIC).durability(864).fireResistant())
+        () -> new DevourerWingsItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant())
     );
 
     private ModItems() {

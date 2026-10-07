@@ -26,27 +26,28 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         float age = entity.localAge(partialTick);
         if (age >= 0.0F) {
             int kind = entity.getKind();
+            VoidRayDraw.Palette tex = VoidRayDraw.of(entity.isTide());
             if (kind == VoidRayVfxEntity.KIND_WARN_LINE) {
-                this.renderWarnLine(entity, age, poseStack, buffers);
+                this.renderWarnLine(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_SHOCK) {
-                this.renderShock(entity, age, poseStack, buffers);
+                this.renderShock(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_VORTEX) {
-                this.renderVortex(entity, age, poseStack, buffers);
+                this.renderVortex(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_STAR || kind == VoidRayVfxEntity.KIND_BIG_STAR) {
-                this.renderStar(entity, age, poseStack, buffers);
+                this.renderStar(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_WARN_WIDE) {
-                this.renderWarnLine(entity, age, poseStack, buffers);
+                this.renderWarnLine(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_BLACK_HOLE) {
-                this.renderBlackHole(entity, age, poseStack, buffers);
+                this.renderBlackHole(entity, age, tex, poseStack, buffers);
             } else if (kind == VoidRayVfxEntity.KIND_STARDUST) {
-                this.renderStardust(entity, age, poseStack, buffers);
+                this.renderStardust(entity, age, tex, poseStack, buffers);
             }
         }
         super.render(entity, yaw, partialTick, poseStack, buffers, light);
     }
 
     // 俯冲预警线：条带沿朝向展开，随前摇由暗到亮，末尾快速闪烁
-    private void renderWarnLine(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderWarnLine(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float life = entity.getLife();
         float length = entity.getSize();
         float grow = Mth.clamp(age / 4.0F, 0.0F, 1.0F);
@@ -58,7 +59,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
         PoseStack.Pose pose = poseStack.last();
-        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.WARN));
+        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(tex.warn()));
         float half = 0.7F;
         // 宽预警：两侧各 3 格
         if (entity.getKind() == VoidRayVfxEntity.KIND_WARN_WIDE) {
@@ -75,17 +76,17 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
     }
 
     // 地面冲击环：环向外扩张并收窄淡出
-    private void renderShock(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderShock(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float life = entity.getLife();
         float p = Mth.clamp(age / life, 0.0F, 1.0F);
         float outer = entity.getSize() * (0.3F + 0.7F * (1.0F - (1.0F - p) * (1.0F - p)));
         float width = 1.1F * (1.0F - p) + 0.15F;
         float bright = 1.0F - p * p;
-        this.ring(poseStack, buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RING)), outer, Math.max(0.0F, outer - width), 0.05F, 0.0F, RiftVfxDraw.fade(bright));
+        this.ring(poseStack, buffers.getBuffer(RiftVfxDraw.additive(tex.ring())), outer, Math.max(0.0F, outer - width), 0.05F, 0.0F, RiftVfxDraw.fade(bright));
     }
 
     // 引力漩涡：前摇期间符文圈淡入，生效期间两层反向旋转并竖起吸入光柱
-    private void renderVortex(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderVortex(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float life = entity.getLife();
         float radius = entity.getSize();
         float arm = VoidRayVfxEntity.VORTEX_ARM;
@@ -95,7 +96,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         float warn = 0.3F + 0.3F * Mth.clamp(age / arm, 0.0F, 1.0F);
         float bright = (warn + (1.0F - warn) * active) * fade;
         float spin = age * (2.0F + 6.0F * active);
-        VertexConsumer rune = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RUNE));
+        VertexConsumer rune = buffers.getBuffer(RiftVfxDraw.additive(tex.rune()));
         // 外层顺时针
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(spin));
@@ -110,16 +111,16 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         if (active > 0.0F) {
             float height = 3.5F * active;
             float pulse = 0.75F + 0.25F * Mth.sin(age * 0.8F);
-            this.column(poseStack, buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.BEAM)), 0.35F, height, -age * 0.15F, RiftVfxDraw.fade(active * fade * pulse));
-            this.column(poseStack, buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.BEAM)), 0.8F, height * 0.7F, -age * 0.1F, RiftVfxDraw.fade(active * fade * 0.35F));
+            this.column(poseStack, buffers.getBuffer(RiftVfxDraw.additive(tex.beam())), 0.35F, height, -age * 0.15F, RiftVfxDraw.fade(active * fade * pulse));
+            this.column(poseStack, buffers.getBuffer(RiftVfxDraw.additive(tex.beam())), 0.8F, height * 0.7F, -age * 0.1F, RiftVfxDraw.fade(active * fade * 0.35F));
         }
     }
 
     // 星陨：预警环收紧，陨星从高空坠落，落地冲击环
-    private void renderStar(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderStar(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float fall = VoidRayVfxEntity.STAR_FALL;
         float radius = entity.getSize();
-        VertexConsumer ring = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RING));
+        VertexConsumer ring = buffers.getBuffer(RiftVfxDraw.additive(tex.ring()));
         if (age < fall) {
             // 预警：内圈从外缘收向实际判定半径
             float p = age / fall;
@@ -141,7 +142,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
                 }
                 poseStack.pushPose();
                 poseStack.scale(starScale, starScale, starScale);
-                this.star(poseStack, buffers, y / starScale, age);
+                this.star(poseStack, buffers, tex, y / starScale, age);
                 poseStack.popPose();
             }
         } else {
@@ -153,13 +154,13 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
     }
 
     // 黑洞：悬空的旋转吸积盘与外圈
-    private void renderBlackHole(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderBlackHole(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float life = entity.getLife();
         float arm = VoidRayVfxEntity.HOLE_ARM;
         float appear = Mth.clamp(age / arm, 0.0F, 1.0F);
         float fade = Mth.clamp((life - age) / 8.0F, 0.0F, 1.0F);
         float radius = entity.getSize();
-        VertexConsumer rune = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RUNE));
+        VertexConsumer rune = buffers.getBuffer(RiftVfxDraw.additive(tex.rune()));
         // 吸积盘：两层反向旋转
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(age * 9.0F));
@@ -170,30 +171,30 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         this.disc(poseStack.last(), rune, 1.3F * appear, 0.02F, RiftVfxDraw.fade(fade * 0.8F));
         poseStack.popPose();
         // 核心星点
-        this.star(poseStack, buffers, 0.0F, age);
+        this.star(poseStack, buffers, tex, 0.0F, age);
         // 吸引范围外圈：向内收缩循环
         float cycle = (age % 20.0F) / 20.0F;
         float outer = radius * (1.0F - cycle);
-        this.ring(poseStack, buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RING)), outer, Math.max(0.0F, outer - 0.3F), 0.0F, 0.0F, RiftVfxDraw.fade(fade * appear * 0.6F));
+        this.ring(poseStack, buffers.getBuffer(RiftVfxDraw.additive(tex.ring())), outer, Math.max(0.0F, outer - 0.3F), 0.0F, 0.0F, RiftVfxDraw.fade(fade * appear * 0.6F));
     }
 
     // 星尘领域：地面缓慢旋转的符文圈
-    private void renderStardust(VoidRayVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
+    private void renderStardust(VoidRayVfxEntity entity, float age, VoidRayDraw.Palette tex, PoseStack poseStack, MultiBufferSource buffers) {
         float life = entity.getLife();
         float appear = Mth.clamp(age / 6.0F, 0.0F, 1.0F);
         float fade = Mth.clamp((life - age) / 10.0F, 0.0F, 1.0F);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(age * 1.5F));
-        this.disc(poseStack.last(), buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.RUNE)), entity.getSize() * appear, 0.05F, RiftVfxDraw.fade(0.45F * fade));
+        this.disc(poseStack.last(), buffers.getBuffer(RiftVfxDraw.additive(tex.rune())), entity.getSize() * appear, 0.05F, RiftVfxDraw.fade(0.45F * fade));
         poseStack.popPose();
     }
 
     // 陨星本体：面向镜头的晶核加竖直拖尾
-    private void star(PoseStack poseStack, MultiBufferSource buffers, float y, float age) {
+    private void star(PoseStack poseStack, MultiBufferSource buffers, VoidRayDraw.Palette tex, float y, float age) {
         poseStack.pushPose();
         poseStack.translate(0.0D, y, 0.0D);
         // 拖尾：两片交叉竖面
-        VertexConsumer beam = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.BEAM));
+        VertexConsumer beam = buffers.getBuffer(RiftVfxDraw.additive(tex.beam()));
         PoseStack.Pose pose = poseStack.last();
         float w = 0.3F;
         float tail = 3.0F;
@@ -205,7 +206,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
         poseStack.mulPose(Axis.ZP.rotationDegrees(age * 20.0F));
         PoseStack.Pose core = poseStack.last();
-        VertexConsumer starBuf = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.STAR));
+        VertexConsumer starBuf = buffers.getBuffer(RiftVfxDraw.additive(tex.star()));
         float s = 0.7F;
         RiftVfxDraw.quad(core, starBuf, new Vec3(-s, s, 0.0D), new Vec3(s, s, 0.0D), new Vec3(s, -s, 0.0D), new Vec3(-s, -s, 0.0D),
             0.0F, 0.0F, 1.0F, 1.0F, RiftVfxDraw.fade(1.0F), true);

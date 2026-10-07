@@ -12,6 +12,15 @@ repositories {
     mavenLocal()
     // 配置 GeckoLib 与 CurseForge Maven 仓库
     maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
     maven {
         name = 'Curios'
         url = 'https://maven.theillusivec4.top/'
@@ -117,6 +126,8 @@ dependencies {
     // Advanced Loot Info 2.3.0（Beta）及其必需库 Advanced Core Info 1.3.0，仅开发环境
     runtimeOnly 'curse.maven:advanced-core-info-1661923:9002615'
     runtimeOnly 'curse.maven:advanced-loot-info-1205426:9002619'
+    // 仅在开发客户端中加载 Iris，用于复现 NeoForge 1.21.1 光影环境
+    runtimeOnly 'maven.modrinth:YL57xq9U:KduFYu4t'
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

@@ -265,7 +265,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
             double oy = (this.random.nextDouble() - 0.5D) * 0.8D;
-            this.level().addParticle(ModParticles.RIFT_SPARK.get(), this.getX() + ox, this.getY() + CORE_HEIGHT + oy, this.getZ() + oz,
+            this.level().addParticle(ModParticles.TIDE_SPARK.get(), this.getX() + ox, this.getY() + CORE_HEIGHT + oy, this.getZ() + oz,
                 -ox * 0.15D, -oy * 0.15D, -oz * 0.15D);
         }
         // 射线过热：核心冒烟
@@ -275,7 +275,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         }
         // 星陨蓄力：背部裂缝溢出火花
         if (skill == SKILL_STARFALL && t > 10 && t < STAR_LAUNCH + 4) {
-            this.level().addParticle(ModParticles.RIFT_SPARK.get(), this.getX() + (this.random.nextDouble() - 0.5D) * 0.8D, this.getY() + 1.3D,
+            this.level().addParticle(ModParticles.TIDE_SPARK.get(), this.getX() + (this.random.nextDouble() - 0.5D) * 0.8D, this.getY() + 1.3D,
                 this.getZ() + (this.random.nextDouble() - 0.5D) * 0.8D, 0.0D, 0.25D, 0.0D);
         }
     }
@@ -361,6 +361,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             this.diveLow = ground.add(0.0D, 0.6D, 0.0D);
             this.diveTo = ground.add(dir.scale(8.0D)).add(0.0D, 5.0D, 0.0D);
             this.diveHits.clear();
+            LOGGER.debug("Void Ray {} dive path height delta {} blocks", this.getId(), this.getY() - this.diveLow.y);
             this.playSound(SoundEvents.PHANTOM_SWOOP, 1.6F, 0.6F);
         }
         if (t == DIVE_WINDUP) {
@@ -370,7 +371,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         }
         if (t >= DIVE_WINDUP && t <= DIVE_STRIKE_END && this.diveFrom != null) {
             float p = (float) (t - DIVE_WINDUP + 1) / (DIVE_STRIKE_END - DIVE_WINDUP + 1);
-            Vec3 next = bezier(this.diveFrom, this.diveLow, this.diveTo, p);
+            Vec3 next = divePath(this.diveFrom, this.diveLow, this.diveTo, p);
             Vec3 motion = next.subtract(this.position());
             this.setDeltaMovement(motion);
             if (motion.horizontalDistanceSqr() > 1.0E-4D) {
@@ -379,7 +380,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 this.yBodyRot = yaw;
                 this.yHeadRot = yaw;
             }
-            this.diveHitCheck();
+            this.diveHitCheck(motion);
             // 最低点冲击环
             if (t == DIVE_WINDUP + 6) {
                 VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, this.diveLow.subtract(0.0D, 0.55D, 0.0D), 0.0F, 4.0F, 0, 12, this);
@@ -399,14 +400,22 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         }
     }
 
-    private static Vec3 bezier(Vec3 a, Vec3 b, Vec3 c, float p) {
-        float q = 1.0F - p;
-        return a.scale(q * q).add(b.scale(2.0F * q * p)).add(c.scale(p * p));
+    private static Vec3 divePath(Vec3 from, Vec3 low, Vec3 to, float progress) {
+        if (progress <= 0.5F) {
+            double t = smoothStep(progress * 2.0F);
+            return from.lerp(low, t);
+        }
+        double t = smoothStep((progress - 0.5F) * 2.0F);
+        return low.lerp(to, t);
+    }
+
+    private static double smoothStep(float progress) {
+        return progress * progress * (3.0D - 2.0D * progress);
     }
 
     // 俯冲判定：沿路径半径 1.5，同一目标只命中一次
-    private void diveHitCheck() {
-        AABB area = this.getBoundingBox().inflate(1.5D);
+    private void diveHitCheck(Vec3 motion) {
+        AABB area = this.getBoundingBox().expandTowards(motion).inflate(1.5D);
         for (LivingEntity victim : this.level().getEntitiesOfClass(LivingEntity.class, area)) {
             if (victim == this || victim instanceof VoidRayEntity || victim instanceof StarDevourerEntity || !victim.isAlive() || this.diveHits.contains(victim.getId())) {
                 continue;
@@ -469,7 +478,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             this.entityData.set(BEAM_POINT, end.toVector3f());
             // 落点灼烧火花
             if (t % 3 == 0 && this.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ModParticles.RIFT_SPARK.get(), end.x, end.y, end.z, 2, 0.15D, 0.15D, 0.15D, 0.06D);
+                serverLevel.sendParticles(ModParticles.TIDE_SPARK.get(), end.x, end.y, end.z, 2, 0.15D, 0.15D, 0.15D, 0.06D);
             }
         }
         if (t == BEAM_STOP) {
@@ -550,7 +559,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 placed++;
             }
             if (this.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 14, 0.5D, 0.2D, 0.5D, 0.25D);
+                serverLevel.sendParticles(ModParticles.TIDE_SHARD.get(), this.getX(), this.getY() + 1.2D, this.getZ(), 14, 0.5D, 0.2D, 0.5D, 0.25D);
             }
             this.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 2.0F, 0.5F);
             LOGGER.debug("Void Ray {} starfall placed {} markers", this.getId(), placed);
@@ -648,8 +657,8 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         // 死亡动画 1.5 秒后碎裂消失
         if (this.deathTime >= 30 && !this.level().isClientSide() && !this.isRemoved()) {
             if (this.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), this.getX(), this.getY() + 0.6D, this.getZ(), 30, 1.4D, 0.4D, 1.4D, 0.2D);
-                serverLevel.sendParticles(ModParticles.RIFT_SPARK.get(), this.getX(), this.getY() + CORE_HEIGHT, this.getZ(), 16, 0.4D, 0.4D, 0.4D, 0.15D);
+                serverLevel.sendParticles(ModParticles.TIDE_SHARD.get(), this.getX(), this.getY() + 0.6D, this.getZ(), 30, 1.4D, 0.4D, 1.4D, 0.2D);
+                serverLevel.sendParticles(ModParticles.TIDE_SPARK.get(), this.getX(), this.getY() + CORE_HEIGHT, this.getZ(), 16, 0.4D, 0.4D, 0.4D, 0.15D);
             }
             this.level().broadcastEntityEvent(this, (byte) 60);
             this.remove(RemovalReason.KILLED);

@@ -35,7 +35,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
         }
     }
 
-    // 虚空射线：外晕、过渡、白芯三层同心圆柱，外层随时间脉动
+    // 潮光射线：外晕、过渡、亮芯三层同心圆柱，外层随时间脉动
     private void renderBeam(VoidRayEntity entity, Vec3 origin, float partialTick, PoseStack poseStack, MultiBufferSource buffers) {
         Vec3 start = new Vec3(0.0D, VoidRayEntity.CORE_HEIGHT, 0.0D);
         Vec3 end = entity.getBeamPoint().subtract(origin);
@@ -55,7 +55,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
         float open = Mth.clamp((entity.getSkillTick() - VoidRayEntity.BEAM_CHARGE + partialTick) / 3.0F, 0.0F, 1.0F);
         float pulse = 0.85F + 0.15F * Mth.sin(age * 1.3F);
         float scroll = -age * 0.25F;
-        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.BEAM));
+        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_BEAM));
         PoseStack.Pose pose = poseStack.last();
         this.cylinder(pose, buffer, start, end, side, up, 0.55F * open * pulse, (float) length, scroll * 0.6F, RiftVfxDraw.fade(0.35F));
         this.cylinder(pose, buffer, start, end, side, up, 0.3F * open, (float) length, scroll, RiftVfxDraw.fade(0.7F));
@@ -64,7 +64,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
         poseStack.pushPose();
         poseStack.translate(end.x, end.y, end.z);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.STAR));
+        VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = 0.9F * open * pulse;
         RiftVfxDraw.quad(poseStack.last(), star, new Vec3(-s, s, 0.0D), new Vec3(s, s, 0.0D), new Vec3(s, -s, 0.0D), new Vec3(-s, -s, 0.0D),
             0.0F, 0.0F, 1.0F, 1.0F, RiftVfxDraw.fade(0.9F), true);
@@ -90,7 +90,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
 
     // 俯冲拖尾：历史点连成竖直条带，尾端收窄变暗
     private void renderTrail(VoidRayEntity entity, Vec3 origin, PoseStack poseStack, MultiBufferSource buffers) {
-        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(RiftVfxDraw.ARC));
+        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_ARC));
         PoseStack.Pose pose = poseStack.last();
         int count = entity.trail.size();
         Iterator<Vec3> it = entity.trail.iterator();
