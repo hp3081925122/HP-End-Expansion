@@ -12,13 +12,13 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.Hp_end_expansion;
-import org.hp.hp_end_expansion.block.tidelight.ReefstoneBlock;
 import org.hp.hp_end_expansion.entity.EndMoteEntity;
 import org.hp.hp_end_expansion.entity.RiftBladeEntity;
 import org.hp.hp_end_expansion.entity.RiftFissureEntity;
@@ -30,6 +30,7 @@ import org.hp.hp_end_expansion.entity.StarDevourerEntity;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
 import org.hp.hp_end_expansion.entity.VoidRayVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 
 public final class ModEntities {
@@ -80,6 +81,13 @@ public final class ModEntities {
             .sized(0.8F, 1.2F)
             .clientTrackingRange(8)
             .build("hp_end_expansion:lantern_jellyfish")
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<TideRemnantHermitCrabEntity>> TIDE_REMNANT_HERMIT_CRAB = ENTITY_TYPES.register(
+        "tide_remnant_hermit_crab",
+        () -> EntityType.Builder.of(TideRemnantHermitCrabEntity::new, MobCategory.CREATURE)
+            .sized(2.5F, 1.4F)
+            .clientTrackingRange(8)
+            .build("hp_end_expansion:tide_remnant_hermit_crab")
     );
     // 吞星星核
     public static final DeferredHolder<EntityType<?>, EntityType<StarCoreEntity>> STAR_CORE = ENTITY_TYPES.register(
@@ -156,20 +164,32 @@ public final class ModEntities {
         event.put(STAR_CORE.get(), StarCoreEntity.createAttributes().build());
         event.put(END_MOTE.get(), EndMoteEntity.createAttributes().build());
         event.put(LANTERN_JELLYFISH.get(), LanternJellyfishEntity.createAttributes().build());
+        event.put(TIDE_REMNANT_HERMIT_CRAB.get(), TideRemnantHermitCrabEntity.createAttributes().build());
     }
 
     // 地面生成规则：沿用怪物的黑暗生成检测
     private static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
         event.register(RIFT_MANTIS.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        // 裂空鳐：空中生成，不要求黑暗
+        // 裂空鳐：空中生成，不要求黑暗，自然生成限制附近数量
         event.register(VOID_RAY.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            Monster::checkAnyLightMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+            ModEntities::voidRaySpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         // 末晶萤：地面生成，无亮度限制
         event.register(END_MOTE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             PathfinderMob::checkMobSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(LANTERN_JELLYFISH.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::lanternJellyfishSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    }
+
+    // 潮光礁海没有其它怪物，裂空鳐会独占怪物上限：自然生成要求 64 格内不足 3 只
+    private static boolean voidRaySpawn(EntityType<VoidRayEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        if (reason != MobSpawnType.NATURAL && reason != MobSpawnType.CHUNK_GENERATION) {
+            return true;
+        }
+        return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 3;
     }
 
     private static <T extends Mob> boolean lanternJellyfishSpawn(EntityType<T> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
@@ -178,7 +198,6 @@ public final class ModEntities {
         }
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
-            || level.getBiome(pos).is(TidelightWorldgen.BIOME)
-            && ReefstoneBlock.isReef(level.getBlockState(pos.below()));
+            || level.getBiome(pos).is(TidelightWorldgen.BIOME);
     }
 }

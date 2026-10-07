@@ -21,7 +21,9 @@ import org.hp.hp_end_expansion.entity.starwreck.StarBearerEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarCallerEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarMartyrEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
+import org.hp.hp_end_expansion.registry.ModEntities;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.cache.GeckoLibCache;
 import org.jetbrains.annotations.Nullable;
@@ -57,6 +59,7 @@ public final class StarwreckEntityRenderers {
         event.registerEntityRenderer(StarwreckEntities.STAR_CALLER.get(), context -> new Renderer<>(context, "star_caller", 0.45F));
         event.registerEntityRenderer(StarwreckEntities.STAR_MARTYR.get(), context -> new Renderer<>(context, "star_martyr", 0.4F));
         event.registerEntityRenderer(StarwreckEntities.STAR_BEARER.get(), context -> new Renderer<>(context, "star_bearer", 0.7F));
+        event.registerEntityRenderer(ModEntities.TIDE_REMNANT_HERMIT_CRAB.get(), context -> new Renderer<TideRemnantHermitCrabEntity>(context, "tide_remnant_hermit_crab", 0.8F));
         event.registerEntityRenderer(StarwreckEntities.STAR_FLAIL.get(), StarFlailRenderer::new);
         // 余烬地面只有粒子，没有模型
         event.registerEntityRenderer(StarwreckEntities.EMBER_GROUND.get(), NoopRenderer::new);

@@ -57,7 +57,7 @@ public final class StarDevourerRenderer extends GeoEntityRenderer<StarDevourerEn
         side = side.normalize();
         Vec3 up = side.cross(dir).normalize();
         float scroll = -age * 0.25F;
-        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.BEAM));
+        VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_BEAM));
         PoseStack.Pose pose = poseStack.last();
         this.cylinder(pose, buffer, start, end, side, up, 0.6F * width, (float) length, scroll * 0.6F, RiftVfxDraw.fade(0.35F));
         this.cylinder(pose, buffer, start, end, side, up, 0.33F * width, (float) length, scroll, RiftVfxDraw.fade(0.7F));
@@ -66,7 +66,7 @@ public final class StarDevourerRenderer extends GeoEntityRenderer<StarDevourerEn
         poseStack.pushPose();
         poseStack.translate(end.x, end.y, end.z);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.STAR));
+        VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = width;
         RiftVfxDraw.quad(poseStack.last(), star, new Vec3(-s, s, 0.0D), new Vec3(s, s, 0.0D), new Vec3(s, -s, 0.0D), new Vec3(-s, -s, 0.0D),
             0.0F, 0.0F, 1.0F, 1.0F, RiftVfxDraw.fade(0.9F), true);

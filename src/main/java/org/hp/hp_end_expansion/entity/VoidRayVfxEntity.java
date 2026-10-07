@@ -1,6 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
 import java.util.UUID;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -49,6 +50,8 @@ public final class VoidRayVfxEntity extends Entity {
     private static final EntityDataAccessor<Integer> LIFE = SynchedEntityData.defineId(VoidRayVfxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(VoidRayVfxEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DELAY = SynchedEntityData.defineId(VoidRayVfxEntity.class, EntityDataSerializers.INT);
+    // 同步字段：是否为裂空鳐放出的潮光配色特效
+    private static final EntityDataAccessor<Boolean> TIDE = SynchedEntityData.defineId(VoidRayVfxEntity.class, EntityDataSerializers.BOOLEAN);
 
     private UUID ownerId;
     private float damage = -1.0F;
@@ -76,6 +79,10 @@ public final class VoidRayVfxEntity extends Entity {
         if (owner != null) {
             vfx.ownerId = owner.getUUID();
         }
+        // 裂空鳐与噬星鳐王的特效改用潮光配色
+        if (owner instanceof VoidRayEntity || owner instanceof StarDevourerEntity) {
+            vfx.entityData.set(TIDE, true);
+        }
         level.addFreshEntity(vfx);
         return vfx;
     }
@@ -86,6 +93,27 @@ public final class VoidRayVfxEntity extends Entity {
         builder.define(LIFE, 10);
         builder.define(SIZE, 1.0F);
         builder.define(DELAY, 0);
+        builder.define(TIDE, false);
+    }
+
+    public boolean isTide() {
+        return this.entityData.get(TIDE);
+    }
+
+    // 按配色选择火花粒子
+    private SimpleParticleType sparkParticle() {
+        if (this.isTide()) {
+            return ModParticles.TIDE_SPARK.get();
+        }
+        return ModParticles.RIFT_SPARK.get();
+    }
+
+    // 按配色选择碎片粒子
+    private SimpleParticleType shardParticle() {
+        if (this.isTide()) {
+            return ModParticles.TIDE_SHARD.get();
+        }
+        return ModParticles.RIFT_SHARD.get();
     }
 
     public int getKind() {
@@ -145,7 +173,7 @@ public final class VoidRayVfxEntity extends Entity {
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
             // 切向加向心速度形成螺旋
-            this.level().addParticle(ModParticles.RIFT_SHARD.get(), this.getX() + ox, this.getY() + 0.2D, this.getZ() + oz,
+            this.level().addParticle(this.shardParticle(), this.getX() + ox, this.getY() + 0.2D, this.getZ() + oz,
                 -ox * 0.08D - oz * 0.06D, 0.02D, -oz * 0.08D + ox * 0.06D);
         }
         // 黑洞：碎片从外圈旋入
@@ -155,18 +183,18 @@ public final class VoidRayVfxEntity extends Entity {
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
             double oy = (this.random.nextDouble() - 0.5D) * 4.0D;
-            this.level().addParticle(ModParticles.RIFT_SHARD.get(), this.getX() + ox, this.getY() + oy, this.getZ() + oz,
+            this.level().addParticle(this.shardParticle(), this.getX() + ox, this.getY() + oy, this.getZ() + oz,
                 -ox * 0.07D - oz * 0.05D, -oy * 0.07D, -oz * 0.07D + ox * 0.05D);
         }
         // 星尘：地面闪烁
         if (kind == KIND_STARDUST && this.random.nextInt(3) == 0) {
             double a = this.random.nextDouble() * Math.PI * 2.0D;
             double r = this.random.nextDouble() * this.getSize();
-            this.level().addParticle(ModParticles.RIFT_SPARK.get(), this.getX() + Math.cos(a) * r, this.getY() + 0.1D, this.getZ() + Math.sin(a) * r, 0.0D, 0.03D, 0.0D);
+            this.level().addParticle(this.sparkParticle(), this.getX() + Math.cos(a) * r, this.getY() + 0.1D, this.getZ() + Math.sin(a) * r, 0.0D, 0.03D, 0.0D);
         }
         if ((kind == KIND_STAR || kind == KIND_BIG_STAR) && t > STAR_FALL - 10 && t < STAR_FALL) {
             float drop = (STAR_FALL - t) / 10.0F;
-            this.level().addParticle(ModParticles.RIFT_SPARK.get(), this.getX(), this.getY() + drop * 14.0D + 0.5D, this.getZ(), 0.0D, 0.1D, 0.0D);
+            this.level().addParticle(this.sparkParticle(), this.getX(), this.getY() + drop * 14.0D + 0.5D, this.getZ(), 0.0D, 0.1D, 0.0D);
         }
     }
 
@@ -270,7 +298,7 @@ public final class VoidRayVfxEntity extends Entity {
             serverLevel.playSound(null, c.x, c.y, c.z, SoundEvents.PORTAL_TRIGGER, SoundSource.HOSTILE, 1.4F, 0.5F);
         }
         if (last) {
-            serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), c.x, c.y, c.z, 40, 2.0D, 2.0D, 2.0D, 0.4D);
+            serverLevel.sendParticles(this.shardParticle(), c.x, c.y, c.z, 40, 2.0D, 2.0D, 2.0D, 0.4D);
             serverLevel.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 2.0F, 0.6F);
         }
     }
@@ -312,11 +340,13 @@ public final class VoidRayVfxEntity extends Entity {
                 victim.hurtMarked = true;
             }
         }
-        serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), this.getX(), this.getY() + 0.3D, this.getZ(), 10, 0.6D, 0.2D, 0.6D, 0.22D);
-        serverLevel.sendParticles(ModParticles.RIFT_SPARK.get(), this.getX(), this.getY() + 0.3D, this.getZ(), 6, 0.4D, 0.3D, 0.4D, 0.1D);
+        serverLevel.sendParticles(this.shardParticle(), this.getX(), this.getY() + 0.3D, this.getZ(), 10, 0.6D, 0.2D, 0.6D, 0.22D);
+        serverLevel.sendParticles(this.sparkParticle(), this.getX(), this.getY() + 0.3D, this.getZ(), 6, 0.4D, 0.3D, 0.4D, 0.1D);
         serverLevel.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.HOSTILE, 1.2F, 0.7F);
         if (kind == KIND_BIG_STAR) {
-            spawn(serverLevel, KIND_STARDUST, this.position(), 0.0F, radius, 0, DUST_LIFE, owner, this.secondaryDamage, -1.0F);
+            VoidRayVfxEntity dust = spawn(serverLevel, KIND_STARDUST, this.position(), 0.0F, radius, 0, DUST_LIFE, owner, this.secondaryDamage, -1.0F);
+            // 鳐王已不在时星尘仍沿用陨石的配色
+            dust.entityData.set(TIDE, this.isTide());
         }
     }
 

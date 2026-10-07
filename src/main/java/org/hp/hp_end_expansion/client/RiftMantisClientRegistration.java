@@ -36,5 +36,8 @@ public final class RiftMantisClientRegistration {
         event.registerSpriteSet(ModParticles.STAR_EMBER.get(), StarEmberParticle.Provider::new);
         event.registerSpriteSet(ModParticles.RIFT_SPARK.get(), RiftParticles.SparkProvider::new);
         event.registerSpriteSet(ModParticles.RIFT_SHARD.get(), RiftParticles.ShardProvider::new);
+        // 潮光粒子沿用裂隙粒子的运动方式
+        event.registerSpriteSet(ModParticles.TIDE_SPARK.get(), RiftParticles.SparkProvider::new);
+        event.registerSpriteSet(ModParticles.TIDE_SHARD.get(), RiftParticles.ShardProvider::new);
     }
 }

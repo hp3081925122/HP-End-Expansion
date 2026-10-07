@@ -15,6 +15,9 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RIFT_SPARK = PARTICLE_TYPES.register("rift_spark", () -> new SimpleParticleType(false));
     // 裂隙碎片：带重力与旋转的晶片
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RIFT_SHARD = PARTICLE_TYPES.register("rift_shard", () -> new SimpleParticleType(false));
+    // 潮光火花与碎片：裂空鳐专用的荧藻青色版本
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> TIDE_SPARK = PARTICLE_TYPES.register("tide_spark", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> TIDE_SHARD = PARTICLE_TYPES.register("tide_shard", () -> new SimpleParticleType(false));
     // 星雨碎石：贴地滚动的星骸岩屑；星灰：裂隙边缘剥落、几乎不落的暗色薄片
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STAR_DEBRIS = PARTICLE_TYPES.register("star_debris", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STAR_ASH = PARTICLE_TYPES.register("star_ash", () -> new SimpleParticleType(false));

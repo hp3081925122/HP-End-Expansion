@@ -21,6 +21,7 @@ public final class EmberCrownItem extends Item implements ICurioItem {
     @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
         if (!(slotContext.entity() instanceof Player player) || player.level().isClientSide) return;
+        if (player.tickCount % 20 != 0) return;
         ItemStack bow = findDamagedBow(player);
         if (bow.isEmpty() || countStarCrystalShards(player) <= 1 || !consumeStarCrystalShard(player)) return;
         bow.setDamageValue(Math.max(0, bow.getDamageValue() - REPAIR_AMOUNT));
