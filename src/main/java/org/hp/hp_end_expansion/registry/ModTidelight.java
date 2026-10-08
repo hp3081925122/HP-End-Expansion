@@ -3,6 +3,7 @@ package org.hp.hp_end_expansion.registry;
 import java.util.*;
 import java.util.function.Supplier;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +12,7 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -21,6 +23,7 @@ import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.registries.*;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.block.tidelight.*;
+import org.hp.hp_end_expansion.item.TideCrossbowItem;
 
 public final class ModTidelight {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Hp_end_expansion.MODID);
@@ -55,6 +58,9 @@ public final class ModTidelight {
     public static final DeferredItem<BlockItem> GLOWKELP_POD = item("glowkelp_pod", () -> new BlockItem(HANGING_GLOWKELP.get(), new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.1F).effect(() -> new MobEffectInstance(MobEffects.NIGHT_VISION, 200), 1).build())));
     public static final DeferredItem<Item> TIDELIGHT_GEL = simpleItem("tidelight_gel");
     public static final DeferredItem<Item> REEF_EEL_SCALE = simpleItem("reef_eel_scale");
+    public static final DeferredItem<TideCrossbowItem> TIDE_CROSSBOW = item("tide_crossbow", () -> new TideCrossbowItem(new Item.Properties()
+        .stacksTo(1).durability(465).fireResistant()
+        .component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY)));
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC = sound("music.tidelight_reef");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_LOOP = sound("ambient.tidelight_reef.loop");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_ADDITIONS = sound("ambient.tidelight_reef.additions");

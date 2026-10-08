@@ -28,33 +28,53 @@ public final class Hp_end_expansion {
     public static final String MODID = "hp_end_expansion";
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TIDELIGHT_TAB = CREATIVE_MODE_TABS.register(
+        "tidelight_reef",
+        () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.hp_end_expansion.tidelight_reef"))
+            .icon(() -> ModTidelight.LANTERN_ANEMONE.get().asItem().getDefaultInstance())
+            .displayItems((parameters, output) -> {
+                ModTidelight.ITEMS.forEach(item -> output.accept(item.get()));
+                output.accept(ModItems.LANTERN_JELLYFISH_SPAWN_EGG.get());
+                output.accept(ModItems.ABYSS_WATCHER_SPAWN_EGG.get());
+                output.accept(ModItems.TIDE_REMNANT_CLAW.get());
+                output.accept(ModItems.TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG.get());
+                output.accept(ModItems.VOID_RAY_SPAWN_EGG.get());
+                output.accept(ModItems.VOID_CORE.get());
+                output.accept(ModItems.RAY_MEMBRANE.get());
+                output.accept(ModItems.STAR_DEVOURER_SPAWN_EGG.get());
+                output.accept(ModItems.STAR_BEACON.get());
+                output.accept(ModItems.DEVOURER_WINGS.get());
+            })
+            .build()
+    );
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> STARWRECK_TAB = CREATIVE_MODE_TABS.register(
+        "starwreck_wastes",
+        () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.hp_end_expansion.starwreck_wastes"))
+            .icon(() -> ModStarwreck.EMBERBLOOM.get().asItem().getDefaultInstance())
+            .displayItems((parameters, output) -> {
+                ModStarwreck.BLOCK_ITEMS.forEach(item -> output.accept(item.get()));
+                output.accept(ModStarwreck.STAR_CRYSTAL_SHARD.get());
+                output.accept(ModStarwreck.STAR_BOW.get());
+                StarwreckEntities.ITEMS.forEach(item -> output.accept(item.get()));
+            })
+            .build()
+    );
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register(
         "main",
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hp_end_expansion"))
             .icon(() -> ModItems.RIFT_MANTIS_SPAWN_EGG.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                ModStarwreck.BLOCK_ITEMS.forEach(item -> output.accept(item.get()));
-                ModTidelight.ITEMS.forEach(item -> output.accept(item.get()));
-                StarwreckEntities.ITEMS.forEach(item -> output.accept(item.get()));
-                output.accept(ModStarwreck.STAR_CRYSTAL_SHARD.get());
-                output.accept(ModStarwreck.STAR_BOW.get());
                 output.accept(ModItems.END_MOTE_SPAWN_EGG.get());
-                output.accept(ModItems.LANTERN_JELLYFISH_SPAWN_EGG.get());
-                output.accept(ModItems.TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG.get());
+                output.accept(ModItems.END_DUST.get());
                 output.accept(ModItems.RIFT_MANTIS_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_MATRIARCH_SPAWN_EGG.get());
-                output.accept(ModItems.VOID_RAY_SPAWN_EGG.get());
-                output.accept(ModItems.STAR_DEVOURER_SPAWN_EGG.get());
                 output.accept(ModItems.RIFT_CARAPACE.get());
                 output.accept(ModItems.RIFT_SICKLE.get());
-                output.accept(ModItems.VOID_CORE.get());
-                output.accept(ModItems.RAY_MEMBRANE.get());
                 output.accept(ModItems.RIFT_EGG.get());
-                output.accept(ModItems.STAR_BEACON.get());
-                output.accept(ModItems.DEVOURER_WINGS.get());
                 output.accept(ModItems.MATRIARCH_SCYTHE.get());
-                output.accept(ModItems.END_DUST.get());
                 output.accept(ModItems.MOB_DUEL_STICK.get());
             })
             .build()

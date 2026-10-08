@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "hp_end_expansion:tide_remnant_claw"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "hp_end_expansion:entities/tide_remnant_hermit_crab"
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "hp_end_expansion:item/tide_crossbow",
+  "textures": {
+    "layer0": "hp_end_expansion:item/tide_crossbow_pulling_0"
+  }
+}
