@@ -41,6 +41,10 @@ public final class ModItems {
         "end_mote_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.END_MOTE, 0x1A0A2E, 0x9FE8FF, new Item.Properties())
     );
+    public static final DeferredItem<SpawnEggItem> ABYSS_WATCHER_SPAWN_EGG = ITEMS.register(
+        "abyss_watcher_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.ABYSS_WATCHER, 0x243348, 0x66DAE7, new Item.Properties())
+    );
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.LANTERN_JELLYFISH, 0x17495A, 0xBDFFF0, new Item.Properties())
@@ -48,6 +52,11 @@ public final class ModItems {
     public static final DeferredItem<SpawnEggItem> TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG = ITEMS.register(
         "tide_remnant_hermit_crab_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.TIDE_REMNANT_HERMIT_CRAB, 0xD7C89D, 0x247C83, new Item.Properties())
+    );
+    // 潮骸寄居蟹掉落：潮骸蟹钳
+    public static final DeferredItem<Item> TIDE_REMNANT_CLAW = ITEMS.register(
+        "tide_remnant_claw",
+        () -> new Item(new Item.Properties())
     );
     // 末晶萤掉落：末晶尘
     public static final DeferredItem<Item> END_DUST = ITEMS.register(

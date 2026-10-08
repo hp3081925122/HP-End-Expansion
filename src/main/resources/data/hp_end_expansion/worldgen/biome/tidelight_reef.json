@@ -54,11 +54,23 @@
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
+  "spawn_costs": {
+    "hp_end_expansion:tide_remnant_hermit_crab": {
+      "energy_budget": 0.12,
+      "charge": 1.0
+    }
+  },
   "spawners": {
     "ambient": [],
     "axolotls": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "hp_end_expansion:tide_remnant_hermit_crab",
+        "weight": 2,
+        "minCount": 1,
+        "maxCount": 1
+      }
+    ],
     "misc": [],
     "monster": [],
     "underground_water_creature": [],

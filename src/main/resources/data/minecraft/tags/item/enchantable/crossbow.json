@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "hp_end_expansion:star_bow",
     "hp_end_expansion:tide_crossbow"
   ]
 }
