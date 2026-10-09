@@ -2,6 +2,7 @@ package org.hp.hp_end_expansion.registry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -37,6 +38,7 @@ import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideWaterBoltEntity;
+import org.hp.hp_end_expansion.entity.tidelight.GlimmerfinEntity;
 import org.hp.hp_end_expansion.block.tidelight.ReefstoneBlock;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 
@@ -88,6 +90,13 @@ public final class ModEntities {
             .sized(0.8F, 1.2F)
             .clientTrackingRange(8)
             .build("hp_end_expansion:lantern_jellyfish")
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<GlimmerfinEntity>> GLIMMERFIN = ENTITY_TYPES.register(
+        "glimmerfin",
+        () -> EntityType.Builder.of(GlimmerfinEntity::new, MobCategory.CREATURE)
+            .sized(1.0F, 0.55F)
+            .clientTrackingRange(8)
+            .build("hp_end_expansion:glimmerfin")
     );
     public static final DeferredHolder<EntityType<?>, EntityType<TideRemnantHermitCrabEntity>> TIDE_REMNANT_HERMIT_CRAB = ENTITY_TYPES.register(
         "tide_remnant_hermit_crab",
@@ -211,6 +220,13 @@ public final class ModEntities {
             .build("hp_end_expansion:tidebreaker_shrimp")
     );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<TidebreakerShrimpEntity>> TIDEBREAKER_SHRIMP_TEST = ENTITY_TYPES.register(
+        "tidebreaker_shrimp_test",
+        () -> EntityType.Builder.of(TidebreakerShrimpEntity::new, MobCategory.MONSTER)
+            .sized(1.1F, 0.95F).eyeHeight(0.75F).clientTrackingRange(12).updateInterval(1)
+            .build("hp_end_expansion:tidebreaker_shrimp_test")
+    );
+
     private ModEntities() {
     }
 
@@ -223,6 +239,7 @@ public final class ModEntities {
     private static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(TIDECROWN_ANEMONE.get(), TidecrownAnemoneEntity.createAttributes().build());
         event.put(TIDEBREAKER_SHRIMP.get(), TidebreakerShrimpEntity.createAttributes().build());
+        event.put(TIDEBREAKER_SHRIMP_TEST.get(), TidebreakerShrimpEntity.createAttributes().build());
         event.put(ABYSS_WATCHER.get(), AbyssWatcherEntity.createAttributes().build());
         event.put(RIFT_MANTIS.get(), RiftMantisEntity.createAttributes().build());
         event.put(RIFT_MATRIARCH.get(), RiftMatriarchEntity.createAttributes().build());
@@ -231,6 +248,7 @@ public final class ModEntities {
         event.put(STAR_CORE.get(), StarCoreEntity.createAttributes().build());
         event.put(END_MOTE.get(), EndMoteEntity.createAttributes().build());
         event.put(LANTERN_JELLYFISH.get(), LanternJellyfishEntity.createAttributes().build());
+        event.put(GLIMMERFIN.get(), GlimmerfinEntity.createAttributes().build());
         event.put(TIDE_REMNANT_HERMIT_CRAB.get(), TideRemnantHermitCrabEntity.createAttributes().build());
     }
 
@@ -248,10 +266,12 @@ public final class ModEntities {
             PathfinderMob::checkMobSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(LANTERN_JELLYFISH.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::lanternJellyfishSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(GLIMMERFIN.get(), SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::glimmerfinSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDE_REMNANT_HERMIT_CRAB.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::tideCrabSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDEBREAKER_SHRIMP.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            Monster::checkAnyLightMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+            ModEntities::tidebreakerSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDECROWN_ANEMONE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::tidecrownSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
@@ -263,7 +283,7 @@ public final class ModEntities {
         if (reason != MobSpawnType.NATURAL && reason != MobSpawnType.CHUNK_GENERATION) {
             return true;
         }
-        return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 3;
+        return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 2;
     }
     private static boolean abyssWatcherSpawn(EntityType<AbyssWatcherEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
@@ -283,7 +303,7 @@ public final class ModEntities {
         }
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
-            || level.getEntitiesOfClass(TideRemnantHermitCrabEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
+            || level.getEntitiesOfClass(TideRemnantHermitCrabEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
     }
 
     private static boolean tidecrownSpawn(EntityType<TidecrownAnemoneEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
@@ -296,9 +316,21 @@ public final class ModEntities {
         }
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
-            || level.getEntitiesOfClass(TidecrownAnemoneEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
+            || level.getEntitiesOfClass(TidecrownAnemoneEntity.class, new AABB(pos).inflate(40.0D), e -> e.isAlive()).isEmpty();
     }
 
+    private static boolean tidebreakerSpawn(EntityType<TidebreakerShrimpEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+            && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getEntitiesOfClass(TidebreakerShrimpEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
+    }
     private static boolean validTidelightSpawnGround(BlockState state) {
         return ReefstoneBlock.isReef(state) || state.is(ModTidelight.PEARL_SAND.get());
     }
@@ -309,6 +341,18 @@ public final class ModEntities {
         }
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
-            || level.getBiome(pos).is(TidelightWorldgen.BIOME);
+            || level.getBiome(pos).is(TidelightWorldgen.BIOME)
+            && level.getEntitiesOfClass(LanternJellyfishEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
+    }
+
+    private static boolean glimmerfinSpawn(EntityType<GlimmerfinEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+            && (!level.getFluidState(pos).is(FluidTags.WATER) || !level.getFluidState(pos.above()).is(FluidTags.WATER))) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getBiome(pos).is(TidelightWorldgen.BIOME)
+            && level.getEntitiesOfClass(GlimmerfinEntity.class, new AABB(pos).inflate(12.0D), e -> e.isAlive()).isEmpty();
     }
 }

@@ -5,8 +5,8 @@
   ],
   "spawners": {
     "type": "hp_end_expansion:lantern_jellyfish",
-    "weight": 10,
-    "minCount": 3,
-    "maxCount": 6
+    "weight": 9,
+    "minCount": 2,
+    "maxCount": 4
   }
 }
