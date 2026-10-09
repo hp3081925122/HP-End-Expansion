@@ -1,4 +1,12 @@
 {
+  "entity.hp_end_expansion.tidebreaker_shrimp": "Tidebreaker Mantis Shrimp",
+  "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "Tidebreaker Mantis Shrimp Spawn Egg",
+  "item.hp_end_expansion.tidebreaker_gauntlet": "Tidebreaker Gauntlet",
+
+  "entity.hp_end_expansion.tidecrown_anemone": "Tidecrown Anemone",
+  "item.hp_end_expansion.tidecrown_anemone_spawn_egg": "Tidecrown Anemone Spawn Egg",
+  "item.hp_end_expansion.tidecrown_tentacle": "Tidecrown Tentacle",
+  "item.hp_end_expansion.abyss_crystal_spine": "Abyss Crystal Spine",
   "entity.hp_end_expansion.abyss_watcher": "Abyss Watcher",
   "item.hp_end_expansion.abyss_watcher_spawn_egg": "Abyss Watcher Spawn Egg",
   "itemGroup.hp_end_expansion": "HP End Expansion",

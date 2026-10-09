@@ -17,7 +17,7 @@ final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
     @Override public ResourceLocation getTextureLocation(AbyssVfxEntity e) { return AbyssFx.GLYPH; }
 
     @Override public void render(AbyssVfxEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource b, int light) {
-        float age = e.tickCount + pt;
+        float age = e.getAge(pt);
         Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(e.getPosition(pt));
         PoseStack.Pose p = ps.last();
         switch (e.getKind()) {
@@ -44,7 +44,7 @@ final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
         }
         float warn = age - AbyssVfxEntity.SPIKE_FLIGHT;
         float span = AbyssVfxEntity.SPIKE_ERUPT - AbyssVfxEntity.SPIKE_FLIGHT;
-        double r = AbyssVfxEntity.SPIKE_RADIUS + 0.35;
+        double r = AbyssVfxEntity.SPIKE_RADIUS;
         if (age < AbyssVfxEntity.SPIKE_ERUPT) {
             // 法阵亮起并慢转；外面一圈环向法阵收拢，收到边缘的那一刻破土
             float k = Mth.clamp(warn / 3, 0, 1) * (0.65F + 0.35F * Mth.sin(age * 1.3F));
@@ -57,7 +57,7 @@ final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
         float tail = AbyssVfxEntity.SPIKE_LIFE - age;
         float fade = Mth.clamp(tail / 8, 0, 1);
         // 晶刺丛：3 tick 内冲出地面并略微过冲，最后 8 tick 沉回地里淡出
-        float grow = since < 3 ? since / 3 * 1.12F : since < 5 ? 1.12F - (since - 3) * 0.06F : 1;
+        float grow = 1;
         double sink = (1 - fade) * 1.6;
         VertexConsumer s = AbyssFx.solid(b, AbyssFx.CRYSTAL);
         long seed = e.getId() * 341873128712L;
@@ -71,7 +71,7 @@ final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
             AbyssFx.crystal(p, s, base, dir, len, i == 0 ? 0.32 : 0.2, ang, fade);
         }
         // 破土瞬间的冲击环和星芒
-        if (since < 8) shockwave(since, 2.6F, 8, cam, p, b);
+        if (since < 8) shockwave(since, (float) AbyssVfxEntity.SPIKE_RADIUS, 8, cam, p, b);
         if (since < 4) {
             Vec3 c = new Vec3(0, 1.4, 0);
             AbyssFx.billboard(p, AbyssFx.glow(b, AbyssFx.FLARE), c, cam.subtract(c), 1.6 * (1 + since * 0.3), since * 0.3, 1 - since / 4);
@@ -102,11 +102,11 @@ final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
 
     static void shockwave(float age, float size, int life, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
         float t = Mth.clamp(age / life, 0, 1);
-        double r = size * (1 - (1 - t) * (1 - t));
+        double r = size;
         float k = 1 - t;
         VertexConsumer g = AbyssFx.glow(b, AbyssFx.RING);
         AbyssFx.flatRing(p, g, new Vec3(0, 0.06, 0), r * 0.55, r, 32, 8, 0, k);
-        AbyssFx.wallRing(p, g, Vec3.ZERO, r, 1.4 * (1 - t) + 0.2, 0.7, 32, 8, k * 0.8F);
+        AbyssFx.wallRing(p, g, Vec3.ZERO, r, 1.4 * (1 - t) + 0.2, 0, 32, 8, k * 0.8F);
         if (age < 4) {
             Vec3 c = new Vec3(0, 0.4, 0);
             AbyssFx.billboard(p, AbyssFx.glow(b, AbyssFx.FLARE), c, cam.subtract(c), size * 0.5, age * 0.4, 1 - age / 4);

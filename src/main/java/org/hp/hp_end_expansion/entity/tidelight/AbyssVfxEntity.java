@@ -34,6 +34,7 @@ public final class AbyssVfxEntity extends Entity {
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> START_TICK = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Vector3f> START = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.VECTOR3);
     @Nullable private LivingEntity owner;
 
@@ -48,6 +49,7 @@ public final class AbyssVfxEntity extends Entity {
         e.owner = owner;
         e.entityData.set(KIND, kind);
         e.entityData.set(SIZE, size);
+        e.entityData.set(START_TICK, (int) level.getGameTime());
         e.entityData.set(START, new Vector3f((float) start.x, (float) start.y, (float) start.z));
         e.moveTo(at.x, at.y, at.z, level.random.nextFloat() * 360, 0);
         level.addFreshEntity(e);
@@ -55,6 +57,7 @@ public final class AbyssVfxEntity extends Entity {
 
     public byte getKind() { return entityData.get(KIND); }
     public float getSize() { return entityData.get(SIZE); }
+    public float getAge(float partialTick) { return Math.max(0, (int) level().getGameTime() - entityData.get(START_TICK) + partialTick); }
     public Vec3 getStart() { Vector3f v = entityData.get(START); return new Vec3(v.x, v.y, v.z); }
 
     public int life() {
@@ -64,6 +67,7 @@ public final class AbyssVfxEntity extends Entity {
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(KIND, SPIKE);
         builder.define(SIZE, 1F);
+        builder.define(START_TICK, 0);
         builder.define(START, new Vector3f());
     }
 
@@ -71,13 +75,16 @@ public final class AbyssVfxEntity extends Entity {
         super.tick();
         if (!(level() instanceof ServerLevel server)) return;
         if (getKind() == SPIKE) {
-            if (tickCount == SPIKE_FLIGHT) server.playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.HOSTILE, 1.2F, 0.6F);
-            if (tickCount == SPIKE_ERUPT) erupt(server);
+            if ((int) getAge(0) == SPIKE_FLIGHT) server.playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.HOSTILE, 1.2F, 0.6F);
+            if ((int) getAge(0) == SPIKE_ERUPT) erupt(server);
         }
-        if (tickCount >= life()) discard();
+        if (getAge(0) >= life()) discard();
     }
 
     private void erupt(ServerLevel server) {
+        if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading")) {
+            com.mojang.logging.LogUtils.getLogger().info("Abyss spike hitbox: center={}, radius={}, age={}", position(), SPIKE_RADIUS, getAge(0));
+        }
         AABB box = new AABB(getX() - SPIKE_RADIUS, getY() - 1, getZ() - SPIKE_RADIUS, getX() + SPIKE_RADIUS, getY() + 3, getZ() + SPIKE_RADIUS);
         for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, AbyssWatcherEntity::canHit)) {
             if (v.position().subtract(position()).horizontalDistance() > SPIKE_RADIUS + v.getBbWidth() * 0.5) continue;

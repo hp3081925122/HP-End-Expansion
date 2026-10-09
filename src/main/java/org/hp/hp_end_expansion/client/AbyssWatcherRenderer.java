@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -43,6 +44,11 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
     @Override public boolean shouldShowName(AbyssWatcherEntity animatable) { return false; }
 
     @Override
+    protected int getBlockLightLevel(AbyssWatcherEntity entity, BlockPos pos) {
+        return Math.max(12, super.getBlockLightLevel(entity, pos));
+    }
+
+    @Override
     public void render(AbyssWatcherEntity entity, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         poseStack.pushPose();
         poseStack.translate(0.0, LIFT, 0.0);
@@ -62,9 +68,9 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         PoseStack.Pose p = ps.last();
         switch (skill) {
             case AbyssWatcherEntity.BITE -> bite(age, yaw, cam, p, b);
-            case AbyssWatcherEntity.SWEEP -> sweep(age, yaw, cam, p, b);
+            case AbyssWatcherEntity.SWEEP -> sweep(age, yaw, w.groundOffset(pt), cam, p, b);
             case AbyssWatcherEntity.VOLLEY -> volley(age, yaw, cam, p, b);
-            case AbyssWatcherEntity.GAZE -> gaze(w, age, yaw, cam, p, b);
+            case AbyssWatcherEntity.GAZE -> gaze(w, age, yaw, pt, cam, p, b);
             case AbyssWatcherEntity.ROAR -> roar(age, yaw, p, b);
             case AbyssWatcherEntity.MAELSTROM -> maelstrom(age, yaw, cam, p, b);
             default -> {}
@@ -96,18 +102,18 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
             float k = Mth.clamp((AbyssWatcherEntity.BITE_SNAP + 2 - age) / 3, 0, 1);
             VertexConsumer a = AbyssFx.glow(b, AbyssFx.ARC);
             double head = Math.toRadians(yaw + 90);
-            Vec3 c = local(yaw, 0, 2.6, -1.0);
+            Vec3 c = AbyssWatcherEntity.mouthOffset(yaw).subtract(fwd(yaw).scale(3.7));
             AbyssFx.arcBlade(p, a, c.add(0, 0.9, 0), head + 0.35, 0.7, 3.2, 4.2, 0.0, 10, k);
             AbyssFx.arcBlade(p, a, c.add(0, -0.4, 0), head - 0.35 + 0.7, 0.7, 3.2, 4.2, 0.0, 10, k);
         }
     }
 
     // 鳍刃回旋：脚下法阵随蓄力扩到攻击半径；回旋时两片弧刃绕身体扫一圈
-    private static void sweep(float age, float yaw, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
+    private static void sweep(float age, float yaw, double groundY, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
         double R = 5.5;
         if (age < AbyssWatcherEntity.SWEEP_START) {
             float t = age / AbyssWatcherEntity.SWEEP_START;
-            Vec3 ground = new Vec3(0, -2.55, 0);
+            Vec3 ground = new Vec3(0, groundY, 0);
             AbyssFx.decal(p, AbyssFx.glow(b, AbyssFx.GLYPH), ground, R * (0.35 + 0.65 * t), age * 0.05, 0.35F + 0.4F * t);
             AbyssFx.flatRing(p, AbyssFx.glow(b, AbyssFx.RING), ground.add(0, 0.02, 0), R - 0.4, R, 40, 10, 0, t);
             return;
@@ -123,27 +129,30 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
             AbyssFx.arcBlade(p, a, new Vec3(0, 1.6, 0), head, 1.9, 2.0, R, -0.06, 16, k);
             AbyssFx.arcBlade(p, a, new Vec3(0, 1.2, 0), head - 0.15, 1.4, 3.0, R - 0.3, -0.04, 12, k * 0.5F);
         }
-        AbyssFx.flatRing(p, AbyssFx.glow(b, AbyssFx.RING), new Vec3(0, -2.5, 0), R * 0.7, R, 40, 10, (float) spin, k * 0.6F);
+        AbyssFx.flatRing(p, AbyssFx.glow(b, AbyssFx.RING), new Vec3(0, groundY, 0), R * 0.7, R, 40, 10, (float) spin, k * 0.6F);
     }
 
     // 晶脊齐射：背上一串晶簇逐个亮起，放出晶核时爆闪
     private static void volley(float age, float yaw, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
         VertexConsumer g = AbyssFx.glow(b, AbyssFx.FLARE);
-        for (int i = 0; i < 4; i++) {
-            Vec3 at = local(yaw, 0, 4.3 - i * 0.25, 1.2 - i * 1.4);
+        for (int i = 0; i < 3; i++) {
+          for (int side = -1; side <= 1; side += 2) {
+            Vec3 at = AbyssWatcherEntity.spineOffset(yaw, i, side);
             float lit = Mth.clamp((age - i * 3) / 10, 0, 1);
             float shot = 0;
-            for (int m : new int[]{20, 24, 28}) if (age >= m && age < m + 3) shot = 1 - (age - m) / 3;
+            int m = 20 + i * 4;
+            if (age >= m && age < m + 3) shot = 1 - (age - m) / 3;
             float k = age < 32 ? lit * (0.55F + 0.3F * Mth.sin(age * 0.9F + i)) + shot * 0.5F : Mth.clamp((40 - age) / 8, 0, 1) * 0.5F;
             AbyssFx.billboard(p, g, at, cam.subtract(at), 0.5 + 0.5 * lit + shot * 0.8, age * 0.2 + i, k);
+          }
         }
     }
 
     // 深渊凝视：嘴前聚光（星芒变大 + 圆环往里收），瞄准细线；发射后是自绘光束，末端打出星芒和地面冲击环
-    private static void gaze(AbyssWatcherEntity w, float age, float yaw, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
-        Vec3 mouth = w.mouth().subtract(w.position());
+    private static void gaze(AbyssWatcherEntity w, float age, float yaw, float pt, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
+        Vec3 mouth = AbyssWatcherEntity.mouthOffset(yaw);
         Vec3 dir = w.beamDirection();
-        double len = AbyssWatcherEntity.beamLength(w.level(), w.mouth(), dir);
+        double len = AbyssWatcherEntity.beamLength(w.level(), w.getPosition(pt).add(mouth), dir);
         VertexConsumer flare = AbyssFx.glow(b, AbyssFx.FLARE);
         if (age < AbyssWatcherEntity.GAZE_FIRE) {
             float t = age / AbyssWatcherEntity.GAZE_FIRE;
@@ -156,7 +165,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         }
         if (age > AbyssWatcherEntity.GAZE_END + 2) return;
         float fade = Mth.clamp(Math.min((age - AbyssWatcherEntity.GAZE_FIRE) / 3, (AbyssWatcherEntity.GAZE_END + 2 - age) / 3), 0, 1);
-        double width = 0.55 * fade * (1 + 0.1 * Mth.sin(age * 2.3F));
+        double width = AbyssWatcherEntity.BEAM_RADIUS;
         VertexConsumer beam = AbyssFx.glow(b, AbyssFx.BEAM);
         float v0 = -age * 0.6F, v1 = v0 + (float) (len / (4 * Math.max(width, 0.05)));
         AbyssFx.ribbon(p, beam, mouth, dir, cam.subtract(mouth), len, width, v0, v1, fade);
@@ -164,7 +173,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         AbyssFx.ribbon(p, beam, mouth, dir, side.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : side.normalize(), len, width * 0.8, v0 + 0.4F, v1 + 0.4F, fade * 0.7F);
         // 光束外层每 6 tick 沿光束推出一个螺旋环
         for (int i = 0; i < 3; i++) {
-            double d = ((age * 0.8 + i * len / 3) % len);
+            double d = ((age * 0.8 + i * len / 3) % Math.max(len, 1.0E-6));
             AbyssFx.axialRing(p, AbyssFx.glow(b, AbyssFx.RING), mouth.add(dir.scale(d)), dir, width * 1.4, width * 2.2, 16, fade * 0.6F);
         }
         AbyssFx.billboard(p, flare, mouth, cam.subtract(mouth), 1.3 * fade, age * 0.4, fade);
@@ -177,15 +186,11 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
 
     // 咆哮：嘴前连续推出三道音波环
     private static void roar(float age, float yaw, PoseStack.Pose p, MultiBufferSource b) {
-        Vec3 mouth = local(yaw, 0, 3.5, 3.1);
-        Vec3 f = fwd(yaw);
         VertexConsumer g = AbyssFx.glow(b, AbyssFx.RING);
-        for (int i = 0; i < 3; i++) {
-            float a = age - AbyssWatcherEntity.ROAR_BLAST - i * 4;
-            if (a < 0 || a > 14) continue;
-            float k = 1 - a / 14;
-            AbyssFx.axialRing(p, g, mouth.add(f.scale(a * 0.45)), f, 0.6 + a * 0.45, 1.2 + a * 0.55, 32, k);
-        }
+        float a = age - AbyssWatcherEntity.ROAR_BLAST;
+        if (a < 0 || a > 14) return;
+        float k = 1 - a / 14;
+        AbyssFx.wallRing(p, g, new Vec3(0, -1, 0), 7, 5, 0, 40, 10, k);
     }
 
     // 渊潮漩涡：盘旋时眼睛常亮；俯冲时嘴前聚成一颗星芒，身后两道弧光
@@ -193,7 +198,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         if (age >= AbyssWatcherEntity.MAEL_RISE && age < AbyssWatcherEntity.MAEL_DIVE) eyes(yaw, cam, p, b, 0.6, 0.9F);
         if (age >= AbyssWatcherEntity.MAEL_DIVE && age < AbyssWatcherEntity.MAEL_SLAM) {
             float t = (age - AbyssWatcherEntity.MAEL_DIVE) / (AbyssWatcherEntity.MAEL_SLAM - AbyssWatcherEntity.MAEL_DIVE);
-            Vec3 m = local(yaw, 0, 2.0, 3.0);
+            Vec3 m = AbyssWatcherEntity.mouthOffset(yaw);
             AbyssFx.billboard(p, AbyssFx.glow(b, AbyssFx.FLARE), m, cam.subtract(m), 0.8 + 1.4 * t, age * 0.5, 1);
             VertexConsumer a = AbyssFx.glow(b, AbyssFx.ARC);
             double head = Math.toRadians(yaw + 90);

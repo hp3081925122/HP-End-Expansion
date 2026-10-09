@@ -742,21 +742,30 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     // 飞行移动：向目标点加速，技能期间由技能直接控制速度
     static final class VoidRayMoveControl extends MoveControl {
         private final VoidRayEntity ray;
+        private final FlightAvoidance flightAvoidance;
 
         VoidRayMoveControl(VoidRayEntity ray) {
             super(ray);
             this.ray = ray;
+            this.flightAvoidance = new FlightAvoidance(ray);
         }
 
         @Override
         public void tick() {
             if (this.ray.isCasting() || this.operation != Operation.MOVE_TO) {
+                this.flightAvoidance.reset();
                 return;
             }
             Vec3 delta = new Vec3(this.wantedX - this.ray.getX(), this.wantedY - this.ray.getY(), this.wantedZ - this.ray.getZ());
             double dist = delta.length();
             if (dist < 1.0D) {
                 this.operation = Operation.WAIT;
+                this.ray.setDeltaMovement(this.ray.getDeltaMovement().scale(0.6D));
+                return;
+            }
+            delta = this.flightAvoidance.steer(new Vec3(this.wantedX, this.wantedY, this.wantedZ)).subtract(this.ray.position());
+            dist = delta.length();
+            if (dist < 0.1D) {
                 this.ray.setDeltaMovement(this.ray.getDeltaMovement().scale(0.6D));
                 return;
             }

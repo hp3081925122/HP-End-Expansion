@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.hp.hp_end_expansion.entity.FlightAvoidance;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -48,6 +49,7 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
     private int retargetTicks;
     private float orbitAngle;
     private Vec3 destination;
+    private final FlightAvoidance flightAvoidance = new FlightAvoidance(this);
 
     public EmberMothEntity(EntityType<? extends EmberMothEntity> type, Level level) {
         super(type, level);
@@ -93,7 +95,7 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
         if (fleeTicks > 0) {
             if (tickCount % 2 == 0 && level() instanceof ServerLevel server)
                 server.sendParticles(ModParticles.STAR_EMBER.get(), getX(), getY() + 0.25, getZ(), 1, 0.1, 0.05, 0.1, 0);
-            if (destination != null) moveControl.setWantedPosition(destination.x, destination.y, destination.z, 2.6);
+            if (destination != null) setFlightTarget(destination, 2.6);
             return;
         }
         Player lightHolder = level().getNearestPlayer(getX(), getY(), getZ(), LIGHT_RANGE,
@@ -103,8 +105,8 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
             orbitAngle += 0.16F;
             double radius = 2.0 + Math.sin(tickCount * 0.05) * 0.4;
             Vec3 center = lightHolder.getEyePosition().add(0, -0.2, 0);
-            moveControl.setWantedPosition(center.x + Math.cos(orbitAngle) * radius, center.y + Math.sin(orbitAngle * 1.7) * 0.4,
-                center.z + Math.sin(orbitAngle) * radius, 1.3);
+            setFlightTarget(center.add(Math.cos(orbitAngle) * radius, Math.sin(orbitAngle * 1.7) * 0.4,
+                Math.sin(orbitAngle) * radius), 1.3);
             destination = null;
             return;
         }
@@ -112,7 +114,12 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
             retargetTicks = 60 + random.nextInt(60);
             destination = pickWanderTarget();
         }
-        if (destination != null) moveControl.setWantedPosition(destination.x, destination.y, destination.z, 1.0);
+        if (destination != null) setFlightTarget(destination, 1.0);
+    }
+
+    private void setFlightTarget(Vec3 target, double speed) {
+        Vec3 at = flightAvoidance.steer(target);
+        moveControl.setWantedPosition(at.x, at.y, at.z, speed);
     }
 
     // 优先飞到附近的余烬花或余烬星骸岩上方；找不到就在周围地表上方 1～6 格随机取点

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "hp_end_expansion:abyss_crystal_spine"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "hp_end_expansion:entities/abyss_watcher"
+}
