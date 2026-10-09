@@ -36,7 +36,11 @@ public final class Hp_end_expansion {
             .displayItems((parameters, output) -> {
                 ModTidelight.ITEMS.forEach(item -> output.accept(item.get()));
                 output.accept(ModItems.LANTERN_JELLYFISH_SPAWN_EGG.get());
+                output.accept(ModItems.TIDECROWN_ANEMONE_SPAWN_EGG.get());
+                output.accept(ModItems.TIDECROWN_TENTACLE.get());
+                        output.accept(ModItems.TIDEBREAKER_SHRIMP_SPAWN_EGG.get());
                 output.accept(ModItems.ABYSS_WATCHER_SPAWN_EGG.get());
+                output.accept(ModItems.ABYSS_CRYSTAL_SPINE.get());
                 output.accept(ModItems.TIDE_REMNANT_CLAW.get());
                 output.accept(ModItems.TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG.get());
                 output.accept(ModItems.VOID_RAY_SPAWN_EGG.get());

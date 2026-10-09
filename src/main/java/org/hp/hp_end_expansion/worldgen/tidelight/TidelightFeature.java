@@ -91,7 +91,7 @@ public final class TidelightFeature extends Feature<TidelightFeature.Settings> {
             }
             for (int d = 0; d <= depth + 3; d++) if (!TidelightTerrain.ground(t.level.getBlockState(top.below(d)))) return false;
         }
-        boolean wet = random.nextFloat() < 0.4F;
+        boolean wet = true;
         for (int dx = -radius; dx <= radius; dx++) for (int dz = -radius; dz <= radius; dz++) {
             int q = dx * dx + dz * dz;
             if (q > radius * radius) continue;

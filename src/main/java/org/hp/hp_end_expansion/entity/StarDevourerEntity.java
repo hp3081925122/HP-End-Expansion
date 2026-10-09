@@ -1200,21 +1200,30 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     // 飞行移动：向目标点加速，技能期间由技能直接控制速度
     static final class DevourerMoveControl extends MoveControl {
         private final StarDevourerEntity boss;
+        private final FlightAvoidance flightAvoidance;
 
         DevourerMoveControl(StarDevourerEntity boss) {
             super(boss);
             this.boss = boss;
+            this.flightAvoidance = new FlightAvoidance(boss);
         }
 
         @Override
         public void tick() {
             if (this.boss.isCasting() || this.operation != Operation.MOVE_TO) {
+                this.flightAvoidance.reset();
                 return;
             }
             Vec3 delta = new Vec3(this.wantedX - this.boss.getX(), this.wantedY - this.boss.getY(), this.wantedZ - this.boss.getZ());
             double dist = delta.length();
             if (dist < 1.5D) {
                 this.operation = Operation.WAIT;
+                this.boss.setDeltaMovement(this.boss.getDeltaMovement().scale(0.6D));
+                return;
+            }
+            delta = this.flightAvoidance.steer(new Vec3(this.wantedX, this.wantedY, this.wantedZ)).subtract(this.boss.position());
+            dist = delta.length();
+            if (dist < 0.1D) {
                 this.boss.setDeltaMovement(this.boss.getDeltaMovement().scale(0.6D));
                 return;
             }

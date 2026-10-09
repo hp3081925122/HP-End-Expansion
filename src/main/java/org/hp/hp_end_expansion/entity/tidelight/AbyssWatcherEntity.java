@@ -10,13 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -28,7 +25,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -83,6 +79,8 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Byte> SKILL = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.BYTE);
     // 每次起技能 +1，同一个技能连放两次（连咬）时客户端也能重置动画和特效计时
     private static final EntityDataAccessor<Integer> SKILL_SEQ = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SKILL_START = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.INT);
+    public static final double MOUTH_HEIGHT = 3.25, MOUTH_FORWARD = 3.0, BEAM_RADIUS = 0.55;
     private static final EntityDataAccessor<Boolean> ENRAGED = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> BEAM_YAW = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> BEAM_PITCH = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.FLOAT);
@@ -96,10 +94,13 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     }
 
     private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
-    private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_10);
     private int skillTicks, globalCd, biteCd, sweepCd, volleyCd, gazeCd, maelCd;
     private float skillYaw;
     private Vec3 biteDirection = new Vec3(0, 0, 1);
+    private double biteSpeed = 0.95;
+    private double safeHoverY = Double.NaN;
+    private Vec3 avoidanceMotion = Vec3.ZERO;
+    private int avoidanceTicks, obstacleCheckTicks;
     private boolean biteChained, biteHit;
     private final java.util.Set<Integer> sweepHit = new java.util.HashSet<>();
     private Vec3 maelCenter = Vec3.ZERO;
@@ -127,6 +128,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         super.defineSynchedData(builder);
         builder.define(SKILL, NONE);
         builder.define(SKILL_SEQ, 0);
+        builder.define(SKILL_START, 0);
         builder.define(ENRAGED, false);
         builder.define(BEAM_YAW, 0F);
         builder.define(BEAM_PITCH, 0F);
@@ -139,7 +141,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
 
     public byte getSkill() { return entityData.get(SKILL); }
     public boolean isEnraged() { return entityData.get(ENRAGED); }
-    public float getSkillAge(float partialTick) { return tickCount - clientSkillStart + partialTick; }
+    public float getSkillAge(float partialTick) { return Math.max(0, (int) level().getGameTime() - entityData.get(SKILL_START) + partialTick); }
     public Vec3 beamDirection() { return Vec3.directionFromRotation(entityData.get(BEAM_PITCH), entityData.get(BEAM_YAW)); }
 
     public static boolean canHit(Entity e) {
@@ -149,7 +151,6 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
 
     @Override protected void registerGoals() {
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     // ---------------- 受伤与阶段 ----------------
@@ -175,7 +176,6 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
 
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
-        bossBar.setProgress(getHealth() / getMaxHealth());
         if (biteCd > 0) biteCd--;
         if (sweepCd > 0) sweepCd--;
         if (volleyCd > 0) volleyCd--;
@@ -213,18 +213,25 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         if (isEnraged() && maelCd <= 0 && d <= 16) { startSkill(MAELSTROM); return true; }
         if (d <= 5.5 && sweepHeight && sweepCd <= 0) { startSkill(SWEEP); return true; }
         if (isEnraged() && gazeCd <= 0 && sight && attackDistance <= 18) { startSkill(GAZE); return true; }
-        if (attackDistance <= 10 && biteCd <= 0 && sight) { startSkill(BITE); return true; }
+        if (attackDistance <= 12 && biteCd <= 0 && sight) { startSkill(BITE); return true; }
         if (attackDistance <= 22 && volleyCd <= 0 && sight) { startSkill(VOLLEY); return true; }
         return false;
     }
 
     private void startSkill(byte skill) {
+        avoidanceTicks = 0;
+        obstacleCheckTicks = 0;
+        entityData.set(SKILL_START, (int) level().getGameTime());
         entityData.set(SKILL, skill);
         entityData.set(SKILL_SEQ, entityData.get(SKILL_SEQ) + 1);
         skillTicks = 0;
         LivingEntity t = getTarget();
         skillYaw = t != null ? yawTo(t) : getYRot();
-        if (skill == BITE) biteDirection = t != null ? t.getEyePosition().subtract(mouth()).normalize() : forward();
+        if (skill == BITE) {
+            Vec3 aim = t != null ? t.getEyePosition().subtract(mouth()) : forward();
+            biteDirection = aim.normalize();
+            biteSpeed = Mth.clamp((aim.length() + 0.5) / (BITE_SNAP - BITE_DASH), 0.95, 1.6);
+        }
         if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && t != null) {
             com.mojang.logging.LogUtils.getLogger().info("Abyss watcher attack: skill={}, mouthY={}, targetY={}, biteDirection={}", skill, mouth().y, t.getEyeY(), biteDirection);
         }
@@ -271,7 +278,14 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         byte skill = getSkill();
         int trackUntil = switch (skill) { case BITE -> BITE_DASH - 2; case SWEEP -> 14; case VOLLEY -> 30; case GAZE -> GAZE_END; case MAELSTROM -> MAEL_DIVE; default -> 0; };
         if (target != null && skillTicks <= trackUntil && skill != GAZE) skillYaw = Mth.approachDegrees(skillYaw, yawTo(target), 8);
-        if (skill == BITE && target != null && skillTicks <= trackUntil) biteDirection = target.getEyePosition().subtract(mouth()).normalize();
+        if (skill == BITE && target != null && skillTicks <= trackUntil) {
+            Vec3 aim = target.getEyePosition().subtract(mouth());
+            biteDirection = aim.normalize();
+            biteSpeed = Mth.clamp((aim.length() + 0.5) / (BITE_SNAP - BITE_DASH), 0.95, 1.6);
+            if (skillTicks == trackUntil && Boolean.getBoolean("hp_end_expansion.debugAbyssHeading")) {
+                com.mojang.logging.LogUtils.getLogger().info("Abyss bite locked: distance={}, speed={}, direction={}", aim.length(), biteSpeed, biteDirection);
+            }
+        }
         if (skill == GAZE && target != null) skillYaw = Mth.approachDegrees(skillYaw, yawTo(target), GAZE_TURN);
         setYRot(skillYaw);
         yBodyRot = skillYaw;
@@ -296,7 +310,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
             return;
         }
         if (skillTicks <= BITE_SNAP) {
-            setDeltaMovement(biteDirection.scale(0.95));
+            setDeltaMovement(biteDirection.scale(biteSpeed));
             if (!biteHit) {
                 Vec3 m = mouth();
                 for (LivingEntity v : near(m, 2.4, 2.4)) {
@@ -351,7 +365,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
                 Vec3 lead = target.position().add(target.getDeltaMovement().scale(SPIKE_DELAY * 0.6));
                 Vec3 at = j == 0 ? lead : target.position().add(rotateY(new Vec3(0, 0, 2.5), random.nextDouble() * Math.PI * 2));
                 at = new Vec3(at.x, groundY(at), at.z);
-                Vec3 from = local((j == 0 ? -0.6 : 0.6), 4.2, 1.2 - k * 1.4);
+                Vec3 from = position().add(spineOffset(yBodyRot, k, j == 0 ? -1 : 1));
                 AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SPIKE, at, 1F, from);
             }
         }
@@ -367,12 +381,15 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         Vec3 from = mouth();
         Vec3 dir = beamDirection();
         double len = beamLength(level(), from, dir);
+        if (skillTicks == GAZE_FIRE && Boolean.getBoolean("hp_end_expansion.debugAbyssHeading")) {
+            com.mojang.logging.LogUtils.getLogger().info("Abyss beam hitbox: origin={}, direction={}, length={}, radius={}, age={}", from, dir, len, BEAM_RADIUS, getSkillAge(0));
+        }
         if (skillTicks == GAZE_FIRE) playSound(SoundEvents.GUARDIAN_ATTACK, 3F, 0.6F);
         Vec3 end = from.add(dir.scale(len));
         if (skillTicks % 4 != 0) return;
         AABB box = new AABB(from, end).inflate(1);
         for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, AbyssWatcherEntity::canHit)) {
-            if (distanceToSegment(v.getBoundingBox().getCenter(), from, end) > 0.8 + v.getBbWidth() * 0.5) continue;
+            if (distanceToSegment(v.getBoundingBox().getCenter(), from, end) > BEAM_RADIUS + v.getBbWidth() * 0.5) continue;
             v.invulnerableTime = 0;
             if (v.hurt(damageSources().indirectMagic(this, this), GAZE_DAMAGE))
                 v.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1), this);
@@ -413,6 +430,9 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
             Vec3 want = maelCenter.add(0, 1.2, 0);
             setDeltaMovement(want.subtract(position()).scale(0.35));
             skillYaw = Mth.approachDegrees(skillYaw, yawToPos(maelCenter), 20);
+            setYRot(skillYaw);
+            yBodyRot = skillYaw;
+            yHeadRot = skillYaw;
             return;
         }
         if (skillTicks == MAEL_SLAM) {
@@ -433,8 +453,8 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
                     v.hurtMarked = true;
                 }
             }
-            AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, 7.5F, maelCenter);
-            AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, 4.5F, maelCenter);
+            AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, 7F, maelCenter);
+            AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, (float) MAEL_SLAM_RADIUS, maelCenter);
             AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.BURST, maelCenter.add(0, 1.2, 0), 3.2F, maelCenter);
             playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.5F, 0.6F);
         }
@@ -456,8 +476,32 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     // ---------------- 移动 ----------------
 
     @Override public void travel(Vec3 input) {
+        if (!isControlledByLocalInstance()) {
+            calculateEntityAnimation(false);
+            return;
+        }
+        if (!level().isClientSide && isAlive()) {
+            double floor = findGroundY(position());
+            if (Double.isNaN(safeHoverY)) safeHoverY = getY();
+            if (Double.isNaN(floor)) {
+                Vec3 velocity = getDeltaMovement();
+                double recovery = Mth.clamp((safeHoverY - getY()) * 0.15, 0, 0.4);
+                if (velocity.y < recovery) setDeltaMovement(velocity.x, recovery, velocity.z);
+                if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && tickCount % 40 == 0) {
+                    com.mojang.logging.LogUtils.getLogger().info("Abyss watcher void guard: id={}, y={}, safeY={}, velocity={}", getId(), getY(), safeHoverY, getDeltaMovement());
+                }
+            } else {
+                safeHoverY = Math.max(getY(), floor + 0.15);
+            }
+        }
         if (isDeadOrDying()) { setDeltaMovement(getDeltaMovement().add(0, -0.04, 0)); }
+        Vec3 before = position();
+        Vec3 requested = getDeltaMovement();
         move(net.minecraft.world.entity.MoverType.SELF, getDeltaMovement());
+        if (Boolean.getBoolean("hp_end_expansion.debugAbyssMovement") && tickCount % 20 == 0) {
+            com.mojang.logging.LogUtils.getLogger().info("Abyss watcher movement: id={}, skill={}, requested={}, actual={}, horizontalCollision={}, verticalCollision={}, avoidanceTicks={}",
+                getId(), getSkill(), requested, position().subtract(before), horizontalCollision, verticalCollision, avoidanceTicks);
+        }
         setDeltaMovement(getDeltaMovement().scale(0.91));
         calculateEntityAnimation(false);
     }
@@ -466,9 +510,10 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     private void hover(Vec3 at, double speed) {
         Vec3 d = at.subtract(position()).multiply(1, 0, 1);
         Vec3 h = d.lengthSqr() > 1 ? d.normalize().scale(speed) : d.scale(speed);
-        setDeltaMovement(getDeltaMovement().add(h.x, holdHeight() * 0.04, h.z));
-        if (d.horizontalDistanceSqr() > 1.0E-6 && getTarget() == null) {
-            float moveYaw = (float) (Mth.atan2(d.z, d.x) * Mth.RAD_TO_DEG) - 90;
+        Vec3 desired = avoidObstacles(new Vec3(h.x * 14, holdHeight() * 0.3, h.z * 14));
+        setDeltaMovement(getDeltaMovement().lerp(desired, 0.25));
+        if (desired.horizontalDistanceSqr() > 1.0E-6 && getTarget() == null) {
+            float moveYaw = (float) (Mth.atan2(desired.z, desired.x) * Mth.RAD_TO_DEG) - 90;
             faceTowardsYaw(moveYaw, 4);
             if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && tickCount % 20 == 0) {
                 com.mojang.logging.LogUtils.getLogger().info("Abyss watcher heading: id={}, bodyYaw={}, moveYaw={}, velocity={}", getId(), yBodyRot, moveYaw, getDeltaMovement());
@@ -476,23 +521,68 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         }
     }
 
+    private Vec3 avoidObstacles(Vec3 desired) {
+        if (avoidanceTicks > 0) avoidanceTicks--;
+        if (--obstacleCheckTicks > 0) return avoidanceTicks > 0 ? avoidanceMotion : desired;
+        obstacleCheckTicks = 4;
+        if (avoidanceTicks > 0 && clearFlightPath(avoidanceMotion.normalize().scale(1.5))) return avoidanceMotion;
+        avoidanceTicks = 0;
+        Vec3 horizontal = desired.multiply(1, 0, 1);
+        Vec3 direction = horizontal.normalize();
+        double ahead = Math.max(2.0, getDeltaMovement().horizontalDistance() * 6);
+        if (clearFlightPath(direction.scale(ahead).add(0, Math.max(0, desired.y) * 4, 0))) return desired;
+        Vec3 side = rotateY(direction, (getId() % 2 == 0 ? 1 : -1) * Math.PI / 2);
+        Vec3 rise = new Vec3(0, 1, 0);
+        boolean climb = clearFlightPath(rise.scale(1.5)) && level().noBlockCollision(this,
+            getBoundingBox().deflate(0.05).move(0, 1.5, 0).expandTowards(direction.scale(ahead)));
+        Vec3[] alternatives = climb
+            ? new Vec3[]{rise, side, side.scale(-1), direction.scale(-1)}
+            : new Vec3[]{side, side.scale(-1), direction.scale(-1), rise};
+        for (Vec3 escape : alternatives) {
+            if (escape.lengthSqr() < 0.01 || !clearFlightPath(escape.scale(1.5))) continue;
+            double speed = escape.y > 0 ? 0.4 : Math.max(0.25, horizontal.length());
+            avoidanceMotion = escape.scale(speed);
+            avoidanceTicks = 16;
+            if (Boolean.getBoolean("hp_end_expansion.debugAbyssMovement")) {
+                com.mojang.logging.LogUtils.getLogger().info("Abyss watcher avoidance: id={}, position={}, desired={}, escape={}", getId(), position(), desired, avoidanceMotion);
+            }
+            return avoidanceMotion;
+        }
+        return Vec3.ZERO;
+    }
+
+    private boolean clearFlightPath(Vec3 offset) {
+        return level().noBlockCollision(this, getBoundingBox().deflate(0.05).expandTowards(offset));
+    }
+
     /** 当前高度距悬浮高度的差（正 = 需要上升），限制在 ±1。 */
     private double holdHeight() {
-        double want = groundY(position()) + HOVER;
+        double ground = findGroundY(position());
+        if (Double.isNaN(safeHoverY)) safeHoverY = getY();
+        if (Double.isNaN(ground)) return Mth.clamp(safeHoverY - getY(), -1, 1);
+        double want = ground + HOVER;
         LivingEntity target = getTarget();
         if (target != null && target.isAlive()) {
-            want = Math.max(groundY(position()) + 0.15, target.getEyeY() - 3.5);
+            want = Math.max(ground + 0.15, target.getEyeY() - MOUTH_HEIGHT);
         }
         return Mth.clamp(want - getY(), -1, 1);
     }
 
     private double groundY(Vec3 at) {
+        double ground = findGroundY(at);
+        if (!Double.isNaN(ground)) return ground;
+        if (Double.isNaN(safeHoverY)) safeHoverY = getY();
+        return safeHoverY - HOVER;
+    }
+
+    private double findGroundY(Vec3 at) {
         BlockPos top = level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(at));
         int y = top.getY();
+        if (y <= level().getMinBuildHeight()) return Double.NaN;
         // 在洞穴/礁柱下时以脚下向下第一格实心方块为准
         if (y > at.y + 1) {
             HitResult hit = level().clip(new ClipContext(at.add(0, 1, 0), at.add(0, -24, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-            return hit.getType() == HitResult.Type.MISS ? at.y - 24 : hit.getLocation().y;
+            return hit.getType() == HitResult.Type.MISS ? Double.NaN : hit.getLocation().y;
         }
         return y;
     }
@@ -520,7 +610,20 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     }
 
     /** 嘴前端（模型 vfx_mouth 骨骼的静止位置：前 3.1 格、高 2.6 格，含渲染上抬 0.45）。 */
-    public Vec3 mouth() { return local(0, 3.5, 3.1); }
+    public Vec3 mouth() { return position().add(mouthOffset(yBodyRot)); }
+
+    public static Vec3 mouthOffset(float yaw) {
+        double angle = Math.toRadians(yaw);
+        return new Vec3(-Math.sin(angle) * MOUTH_FORWARD, MOUTH_HEIGHT, Math.cos(angle) * MOUTH_FORWARD);
+    }
+
+    public static Vec3 spineOffset(float yaw, int index, int side) {
+        double angle = Math.toRadians(yaw), forward = 0.4 - index * 1.1, right = side * 0.25;
+        return new Vec3(-Math.sin(angle) * forward - Math.cos(angle) * right,
+                4.5 - index * 0.15, Math.cos(angle) * forward - Math.sin(angle) * right);
+    }
+
+    public double groundOffset(float partialTick) { return groundY(position()) - getPosition(partialTick).y + 0.05; }
 
     private Vec3 forward() {
         double y = Math.toRadians(skillYaw);
@@ -570,8 +673,6 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
 
     // ---------------- 其他 ----------------
 
-    @Override public void startSeenByPlayer(ServerPlayer player) { super.startSeenByPlayer(player); bossBar.addPlayer(player); }
-    @Override public void stopSeenByPlayer(ServerPlayer player) { super.stopSeenByPlayer(player); bossBar.removePlayer(player); }
     @Override public boolean causeFallDamage(float distance, float multiplier, DamageSource source) { return false; }
     @Override protected void checkFallDamage(double y, boolean onGround, net.minecraft.world.level.block.state.BlockState state, BlockPos pos) {}
     @Override public boolean removeWhenFarAway(double distance) { return false; }
@@ -589,12 +690,6 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entityData.set(ENRAGED, tag.getBoolean("Enraged"));
-        if (hasCustomName()) bossBar.setName(getDisplayName());
-    }
-
-    @Override public void setCustomName(@Nullable net.minecraft.network.chat.Component name) {
-        super.setCustomName(name);
-        bossBar.setName(getDisplayName());
     }
 
     // ---------------- 动画 ----------------

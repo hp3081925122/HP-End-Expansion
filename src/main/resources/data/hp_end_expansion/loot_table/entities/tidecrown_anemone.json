@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "hp_end_expansion:tidecrown_tentacle"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "hp_end_expansion:entities/tidecrown_anemone"
+}

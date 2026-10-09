@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": ["hp_end_expansion:tidelight_reef"],
+  "spawners": {
+    "type": "hp_end_expansion:tidecrown_anemone",
+    "weight": 12,
+    "minCount": 1,
+    "maxCount": 2
+  }
+}

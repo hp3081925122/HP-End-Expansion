@@ -41,9 +41,28 @@ public final class ModItems {
         "end_mote_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.END_MOTE, 0x1A0A2E, 0x9FE8FF, new Item.Properties())
     );
+    public static final DeferredItem<Item> ABYSS_CRYSTAL_SPINE = ITEMS.register(
+        "abyss_crystal_spine", () -> new Item(new Item.Properties())
+    );
     public static final DeferredItem<SpawnEggItem> ABYSS_WATCHER_SPAWN_EGG = ITEMS.register(
         "abyss_watcher_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.ABYSS_WATCHER, 0x243348, 0x66DAE7, new Item.Properties())
+    );
+    public static final DeferredItem<SpawnEggItem> TIDECROWN_ANEMONE_SPAWN_EGG = ITEMS.register(
+        "tidecrown_anemone_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDECROWN_ANEMONE, 0x314F56, 0x99DECB, new Item.Properties())
+    );
+    public static final DeferredItem<Item> TIDECROWN_TENTACLE = ITEMS.register(
+        "tidecrown_tentacle",
+        () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
+    );
+    public static final DeferredItem<SpawnEggItem> TIDEBREAKER_SHRIMP_SPAWN_EGG = ITEMS.register(
+        "tidebreaker_shrimp_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP, 0x2C525C, 0xB0B897, new Item.Properties())
+    );
+    public static final DeferredItem<Item> TIDEBREAKER_GAUNTLET = ITEMS.register(
+        "tidebreaker_gauntlet",
+        () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
     );
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",

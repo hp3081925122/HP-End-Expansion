@@ -1,4 +1,12 @@
 {
+  "entity.hp_end_expansion.tidebreaker_shrimp": "碎潮拳虾",
+  "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "碎潮拳虾刷怪蛋",
+  "item.hp_end_expansion.tidebreaker_gauntlet": "碎潮拳甲",
+
+  "entity.hp_end_expansion.tidecrown_anemone": "潮冠缚葵",
+  "item.hp_end_expansion.tidecrown_anemone_spawn_egg": "潮冠缚葵刷怪蛋",
+  "item.hp_end_expansion.tidecrown_tentacle": "潮冠触腕",
+  "item.hp_end_expansion.abyss_crystal_spine": "深渊晶刺",
   "entity.hp_end_expansion.abyss_watcher": "深渊守望者",
   "item.hp_end_expansion.abyss_watcher_spawn_egg": "深渊守望者刷怪蛋",
   "itemGroup.hp_end_expansion": "末地扩展",

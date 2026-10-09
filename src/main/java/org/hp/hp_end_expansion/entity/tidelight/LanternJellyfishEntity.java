@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.hp.hp_end_expansion.entity.FlightAvoidance;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
@@ -28,6 +29,8 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
     private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     private int fleeTicks;
     private Vec3 destination;
+    private Vec3 separation = Vec3.ZERO;
+    private final FlightAvoidance flightAvoidance = new FlightAvoidance(this);
 
     public LanternJellyfishEntity(EntityType<? extends LanternJellyfishEntity> type, Level level) {
         super(type, level);
@@ -76,31 +79,32 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
             fleeTicks--;
         }
         entityData.set(FLEEING, fleeTicks > 0);
-        if (tickCount % 10 != 0) {
-            return;
-        }
-        if (destination == null || tickCount % 80 == 0 || destination.distanceToSqr(position()) < 1) {
+        if (fleeTicks == 0 && (destination == null || tickCount % 10 == 0
+            && (tickCount % 80 == 0 || destination.distanceToSqr(position()) < 1))) {
             BlockPos candidate = blockPosition().offset(random.nextInt(13) - 6, 0, random.nextInt(13) - 6);
-            if (!level().hasChunkAt(candidate)) {
-                return;
-            }
-            int surface = level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate.getX(), candidate.getZ());
-            destination = surface > 20
-                ? new Vec3(candidate.getX() + 0.5, surface + 3 + random.nextInt(10), candidate.getZ() + 0.5)
-                : position().add(0, 1, 0);
-        }
-        Vec3 push = Vec3.ZERO;
-        for (LanternJellyfishEntity other : level().getEntitiesOfClass(LanternJellyfishEntity.class, getBoundingBox().inflate(3))) {
-            if (other == this) {
-                continue;
-            }
-            Vec3 delta = position().subtract(other.position());
-            if (delta.lengthSqr() > 0.01) {
-                push = push.add(delta.normalize().scale(0.5));
+            if (level().hasChunkAt(candidate)) {
+                int surface = level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate.getX(), candidate.getZ());
+                destination = surface > 20
+                    ? new Vec3(candidate.getX() + 0.5, surface + 3 + random.nextInt(10), candidate.getZ() + 0.5)
+                    : position().add(0, 1, 0);
             }
         }
-        Vec3 at = destination.add(push);
-        moveControl.setWantedPosition(at.x, at.y, at.z, fleeTicks > 0 ? 2.5 : 1);
+        if (tickCount % 10 == 0) {
+            separation = Vec3.ZERO;
+            for (LanternJellyfishEntity other : level().getEntitiesOfClass(LanternJellyfishEntity.class, getBoundingBox().inflate(3))) {
+                if (other == this) {
+                    continue;
+                }
+                Vec3 delta = position().subtract(other.position());
+                if (delta.lengthSqr() > 0.01) {
+                    separation = separation.add(delta.normalize().scale(0.5));
+                }
+            }
+        }
+        if (destination != null) {
+            Vec3 at = flightAvoidance.steer(destination.add(separation));
+            moveControl.setWantedPosition(at.x, at.y, at.z, fleeTicks > 0 ? 2.5 : 1);
+        }
     }
 
     @Override

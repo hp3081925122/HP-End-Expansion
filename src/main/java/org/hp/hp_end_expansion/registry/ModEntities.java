@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
@@ -21,7 +20,6 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.Hp_end_expansion;
-import org.hp.hp_end_expansion.block.tidelight.ReefstoneBlock;
 import org.hp.hp_end_expansion.entity.EndMoteEntity;
 import org.hp.hp_end_expansion.entity.RiftBladeEntity;
 import org.hp.hp_end_expansion.entity.RiftFissureEntity;
@@ -34,9 +32,12 @@ import org.hp.hp_end_expansion.entity.VoidRayEntity;
 import org.hp.hp_end_expansion.entity.VoidRayVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
 import org.hp.hp_end_expansion.entity.tidelight.AbyssWatcherEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidecrownAnemoneEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideWaterBoltEntity;
+import org.hp.hp_end_expansion.block.tidelight.ReefstoneBlock;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 
 public final class ModEntities {
@@ -192,7 +193,22 @@ public final class ModEntities {
             .sized(4.0F, 5.7F)
             .eyeHeight(3.8F)
             .clientTrackingRange(12)
+            .updateInterval(1)
             .build("hp_end_expansion:abyss_watcher")
+    );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<TidecrownAnemoneEntity>> TIDECROWN_ANEMONE = ENTITY_TYPES.register(
+        "tidecrown_anemone",
+        () -> EntityType.Builder.of(TidecrownAnemoneEntity::new, MobCategory.MONSTER)
+            .sized(1.5F, 2.4F).eyeHeight(1.45F).clientTrackingRange(12).updateInterval(1)
+            .build("hp_end_expansion:tidecrown_anemone")
+    );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<TidebreakerShrimpEntity>> TIDEBREAKER_SHRIMP = ENTITY_TYPES.register(
+        "tidebreaker_shrimp",
+        () -> EntityType.Builder.of(TidebreakerShrimpEntity::new, MobCategory.MONSTER)
+            .sized(1.1F, 0.95F).eyeHeight(0.75F).clientTrackingRange(12).updateInterval(1)
+            .build("hp_end_expansion:tidebreaker_shrimp")
     );
 
     private ModEntities() {
@@ -205,6 +221,8 @@ public final class ModEntities {
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(TIDECROWN_ANEMONE.get(), TidecrownAnemoneEntity.createAttributes().build());
+        event.put(TIDEBREAKER_SHRIMP.get(), TidebreakerShrimpEntity.createAttributes().build());
         event.put(ABYSS_WATCHER.get(), AbyssWatcherEntity.createAttributes().build());
         event.put(RIFT_MANTIS.get(), RiftMantisEntity.createAttributes().build());
         event.put(RIFT_MATRIARCH.get(), RiftMatriarchEntity.createAttributes().build());
@@ -223,6 +241,8 @@ public final class ModEntities {
         // 裂空鳐：空中生成，不要求黑暗，自然生成限制附近数量
         event.register(VOID_RAY.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::voidRaySpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ABYSS_WATCHER.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::abyssWatcherSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         // 末晶萤：地面生成，无亮度限制
         event.register(END_MOTE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             PathfinderMob::checkMobSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
@@ -230,9 +250,12 @@ public final class ModEntities {
             ModEntities::lanternJellyfishSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDE_REMNANT_HERMIT_CRAB.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::tideCrabSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(TIDEBREAKER_SHRIMP.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            Monster::checkAnyLightMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(TIDECROWN_ANEMONE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::tidecrownSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 
-    // 潮光礁海没有其它怪物，裂空鳐会独占怪物上限：自然生成要求 64 格内不足 3 只
     private static boolean voidRaySpawn(EntityType<VoidRayEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
@@ -242,16 +265,42 @@ public final class ModEntities {
         }
         return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 3;
     }
-
-    // 只在潮光礁海的礁石或珠砂上自然出现，48 格内已有一只就不再刷。不随区块生成预先摆放。
+    private static boolean abyssWatcherSpawn(EntityType<AbyssWatcherEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getEntitiesOfClass(AbyssWatcherEntity.class, new AABB(pos).inflate(96.0D), e -> e.isAlive()).isEmpty();
+    }
     private static boolean tideCrabSpawn(EntityType<TideRemnantHermitCrabEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
-        if (reason == MobSpawnType.CHUNK_GENERATION) return false;
-        if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) return false;
-        if (reason != MobSpawnType.NATURAL) return true;
-        if (!level.getBiome(pos).is(TidelightWorldgen.BIOME)) return false;
-        BlockState below = level.getBlockState(pos.below());
-        if (!ReefstoneBlock.isReef(below) && !below.is(ModTidelight.PEARL_SAND.get())) return false;
-        return level.getEntitiesOfClass(TideRemnantHermitCrabEntity.class, new AABB(pos).inflate(48.0D), LivingEntity::isAlive).isEmpty();
+        if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+            && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getEntitiesOfClass(TideRemnantHermitCrabEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
+    }
+
+    private static boolean tidecrownSpawn(EntityType<TidecrownAnemoneEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+            && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
+            return false;
+        }
+        return reason != MobSpawnType.NATURAL
+            && reason != MobSpawnType.CHUNK_GENERATION
+            || level.getEntitiesOfClass(TidecrownAnemoneEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
+    }
+
+    private static boolean validTidelightSpawnGround(BlockState state) {
+        return ReefstoneBlock.isReef(state) || state.is(ModTidelight.PEARL_SAND.get());
     }
 
     private static <T extends Mob> boolean lanternJellyfishSpawn(EntityType<T> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
