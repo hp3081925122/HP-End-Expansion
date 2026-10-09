@@ -4,9 +4,9 @@
     "hp_end_expansion:tidelight_reef"
   ],
   "spawners": {
-    "type": "hp_end_expansion:lantern_jellyfish",
-    "weight": 9,
-    "minCount": 2,
-    "maxCount": 4
+    "type": "hp_end_expansion:glimmerfin",
+    "weight": 14,
+    "minCount": 3,
+    "maxCount": 5
   }
 }

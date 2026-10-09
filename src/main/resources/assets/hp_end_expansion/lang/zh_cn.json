@@ -1,6 +1,8 @@
 {
   "entity.hp_end_expansion.tidebreaker_shrimp": "碎潮拳虾",
+  "entity.hp_end_expansion.tidebreaker_shrimp_test": "碎潮拳虾测试版",
   "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "碎潮拳虾刷怪蛋",
+  "item.hp_end_expansion.tidebreaker_shrimp_test_spawn_egg": "碎潮拳虾测试刷怪蛋",
   "item.hp_end_expansion.tidebreaker_gauntlet": "碎潮拳甲",
 
   "entity.hp_end_expansion.tidecrown_anemone": "潮冠缚葵",
@@ -51,6 +53,8 @@
   "item.hp_end_expansion.end_mote_spawn_egg": "末晶萤刷怪蛋",
   "entity.hp_end_expansion.lantern_jellyfish": "灯水母",
   "item.hp_end_expansion.lantern_jellyfish_spawn_egg": "灯水母刷怪蛋",
+  "entity.hp_end_expansion.glimmerfin": "萤鳍鱼",
+  "item.hp_end_expansion.glimmerfin_spawn_egg": "萤鳍鱼刷怪蛋",
   "entity.hp_end_expansion.tide_remnant_hermit_crab": "潮骸寄居蟹",
   "entity.hp_end_expansion.tide_water_bolt": "潮压水箭",
   "entity.hp_end_expansion.tide_vfx": "骸潮涌流",

@@ -60,6 +60,10 @@ public final class ModItems {
         "tidebreaker_shrimp_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP, 0x2C525C, 0xB0B897, new Item.Properties())
     );
+    public static final DeferredItem<SpawnEggItem> TIDEBREAKER_SHRIMP_TEST_SPAWN_EGG = ITEMS.register(
+        "tidebreaker_shrimp_test_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP_TEST, 0x2C525C, 0xB0B897, new Item.Properties())
+    );
     public static final DeferredItem<Item> TIDEBREAKER_GAUNTLET = ITEMS.register(
         "tidebreaker_gauntlet",
         () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
@@ -67,6 +71,10 @@ public final class ModItems {
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.LANTERN_JELLYFISH, 0x17495A, 0xBDFFF0, new Item.Properties())
+    );
+    public static final DeferredItem<SpawnEggItem> GLIMMERFIN_SPAWN_EGG = ITEMS.register(
+        "glimmerfin_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.GLIMMERFIN, 0x1F6E87, 0xB7FFF0, new Item.Properties())
     );
     public static final DeferredItem<SpawnEggItem> TIDE_REMNANT_HERMIT_CRAB_SPAWN_EGG = ITEMS.register(
         "tide_remnant_hermit_crab_spawn_egg",

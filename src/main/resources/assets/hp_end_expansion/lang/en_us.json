@@ -1,6 +1,8 @@
 {
   "entity.hp_end_expansion.tidebreaker_shrimp": "Tidebreaker Mantis Shrimp",
+  "entity.hp_end_expansion.tidebreaker_shrimp_test": "Tidebreaker Mantis Shrimp Test",
   "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "Tidebreaker Mantis Shrimp Spawn Egg",
+  "item.hp_end_expansion.tidebreaker_shrimp_test_spawn_egg": "Tidebreaker Mantis Shrimp Test Spawn Egg",
   "item.hp_end_expansion.tidebreaker_gauntlet": "Tidebreaker Gauntlet",
 
   "entity.hp_end_expansion.tidecrown_anemone": "Tidecrown Anemone",
@@ -51,6 +53,8 @@
   "item.hp_end_expansion.end_mote_spawn_egg": "End Mote Spawn Egg",
   "entity.hp_end_expansion.lantern_jellyfish": "Lantern Jellyfish",
   "item.hp_end_expansion.lantern_jellyfish_spawn_egg": "Lantern Jellyfish Spawn Egg",
+  "entity.hp_end_expansion.glimmerfin": "Glimmerfin",
+  "item.hp_end_expansion.glimmerfin_spawn_egg": "Glimmerfin Spawn Egg",
   "entity.hp_end_expansion.tide_remnant_hermit_crab": "Tide Remnant Hermit Crab",
   "entity.hp_end_expansion.tide_water_bolt": "Tidal Water Bolt",
   "entity.hp_end_expansion.tide_vfx": "Remnant Tide Surge",
