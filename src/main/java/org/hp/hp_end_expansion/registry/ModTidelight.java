@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -11,8 +12,14 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -20,6 +27,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.registries.*;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.block.tidelight.*;
@@ -29,6 +37,13 @@ public final class ModTidelight {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Hp_end_expansion.MODID);
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, Hp_end_expansion.MODID);
     public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, Hp_end_expansion.MODID);
+    public static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, Hp_end_expansion.MODID);
+    public static final DeferredHolder<Attribute, Attribute> CROSSBOW_CAPACITY = ATTRIBUTES.register("crossbow_capacity",
+        () -> new RangedAttribute("attribute.hp_end_expansion.crossbow_capacity", 0.0D, 0.0D, 1024.0D).setSyncable(true));
+    public static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Hp_end_expansion.MODID);
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<List<ChargedProjectiles>>> CROSSBOW_RESERVE = COMPONENTS.registerComponentType(
+        "crossbow_reserve", builder -> builder.persistent(ChargedProjectiles.CODEC.listOf())
+            .networkSynchronized(ChargedProjectiles.STREAM_CODEC.apply(net.minecraft.network.codec.ByteBufCodecs.list())));
     public static final List<DeferredItem<? extends Item>> ITEMS = new ArrayList<>();
     public static final DeferredBlock<ReefstoneBlock> REEFSTONE = block("reefstone", () -> new ReefstoneBlock(stone()));
     public static final DeferredBlock<ReefstoneBlock> GLOWKELP_REEFSTONE = block("glowkelp_reefstone", () -> new ReefstoneBlock(stone().lightLevel(s -> 3)));
@@ -60,6 +75,9 @@ public final class ModTidelight {
     public static final DeferredItem<Item> REEF_EEL_SCALE = simpleItem("reef_eel_scale");
     public static final DeferredItem<TideCrossbowItem> TIDE_CROSSBOW = item("tide_crossbow", () -> new TideCrossbowItem(new Item.Properties()
         .stacksTo(1).durability(465).fireResistant()
+        .attributes(ItemAttributeModifiers.builder().add(CROSSBOW_CAPACITY,
+            new AttributeModifier(TideCrossbowItem.CAPACITY_MODIFIER_ID, 3.0D, AttributeModifier.Operation.ADD_VALUE),
+            EquipmentSlotGroup.HAND).build())
         .component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY)));
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC = sound("music.tidelight_reef");
     public static final DeferredHolder<SoundEvent, SoundEvent> AMBIENT_LOOP = sound("ambient.tidelight_reef.loop");
@@ -82,9 +100,12 @@ public final class ModTidelight {
     private static DeferredHolder<SoundEvent, SoundEvent> sound(String name) { return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, name))); }
     public static void register(IEventBus bus) {
         BLOCKS.register(bus); SOUNDS.register(bus); PARTICLES.register(bus);
+        ATTRIBUTES.register(bus); COMPONENTS.register(bus);
+        bus.addListener(ModTidelight::attributes);
         bus.addListener(ModTidelight::setup);
         NeoForge.EVENT_BUS.addListener(ModTidelight::brewing);
     }
+    private static void attributes(EntityAttributeModificationEvent event) { event.add(EntityType.PLAYER, CROSSBOW_CAPACITY); }
     private static void setup(FMLCommonSetupEvent event) { event.enqueueWork(() -> ((FlowerPotBlock)Blocks.FLOWER_POT).addPlant(LANTERN_ANEMONE.getId(), POTTED_LANTERN_ANEMONE)); }
     private static void brewing(RegisterBrewingRecipesEvent event) { event.getBuilder().addMix(Potions.AWKWARD, TIDELIGHT_GEL.get(), Potions.SLOW_FALLING); }
 }

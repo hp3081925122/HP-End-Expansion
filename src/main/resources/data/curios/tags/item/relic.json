@@ -6,6 +6,11 @@
     "hp_end_expansion:starcall_pendant",
     "hp_end_expansion:ember_crown",
     "hp_end_expansion:sky_eye",
-    "hp_end_expansion:skyrender_horn"
+    "hp_end_expansion:skyrender_horn",
+    "hp_end_expansion:tidecrown_tentacle",
+    "hp_end_expansion:tide_remnant_claw",
+    "hp_end_expansion:tidebreaker_hammer_core",
+    "hp_end_expansion:abyss_crystal_spine",
+    "hp_end_expansion:void_core"
   ]
 }
