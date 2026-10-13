@@ -8,7 +8,19 @@ plugins {
 version = mod_version
 group = mod_group_id
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('gradle-local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { localProperties.load(it) }
+}
+def localMaven = localProperties.getProperty('hpLocalMaven')
+
 repositories {
+    if (localMaven) {
+        def localRepository = maven { name = 'HpLocalMaven'; url = uri(localMaven) }
+        remove(localRepository)
+        addFirst(localRepository)
+    }
     mavenLocal()
     // 配置 GeckoLib 与 CurseForge Maven 仓库
     maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }

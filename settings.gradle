@@ -1,4 +1,10 @@
 pluginManagement {
+    def localProperties = new Properties()
+    def localPropertiesFile = file('gradle-local.properties')
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.withReader('UTF-8') { localProperties.load(it) }
+    }
+    def localMaven = localProperties.getProperty('hpLocalMaven')
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id == 'net.neoforged.moddev') {
@@ -7,6 +13,9 @@ pluginManagement {
         }
     }
     repositories {
+        if (localMaven) {
+            maven { name = 'HpLocalMaven'; url = uri(localMaven) }
+        }
         mavenLocal()
         gradlePluginPortal()
         maven { url = 'https://maven.neoforged.net/releases' }
