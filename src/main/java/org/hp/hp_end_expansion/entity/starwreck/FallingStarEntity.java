@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -52,13 +54,13 @@ public final class FallingStarEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 from, Vec3 to, boolean small, float damage) {
-        FallingStarEntity star = StarwreckEntities.FALLING_STAR.get().create(level);
+        FallingStarEntity star = StarwreckEntities.FALLING_STAR.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (star == null) return;
         star.damage = damage;
         star.entityData.set(SMALL, small);
         star.start = from;
         star.target = to;
-        star.moveTo(from.x, from.y, from.z, yaw(from, to), 0);
+        star.snapTo(from.x, from.y, from.z, yaw(from, to), 0);
         level.addFreshEntity(star);
     }
 
@@ -72,7 +74,7 @@ public final class FallingStarEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             clientTrail();
             return;
         }
@@ -105,7 +107,7 @@ public final class FallingStarEntity extends Entity {
             for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, area,
                     e -> e.isAlive() && !(e instanceof StarChaserEntity) && !(e instanceof StarCallerEntity) && !(e instanceof StarBearerEntity))) {
                 if (living.distanceToSqr(target) > radius * radius) continue;
-                if (living.hurt(damageSources().explosion(this, this), damage >= 0 ? damage : small ? SMALL_DAMAGE : IMPACT_DAMAGE))
+                if (living.hurtOrSimulate(damageSources().explosion(this, this), damage >= 0 ? damage : small ? SMALL_DAMAGE : IMPACT_DAMAGE))
                     living.knockback(small ? 0.5 : 0.7, getX() - living.getX(), getZ() - living.getZ());
             }
             StarImpactEntity.spawn(server, target, target.subtract(start), small);
@@ -136,15 +138,15 @@ public final class FallingStarEntity extends Entity {
 
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {
-        entityData.set(SMALL, tag.getBoolean("Small"));
-        age = tag.getInt("Age");
-        impacted = tag.getBoolean("Impacted");
-        damage = tag.contains("Damage") ? tag.getFloat("Damage") : -1.0F;
-        start = new Vec3(tag.getDouble("StartX"), tag.getDouble("StartY"), tag.getDouble("StartZ"));
-        target = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
+    @Override protected void readAdditionalSaveData(ValueInput tag) {
+        entityData.set(SMALL, tag.getBooleanOr("Small", false));
+        age = tag.getIntOr("Age", 0);
+        impacted = tag.getBooleanOr("Impacted", false);
+        damage = tag.read("Damage", com.mojang.serialization.Codec.PASSTHROUGH).isPresent() ? tag.getFloatOr("Damage", 0F) : -1.0F;
+        start = new Vec3(tag.getDoubleOr("StartX", 0D), tag.getDoubleOr("StartY", 0D), tag.getDoubleOr("StartZ", 0D));
+        target = new Vec3(tag.getDoubleOr("TargetX", 0D), tag.getDoubleOr("TargetY", 0D), tag.getDoubleOr("TargetZ", 0D));
     }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {
         tag.putBoolean("Small", isSmall());
         tag.putInt("Age", age);
         tag.putBoolean("Impacted", impacted);
@@ -156,4 +158,5 @@ public final class FallingStarEntity extends Entity {
         tag.putDouble("TargetY", target.y);
         tag.putDouble("TargetZ", target.z);
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

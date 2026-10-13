@@ -6,9 +6,7 @@
     "#"
   ],
   "key": {
-    "#": {
-      "item": "hp_end_expansion:reefstone_brick_slab"
-    }
+    "#": "hp_end_expansion:reefstone_brick_slab"
   },
   "result": {
     "id": "hp_end_expansion:chiseled_reefstone",

@@ -5,15 +5,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.starwreck.StarFlailEntity;
 
 /** 掷出的链锤：一块翻滚的星骸岩，身后一条短尾焰。 */
-public final class StarFlailRenderer extends EntityRenderer<StarFlailEntity> {
+public final class StarFlailRenderer extends HpEntityRenderer<StarFlailEntity> {
     private static final float[][] LUMPS = {
         {0, 0, 0, 0.42F, 0.36F, 0.38F, 0, 0},
         {0.16F, 0.1F, -0.06F, 0.26F, 0.24F, 0.28F, 30, 12},
@@ -31,7 +31,7 @@ public final class StarFlailRenderer extends EntityRenderer<StarFlailEntity> {
         if (velocity.lengthSqr() < 1.0E-6) velocity = entity.position().subtract(entity.xo, entity.yo, entity.zo);
         double speed = velocity.length();
         Vec3 dir = speed > 1.0E-4 ? velocity.scale(1 / speed) : new Vec3(0, -1, 0);
-        Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(entity.getPosition(partialTick)).normalize();
+        Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(entity.getPosition(partialTick)).normalize();
 
         poseStack.pushPose();
         poseStack.translate(0, 0.2, 0);
@@ -91,5 +91,5 @@ public final class StarFlailRenderer extends EntityRenderer<StarFlailEntity> {
         return entity.shouldRender(x, y, z) && frustum.isVisible(entity.getBoundingBox().inflate(3));
     }
 
-    @Override public ResourceLocation getTextureLocation(StarFlailEntity entity) { return StarfallDraw.METEOR; }
+    @Override public Identifier getTextureLocation(StarFlailEntity entity) { return StarfallDraw.METEOR; }
 }

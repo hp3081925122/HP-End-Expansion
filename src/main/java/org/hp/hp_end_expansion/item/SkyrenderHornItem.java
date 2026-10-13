@@ -14,9 +14,9 @@ public final class SkyrenderHornItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
         for (int i = 1; i <= 5; i++) {
-            tooltip.add(Component.translatable("tooltip.hp_end_expansion.skyrender_horn." + i).withStyle(ChatFormatting.GOLD));
+            tooltip.accept(Component.translatable("tooltip.hp_end_expansion.skyrender_horn." + i).withStyle(ChatFormatting.GOLD));
         }
     }
 }

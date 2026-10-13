@@ -1,10 +1,13 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -19,7 +22,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -39,7 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -52,19 +55,19 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 负星者：坠星教团的朝圣者。走得慢、正面硬，背后的圣星是弱点。
  * 圣星打碎后跪地硬直，怒吼后进入碎星狂暴。
  */
-public final class StarBearerEntity extends Monster implements GeoEntity {
+public final class StarBearerEntity extends Monster implements GeoEntity, HpCullingEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.star_bearer.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.star_bearer.walk");
     private static final RawAnimation WALK_RAGE = RawAnimation.begin().thenLoop("animation.star_bearer.walk_rage");
@@ -151,7 +154,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
 
     // 光束能照 24 格，照射时实体本身可能在屏幕外，放大裁剪盒免得光束跟着消失
     @Override public AABB getBoundingBoxForCulling() {
-        return action() == ACT_BEAM ? super.getBoundingBoxForCulling().inflate(BEAM_RANGE) : super.getBoundingBoxForCulling();
+        return action() == ACT_BEAM ? super.getBoundingBox().inflate(BEAM_RANGE) : super.getBoundingBox();
     }
 
     @Override protected BodyRotationControl createBodyControl() { return new ActionLockTurn(); }
@@ -169,19 +172,19 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     }
 
     // 自然刷出时身边带两只殉星者；刷怪蛋和指令不带
-    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
+    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
-        if (spawnType != MobSpawnType.NATURAL) return result;
+        if (spawnType != EntitySpawnReason.NATURAL) return result;
         for (int i = 0; i < 2; i++) {
-            StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel());
+            StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if (martyr == null) continue;
             double a = random.nextDouble() * Math.PI * 2, r = 2 + random.nextDouble() * 1.5;
             int x = Mth.floor(getX() + Math.cos(a) * r), z = Mth.floor(getZ() + Math.sin(a) * r);
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             if (Math.abs(y - getY()) > 3) continue;
-            martyr.moveTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
+            martyr.snapTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
             if (!level.noCollision(martyr)) continue;
-            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null);
+            martyr.finalizeSpawn(level, difficulty, EntitySpawnReason.MOB_SUMMONED, null);
             level.addFreshEntity(martyr);
         }
         return result;
@@ -189,7 +192,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             if (action() != seenAction) {
                 seenAction = action();
                 actionStart = tickCount;
@@ -220,8 +223,8 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         return entity instanceof StarBearerEntity || entity instanceof StarMartyrEntity || entity instanceof StarCallerEntity;
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (slamCd > 0) slamCd--;
         if (flameCd > 0) flameCd--;
         if (tossCd > 0) tossCd--;
@@ -342,7 +345,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
             float a = localAngle(living.position());
             if (a <= lo || a > hi) continue;
             sweepHit.add(living.getId());
-            if (!living.hurt(damageSources().mobAttack(this), 9)) continue;
+            if (!living.hurtOrSimulate(damageSources().mobAttack(this), 9)) continue;
             // 顺着挥砍方向横着甩出去，再带一点往外
             float r = a * Mth.DEG_TO_RAD;
             Vec3 push = BearerVfxEntity.toWorld(yBodyRot, Mth.cos(r) * 0.9 + Mth.sin(r) * 0.5, 0, -Mth.sin(r) * 0.9 + Mth.cos(r) * 0.5);
@@ -382,7 +385,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, new AABB(from, end).inflate(1), e -> e.isAlive() && e != this && !isKin(e))) {
             AABB box = living.getBoundingBox().inflate(0.35);
             if (!box.contains(from) && box.clip(from, end).isEmpty()) continue;
-            if (living.hurt(damageSources().mobAttack(this), 5)) living.push(dir.x * 0.15, 0.04, dir.z * 0.15);
+            if (living.hurtOrSimulate(damageSources().mobAttack(this), 5)) living.push(dir.x * 0.15, 0.04, dir.z * 0.15);
         }
     }
 
@@ -414,7 +417,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         return (float) Math.toDegrees(Math.acos(Mth.clamp(dot, -1, 1)));
     }
 
-    @Override public boolean hurt(DamageSource source, float amount) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         if (source.getDirectEntity() instanceof FallingStarEntity || source.getDirectEntity() instanceof StarShardEntity) return false;
         float angle = attackAngle(source);
         boolean projectile = source.getDirectEntity() instanceof Projectile;
@@ -426,7 +429,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
             Vec3 at = source.getSourcePosition();
             if (at == null || at.y - getY() < 1.6) back = false;
         }
-        boolean hurt = super.hurt(source, amount);
+        boolean hurt = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         // 只有真正打进去的一下才算到圣星上，无敌帧里连射的箭不会白白削圣星
         if (hurt && back && !isStarBroken() && damageStar(amount) && isAlive()) shatter();
         return hurt;
@@ -454,12 +457,12 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         wantFlame = false;
         Vec3 at = starPos();
         if (level() instanceof ServerLevel server) {
-            if (server.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT) && random.nextFloat() < 0.3F)
+            if (server.getGameRules().get(GameRules.MOB_DROPS) && random.nextFloat() < 0.3F)
                 dropHolyStar(server, intactStarAt);
             BearerVfxEntity.spawn(server, BearerVfxEntity.SHATTER, at, yBodyRot, 1, 0);
             for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(4), e -> e.isAlive() && !isKin(e))) {
                 if (living.distanceToSqr(at) > 9) continue;
-                living.hurt(damageSources().mobAttack(this), 5);
+                living.hurtOrSimulate(damageSources().mobAttack(this), 5);
             }
         }
         playSound(SoundEvents.AMETHYST_CLUSTER_BREAK, 1.6F, 0.5F);
@@ -474,7 +477,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         Vec3 ground = new Vec3(at.x, y, at.z);
         for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(4), e -> e.isAlive() && !isKin(e))) {
             if (!inCone(living, forward, 3, 45)) continue;
-            if (living.hurt(damageSources().mobAttack(this), 10))
+            if (living.hurtOrSimulate(damageSources().mobAttack(this), 10))
                 living.knockback(1.1, getX() - living.getX(), getZ() - living.getZ());
         }
         if (level() instanceof ServerLevel server) BearerVfxEntity.spawn(server, BearerVfxEntity.SLAM, ground, yBodyRot, 1, 0);
@@ -495,7 +498,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
                 double d = Math.sqrt(living.distanceToSqr(ring.at.x, living.getY(), ring.at.z));
                 boolean crossed = ring.age == 1 ? d <= ring.radius : d <= ring.radius && d >= prev - 0.3;
                 if (!crossed || !ring.hit.add(living.getId())) continue;
-                if (living.hurt(damageSources().mobAttack(this), 6))
+                if (living.hurtOrSimulate(damageSources().mobAttack(this), 6))
                     living.setDeltaMovement(living.getDeltaMovement().x, 0.55, living.getDeltaMovement().z);
             }
             if (ring.age >= BearerVfxEntity.RING_TICKS) rings.remove(i);
@@ -507,7 +510,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         if (level() instanceof ServerLevel server) BearerVfxEntity.spawn(server, BearerVfxEntity.FLARE, starPos(), yBodyRot + 180, 1, 0);
         for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(5), e -> e.isAlive() && !isKin(e))) {
             if (!inCone(living, back, 4, 30)) continue;
-            if (living.hurt(damageSources().mobAttack(this), 6)) {
+            if (living.hurtOrSimulate(damageSources().mobAttack(this), 6)) {
                 living.knockback(0.7, getX() - living.getX(), getZ() - living.getZ());
                 if (!living.fireImmune()) living.igniteForSeconds(2);
             }
@@ -630,14 +633,14 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     @Override protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
         if (!isStarBroken()) {
-            if (level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) dropHolyStar(level, position());
+            if (level.getGameRules().get(GameRules.MOB_DROPS)) dropHolyStar(level, position());
             return;
         }
         if (!(source.getEntity() instanceof Player player)) return;
         var looting = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING);
         int levelBonus = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getWeaponItem());
         if (random.nextFloat() < 0.15F + 0.05F * levelBonus)
-            spawnAtLocation(new ItemStack(StarwreckEntities.STAR_CORE_EMBER.get()));
+            spawnAtLocation((net.minecraft.server.level.ServerLevel)level(), new ItemStack(StarwreckEntities.STAR_CORE_EMBER.get()));
     }
 
     private void dropHolyStar(ServerLevel level, Vec3 at) {
@@ -654,7 +657,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     }
     @Override public float getVoicePitch() { return super.getVoicePitch() * 0.55F; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("StarHealth", starHealth());
         tag.putBoolean("StarBroken", isStarBroken());
@@ -663,13 +666,13 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         tag.putInt("Vulnerable", vulnerable);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        entityData.set(STAR_HEALTH, tag.contains("StarHealth") ? tag.getFloat("StarHealth") : STAR_MAX);
-        entityData.set(STAR_BROKEN, tag.getBoolean("StarBroken"));
-        entityData.set(ENRAGED, tag.getBoolean("Enraged"));
-        entityData.set(ACTION, tag.getInt("Action"));
-        vulnerable = tag.getInt("Vulnerable");
+        entityData.set(STAR_HEALTH, tag.read("StarHealth", com.mojang.serialization.Codec.PASSTHROUGH).isPresent() ? tag.getFloatOr("StarHealth", 0F) : STAR_MAX);
+        entityData.set(STAR_BROKEN, tag.getBooleanOr("StarBroken", false));
+        entityData.set(ENRAGED, tag.getBooleanOr("Enraged", false));
+        entityData.set(ACTION, tag.getIntOr("Action", 0));
+        vulnerable = tag.getIntOr("Vulnerable", 0);
         int act = action();
         boolean lying = act == ACT_STAGGER || act == ACT_SHATTER;
         // 出招计时不存档：读档时没打完的招直接作废；怒吼中途存档的话直接进入狂暴，免得碎了星却不狂暴
@@ -680,14 +683,14 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 4, state -> {
+        controllers.add(new AnimationController<>("base", 4, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             if (action() == ACT_STAGGER) return state.setAndContinue(STAGGER);
             // 闲逛移速 0.12，水平速度大约 0.01，过不了 GeckoLib isMoving 的 0.015。腿的摆动已经起来了。
             if (walkAnimation.speed() > 0.02F) return state.setAndContinue(isEnraged() ? WALK_RAGE : WALK);
             return state.setAndContinue(IDLE);
         }));
-        controllers.add(new AnimationController<>(this, "action", 2, state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("action", 2, state -> PlayState.STOP)
             .triggerableAnim("slam", SLAM).triggerableAnim("slam_fast", SLAM_FAST).triggerableAnim("backfire", BACKFIRE)
             .triggerableAnim("toss", TOSS).triggerableAnim("shatter", SHATTER).triggerableAnim("rage", RAGE)
             .triggerableAnim("sweep", SWEEP).triggerableAnim("beam", BEAM));

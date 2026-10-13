@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayDeque;
 import java.util.EnumSet;
@@ -41,13 +43,13 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.util.GeckoLibUtil;
 
 public final class VoidRayEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -88,7 +90,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     // 同步字段：技能、技能 tick、射线终点、第二阶段
     private static final EntityDataAccessor<Integer> SKILL = SynchedEntityData.defineId(VoidRayEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> SKILL_TICK = SynchedEntityData.defineId(VoidRayEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Vector3f> BEAM_POINT = SynchedEntityData.defineId(VoidRayEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> BEAM_POINT = SynchedEntityData.defineId(VoidRayEntity.class, EntityDataSerializers.VECTOR3);
     private static final EntityDataAccessor<Boolean> ENRAGED = SynchedEntityData.defineId(VoidRayEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
@@ -161,8 +163,8 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected boolean shouldDropLoot() {
-        return !this.minion && super.shouldDropLoot();
+    protected boolean shouldDropLoot(net.minecraft.server.level.ServerLevel hpServerLevel) {
+        return !this.minion && super.shouldDropLoot(hpServerLevel);
     }
 
     public int getSkill() {
@@ -182,8 +184,8 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     }
 
     public Vec3 getBeamPoint() {
-        Vector3f v = this.entityData.get(BEAM_POINT);
-        return new Vec3(v.x, v.y, v.z);
+        org.joml.Vector3fc v = this.entityData.get(BEAM_POINT);
+        return new Vec3(v.x(), v.y(), v.z());
     }
 
     // 射线是否处于引导阶段
@@ -259,30 +261,30 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         int skill = this.getSkill();
         int t = this.getSkillTick();
         // 射线蓄力：火花从周围吸入核心
-        if (skill == SKILL_BEAM && t < BEAM_CHARGE && this.random.nextInt(2) == 0) {
-            double a = this.random.nextDouble() * Math.PI * 2.0D;
-            double r = 1.4D + this.random.nextDouble() * 0.6D;
+        if (skill == SKILL_BEAM && t < BEAM_CHARGE && this.getRandom().nextInt(2) == 0) {
+            double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+            double r = 1.4D + this.getRandom().nextDouble() * 0.6D;
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
-            double oy = (this.random.nextDouble() - 0.5D) * 0.8D;
+            double oy = (this.getRandom().nextDouble() - 0.5D) * 0.8D;
             this.level().addParticle(ModParticles.TIDE_SPARK.get(), this.getX() + ox, this.getY() + CORE_HEIGHT + oy, this.getZ() + oz,
                 -ox * 0.15D, -oy * 0.15D, -oz * 0.15D);
         }
         // 射线过热：核心冒烟
-        if (skill == SKILL_BEAM && t >= BEAM_STOP && this.random.nextInt(2) == 0) {
+        if (skill == SKILL_BEAM && t >= BEAM_STOP && this.getRandom().nextInt(2) == 0) {
             this.level().addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, this.getX(), this.getY() + CORE_HEIGHT - 0.2D, this.getZ(),
                 0.0D, -0.03D, 0.0D);
         }
         // 星陨蓄力：背部裂缝溢出火花
         if (skill == SKILL_STARFALL && t > 10 && t < STAR_LAUNCH + 4) {
-            this.level().addParticle(ModParticles.TIDE_SPARK.get(), this.getX() + (this.random.nextDouble() - 0.5D) * 0.8D, this.getY() + 1.3D,
-                this.getZ() + (this.random.nextDouble() - 0.5D) * 0.8D, 0.0D, 0.25D, 0.0D);
+            this.level().addParticle(ModParticles.TIDE_SPARK.get(), this.getX() + (this.getRandom().nextDouble() - 0.5D) * 0.8D, this.getY() + 1.3D,
+                this.getZ() + (this.getRandom().nextDouble() - 0.5D) * 0.8D, 0.0D, 0.25D, 0.0D);
         }
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         // 首次低于 50% 进入第二阶段
         if (!this.isEnraged() && this.getHealth() < this.getMaxHealth() * 0.5F) {
             this.entityData.set(ENRAGED, true);
@@ -421,7 +423,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 continue;
             }
             this.diveHits.add(victim.getId());
-            if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.VOID_RAY.damage("diveDamage"))) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), CombatConfigs.VOID_RAY.damage("diveDamage"))) {
                 // 只向上击飞，避免把玩家推下虚空
                 victim.setDeltaMovement(victim.getDeltaMovement().multiply(0.2D, 0.0D, 0.2D).add(0.0D, 0.6D, 0.0D));
                 victim.hurtMarked = true;
@@ -472,7 +474,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                     if (victim.isBlocking()) {
                         damage = CombatConfigs.VOID_RAY.damage("beamBlockedDamage");
                     }
-                    victim.hurt(this.damageSources().indirectMagic(this, this), damage);
+                    victim.hurtOrSimulate(this.damageSources().indirectMagic(this, this), damage);
                 }
             }
             this.entityData.set(BEAM_POINT, end.toVector3f());
@@ -547,8 +549,8 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
                 if (i == 0) {
                     spot = target.position();
                 } else {
-                    double a = this.random.nextDouble() * Math.PI * 2.0D;
-                    double r = 2.5D + this.random.nextDouble() * 3.5D;
+                    double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+                    double r = 2.5D + this.getRandom().nextDouble() * 3.5D;
                     spot = target.position().add(Math.cos(a) * r, 0.0D, Math.sin(a) * r);
                 }
                 Vec3 ground = this.groundBelow(spot.add(0.0D, 3.0D, 0.0D));
@@ -624,7 +626,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         float finalAmount = amount;
         // 弱点：来自下方的弹射物打中腹部核心
         Entity direct = source.getDirectEntity();
@@ -635,9 +637,9 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
         if (this.getSkill() == SKILL_BEAM && this.getSkillTick() >= BEAM_STOP) {
             finalAmount = finalAmount * 1.3F;
         }
-        boolean result = super.hurt(source, finalAmount);
+        boolean result = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, finalAmount);
         if (result && !this.level().isClientSide() && source.getEntity() instanceof Player player) {
-            LOGGER.debug("Void Ray {} was damaged by player {}; retaliation target is available", this.getId(), player.getGameProfile().getName());
+            LOGGER.debug("Void Ray {} was damaged by player {}; retaliation target is available", this.getId(), player.getGameProfile().name());
         }
         if (result && !this.level().isClientSide() && !this.isCasting() && this.isAlive()) {
             this.triggerAnim("skill", "hurt");
@@ -666,7 +668,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+    public boolean causeFallDamage(double distance, float multiplier, DamageSource source) {
         return false;
     }
 
@@ -691,21 +693,21 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
 
     @Override
     public float getVoicePitch() {
-        return 0.45F + this.random.nextFloat() * 0.1F;
+        return 0.45F + this.getRandom().nextFloat() * 0.1F;
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Enraged", this.isEnraged());
         tag.putBoolean("Minion", this.minion);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        this.entityData.set(ENRAGED, tag.getBoolean("Enraged"));
-        this.minion = tag.getBoolean("Minion");
+        this.entityData.set(ENRAGED, tag.getBooleanOr("Enraged", false));
+        this.minion = tag.getBooleanOr("Minion", false);
         if (this.minion) {
             this.xpReward = 0;
         }
@@ -714,7 +716,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 基础控制器：死亡、滑翔、悬停拍翼
-        controllers.add(new AnimationController<>(this, "base", 6, state -> {
+        controllers.add(new AnimationController<>("base", 6, state -> {
             if (this.isDeadOrDying()) {
                 return state.setAndContinue(DEATH);
             }
@@ -724,7 +726,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             return state.setAndContinue(IDLE_FLY);
         }));
         // 技能控制器：只播放服务端触发的动画
-        controllers.add(new AnimationController<>(this, "skill", 3, state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("skill", 3, state -> PlayState.STOP)
             .triggerableAnim("dive", DIVE)
             .triggerableAnim("dive_end", DIVE_END)
             .triggerableAnim("beam", BEAM)
@@ -874,7 +876,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             double z = this.ray.getZ() + (this.ray.getRandom().nextDouble() - 0.5D) * 24.0D;
             int ground = this.ray.level().getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x), Mth.floor(z));
             double y = this.ray.getY();
-            if (ground > this.ray.level().getMinBuildHeight() + 1) {
+            if (ground > this.ray.level().getMinY() + 1) {
                 y = ground + 8.0D + this.ray.getRandom().nextDouble() * 6.0D;
             }
             this.ray.getMoveControl().setWantedPosition(x, y, z, 0.6D);

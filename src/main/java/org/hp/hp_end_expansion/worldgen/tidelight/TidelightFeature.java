@@ -22,7 +22,7 @@ public final class TidelightFeature extends Feature<TidelightFeature.Settings> {
         if (!StarwreckConfig.tidelightEnabled()) return false;
         WorldGenLevel level = context.level(); RandomSource random = context.random();
         int minX = context.origin().getX() & ~15, minZ = context.origin().getZ() & ~15;
-        TidelightTerrain terrain = new TidelightTerrain(level, new BoundingBox(minX - 16, level.getMinBuildHeight(), minZ - 16, minX + 31, level.getMaxBuildHeight() - 1, minZ + 31));
+        TidelightTerrain terrain = new TidelightTerrain(level, new BoundingBox(minX - 16, level.getMinY(), minZ - 16, minX + 31, level.getMaxY(), minZ + 31));
         String kind = context.config().kind();
         if (kind.equals("surface")) { surface(terrain, minX, minZ); return true; }
         if (kind.equals("curtains")) { curtains(terrain, minX, minZ, random); return true; }

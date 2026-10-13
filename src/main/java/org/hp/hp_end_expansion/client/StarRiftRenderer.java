@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.starwreck.StarRiftEntity;
@@ -15,7 +15,7 @@ import org.hp.hp_end_expansion.entity.starwreck.StarRiftEntity;
  * 星雨裂隙：绕竖轴朝向镜头的撕裂口。张开时先从中点向上下拉出一条亮缝，再逐帧撕宽；闭合倒放。
  * 三层：身后一大片暗热光、镂空本体（带紫黑外缘）、加法辉光（芯补亮 + 外缘外三级热光）。
  */
-public final class StarRiftRenderer extends EntityRenderer<StarRiftEntity> {
+public final class StarRiftRenderer extends HpEntityRenderer<StarRiftEntity> {
     private static final int FRAMES = 6;
     private static final float GLOW_WIDTH = StarRiftEntity.StarRiftVisual.WIDTH * 40F / 24F;
 
@@ -35,7 +35,7 @@ public final class StarRiftRenderer extends EntityRenderer<StarRiftEntity> {
         // 陨星离开那一拍芯里闪一下，只在芯内
         float flare = Math.max(0, 1 - Math.abs(age - StarRiftEntity.OPEN_TICKS) / 5F);
 
-        Vec3 cam = entityRenderDispatcher.camera.getPosition();
+        Vec3 cam = entityRenderDispatcher.camera.position();
         float face = (float) (Mth.atan2(cam.x - entity.getX(), cam.z - entity.getZ()) * Mth.RAD_TO_DEG);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(face));
@@ -66,5 +66,5 @@ public final class StarRiftRenderer extends EntityRenderer<StarRiftEntity> {
         return entity.shouldRender(x, y, z) && frustum.isVisible(entity.getBoundingBox().inflate(5, 7, 5));
     }
 
-    @Override public ResourceLocation getTextureLocation(StarRiftEntity entity) { return StarfallDraw.RIFT; }
+    @Override public Identifier getTextureLocation(StarRiftEntity entity) { return StarfallDraw.RIFT; }
 }

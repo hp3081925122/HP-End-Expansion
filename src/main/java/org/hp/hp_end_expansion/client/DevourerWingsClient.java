@@ -17,7 +17,7 @@ public final class DevourerWingsClient {
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || minecraft.player.input == null || !minecraft.player.input.jumping
+        if (minecraft.player == null || minecraft.player.input == null || !minecraft.player.input.keyPresses.jump()
             || minecraft.player.getAbilities().flying || minecraft.player.isFallFlying()) return;
         if (!(DevourerWingsItem.getFlightStack(minecraft.player, net.minecraft.world.entity.EquipmentSlot.CHEST).getItem()
             instanceof DevourerWingsItem)) return;

@@ -22,12 +22,12 @@ public final class DevourerWingsItem extends Item implements ICurioItem {
     private static final int DASH_COOLDOWN = 60;
 
     public DevourerWingsItem(Properties properties) {
-        super(properties);
+        super(properties.component(net.minecraft.core.component.DataComponents.GLIDER, net.minecraft.util.Unit.INSTANCE).component(net.minecraft.core.component.DataComponents.EQUIPPABLE, net.minecraft.world.item.equipment.Equippable.builder(EquipmentSlot.CHEST).build()));
     }
 
     public static ItemStack getFlightStack(LivingEntity entity, EquipmentSlot slot) {
         ItemStack equipped = entity.getItemBySlot(slot);
-        if (slot != EquipmentSlot.CHEST || equipped.canElytraFly(entity)) return equipped;
+        if (slot != EquipmentSlot.CHEST || LivingEntity.canGlideUsing(equipped,slot)) return equipped;
         if (!(entity instanceof Player player)) return equipped;
         return CuriosApi.getCuriosInventory(player)
             .flatMap(handler -> handler.findFirstCurio(ModItems.DEVOURER_WINGS.get()))
@@ -37,30 +37,18 @@ public final class DevourerWingsItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.devourer_wings.flight").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.devourer_wings").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.devourer_wings.flight").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.devourer_wings").withStyle(ChatFormatting.GRAY));
     }
 
-    @Override
-    public boolean canElytraFly(ItemStack stack, LivingEntity entity) {
-        return true;
-    }
-
-    @Override
-    public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
-        if (!entity.level().isClientSide()) {
-            int nextFlightTick = flightTicks + 1;
-            if (nextFlightTick % 10 == 0) {
-                entity.gameEvent(net.minecraft.world.level.gameevent.GameEvent.ELYTRA_GLIDE);
-            }
-        }
-        if (!entity.level().isClientSide() && entity instanceof Player player && player.isShiftKeyDown()
-            && !player.getCooldowns().isOnCooldown(this)) {
+public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
+if (!entity.level().isClientSide() && entity instanceof Player player && player.isShiftKeyDown()
+            && !player.getCooldowns().isOnCooldown(new ItemStack(this))) {
             Vec3 look = player.getLookAngle();
             player.setDeltaMovement(player.getDeltaMovement().add(look.scale(1.6D)));
             player.hurtMarked = true;
-            player.getCooldowns().addCooldown(this, DASH_COOLDOWN);
+            player.getCooldowns().addCooldown(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(this), DASH_COOLDOWN);
             // 冲刺特效与音效
             if (player.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 0.5D, player.getZ(), 20, 0.4D, 0.4D, 0.4D, 0.1D);
@@ -68,5 +56,8 @@ public final class DevourerWingsItem extends Item implements ICurioItem {
             player.level().playSound(null, player.blockPosition(), SoundEvents.PHANTOM_FLAP, SoundSource.PLAYERS, 1.5F, 0.6F);
         }
         return true;
+    }
+    @Override public void curioTick(top.theillusivec4.curios.api.SlotContext context, ItemStack stack) {
+        if (context.identifier().equals("back") && context.entity().isFallFlying()) elytraFlightTick(stack,context.entity(),0);
     }
 }

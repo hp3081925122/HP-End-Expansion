@@ -3,11 +3,11 @@ package org.hp.hp_end_expansion.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -21,17 +21,17 @@ import org.joml.Quaternionf;
  * 负星者专属特效：圣印、光墙、光柱、白金火舌、碎星光刺。全部走加法混合，颜色分量先夹到 1 再写顶点，
  * 否则 float 转 byte 会溢出成暗色。
  */
-public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
-    public static final ResourceLocation SIGIL = tex("bearer_sigil");
-    public static final ResourceLocation WAVE = tex("bearer_wave");
-    public static final ResourceLocation FLARE = tex("bearer_flare");
-    public static final ResourceLocation SPIKE = tex("bearer_spike");
-    public static final ResourceLocation GLOW = tex("bearer_glow");
+public final class BearerVfxRenderer extends HpEntityRenderer<BearerVfxEntity> {
+    public static final Identifier SIGIL = tex("bearer_sigil");
+    public static final Identifier WAVE = tex("bearer_wave");
+    public static final Identifier FLARE = tex("bearer_flare");
+    public static final Identifier SPIKE = tex("bearer_spike");
+    public static final Identifier GLOW = tex("bearer_glow");
     // 负光招式（横扫、光束）：靛紫到青白的冷色，和白金圣火分开
-    public static final ResourceLocation ARC = tex("bearer_arc");
-    public static final ResourceLocation BEAM = tex("bearer_beam");
-    public static final ResourceLocation LENS = tex("bearer_lens");
-    public static final ResourceLocation HALO = tex("bearer_halo");
+    public static final Identifier ARC = tex("bearer_arc");
+    public static final Identifier BEAM = tex("bearer_beam");
+    public static final Identifier LENS = tex("bearer_lens");
+    public static final Identifier HALO = tex("bearer_halo");
     private static final int WALL_SEGMENTS = 48, ARC_SEGMENTS = 28;
 
     public BearerVfxRenderer(EntityRendererProvider.Context context) {
@@ -39,13 +39,13 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
         shadowRadius = 0;
     }
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
     }
 
     static float c(float v) { return Mth.clamp(v, 0, 1); }
 
-    static VertexConsumer add(MultiBufferSource buffers, ResourceLocation texture) { return buffers.getBuffer(StarfallDraw.additive(texture)); }
+    static VertexConsumer add(MultiBufferSource buffers, Identifier texture) { return buffers.getBuffer(StarfallDraw.additive(texture)); }
 
     /** 平铺在当前姿态 XZ 平面上的正方形贴图，半边长 r。 */
     static void flat(PoseStack.Pose pose, VertexConsumer buffer, float r, float red, float green, float blue) {
@@ -60,7 +60,7 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
     }
 
     /** 朝向镜头的贴图片。 */
-    public static void sprite(PoseStack poseStack, MultiBufferSource buffers, Quaternionf camera, ResourceLocation texture, Vec3 at, float size, float spin,
+    public static void sprite(PoseStack poseStack, MultiBufferSource buffers, Quaternionf camera, Identifier texture, Vec3 at, float size, float spin,
                               float red, float green, float blue) {
         if (size <= 0) return;
         poseStack.pushPose();
@@ -174,7 +174,7 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
     private void flare(BearerVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
         float grow = Math.min(1, age / 3);
         float fade = age < 7 ? 1 : Math.max(0, 1 - (age - 7) / 5);
-        if (age < 5) glow(poseStack, buffers, entityRenderDispatcher.cameraOrientation(), Vec3.ZERO, 1.6F, age * 15, 1 - age / 5, 0.95F * (1 - age / 5), 0.8F * (1 - age / 5));
+        if (age < 5) glow(poseStack, buffers, entityRenderDispatcher.camera.rotation(), Vec3.ZERO, 1.6F, age * 15, 1 - age / 5, 0.95F * (1 - age / 5), 0.8F * (1 - age / 5));
         poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
         poseStack.mulPose(Axis.XP.rotationDegrees(10));
         float length = 4.6F * grow, scroll = age * 0.18F;
@@ -198,9 +198,9 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
     private void shatter(BearerVfxEntity entity, float age, PoseStack poseStack, MultiBufferSource buffers) {
         float t = Math.min(1, age / 16);
         float flash = (1 - t) * (1 - t);
-        Quaternionf camera = entityRenderDispatcher.cameraOrientation();
+        Quaternionf camera = entityRenderDispatcher.camera.rotation();
         glow(poseStack, buffers, camera, Vec3.ZERO, 1 + age * 0.5F, age * 6, flash * 1.2F, flash * 1.1F, flash);
-        Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(entity.position()).normalize();
+        Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(entity.position()).normalize();
         RandomSource r = RandomSource.create(entity.getId() * 17L);
         VertexConsumer spike = add(buffers, SPIKE);
         for (int i = 0; i < 12; i++) {
@@ -264,7 +264,7 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
         if (age <= swing + 0.5F) {
             float a = lead * Mth.DEG_TO_RAD, r = BearerVfxEntity.ARC_R;
             Vec3 tip = BearerVfxEntity.toWorld(entity.getYRot(), Mth.sin(a) * r, BearerVfxEntity.arcY(lead), Mth.cos(a) * r);
-            sprite(poseStack, buffers, entityRenderDispatcher.cameraOrientation(), LENS, tip, 1.1F, age * 20, 1, 1, 1);
+            sprite(poseStack, buffers, entityRenderDispatcher.camera.rotation(), LENS, tip, 1.1F, age * 20, 1, 1, 1);
         }
         poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
         sweepBand(poseStack.last(), buffers, tail, lead, 1.2F, BearerVfxEntity.ARC_R, 0, fade);
@@ -344,5 +344,5 @@ public final class BearerVfxRenderer extends EntityRenderer<BearerVfxEntity> {
         disc(poseStack.last(), add(buffers, HALO), end.subtract(dir.scale(0.05)), dir, (0.8F + 0.25F * Mth.sin(age * 2.2F)) * close, age * 15, hit, hit, hit);
     }
 
-    @Override public ResourceLocation getTextureLocation(BearerVfxEntity entity) { return SIGIL; }
+    @Override public Identifier getTextureLocation(BearerVfxEntity entity) { return SIGIL; }
 }

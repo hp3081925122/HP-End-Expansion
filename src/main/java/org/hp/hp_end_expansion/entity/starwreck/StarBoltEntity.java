@@ -1,7 +1,9 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Comparator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -74,22 +76,22 @@ public class StarBoltEntity extends AbstractArrow {
         return SoundEvents.AMETHYST_BLOCK_HIT;
     }
 
-    public boolean stuck() { return inGround; }
+    public boolean stuck() { return isInGround(); }
 
     public void setHoming(boolean homing) {
         this.homing = homing;
     }
 
     @Override public void tick() {
-        if (!level().isClientSide && homing && !inGround) updateHoming();
+        if (!level().isClientSide() && homing && !isInGround()) updateHoming();
         // 原版箭在客户端 tick 里只要是暴击就每拍撒 4 个 CRIT 粒子，拉满弓必暴击，会盖住星晶矢自己的拖尾。
         // 客户端这一拍先把暴击标记临时清掉再放回，伤害在服务端算，不受影响；渲染读到的仍是真实标记。
-        boolean crit = level().isClientSide && isCritArrow();
+        boolean crit = level().isClientSide() && isCritArrow();
         if (crit) setCritArrow(false);
         super.tick();
         if (crit) setCritArrow(true);
-        if (!level().isClientSide) return;
-        if (inGround) {
+        if (!level().isClientSide()) return;
+        if (isInGround()) {
             // 扎在地上：拖尾一拍一拍缩回去，偶尔闪一下
             if (trailCount > 0) trailCount--;
             if (tickCount % 12 == 0) level().addParticle(ModParticles.BEARER_GLINT.get(), getX(), getY(), getZ(), 0, 0.01, 0);
@@ -181,7 +183,7 @@ public class StarBoltEntity extends AbstractArrow {
                 FallingStarEntity.spawn(server, at.add(0, 20, 0), at, true);
             }
         }
-        boolean bounce = !level().isClientSide && hasStarCoreChestplate() && chestplateBounceCount < 2;
+        boolean bounce = !level().isClientSide() && hasStarCoreChestplate() && chestplateBounceCount < 2;
         if (bounce) rememberChestplateHit(result.getEntity());
         double bounceSpeed = Math.max(getDeltaMovement().length(), 1.0D);
         super.onHitEntity(result);
@@ -201,15 +203,16 @@ public class StarBoltEntity extends AbstractArrow {
         super.onHitBlock(result);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        unstableRemnantTriggered = tag.getBoolean("UnstableRemnantTriggered");
-        chestplateBounceCount = tag.getInt("ChestplateBounceCount");
+        hpBaseDamage=tag.getDoubleOr("damage",2D);
+        unstableRemnantTriggered = tag.getBooleanOr("UnstableRemnantTriggered", false);
+        chestplateBounceCount = tag.getIntOr("ChestplateBounceCount", 0);
         chestplateHitEntityIds.clear();
-        for (int id : tag.getIntArray("ChestplateHitEntityIds")) chestplateHitEntityIds.add(id);
+        for (int id : tag.getIntArray("ChestplateHitEntityIds").orElseGet(() -> new int[0])) chestplateHitEntityIds.add(id);
     }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("UnstableRemnantTriggered", unstableRemnantTriggered);
         tag.putInt("ChestplateBounceCount", chestplateBounceCount);
@@ -290,4 +293,7 @@ public class StarBoltEntity extends AbstractArrow {
         sl.sendParticles(ModParticles.STAR_EMBER.get(), at.x, at.y, at.z, n / 2, 0.12, 0.12, 0.12, 0.03);
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 0.6F, 1.5F + random.nextFloat() * 0.3F);
     }
+    private double hpBaseDamage=2D;
+    @Override public void setBaseDamage(double value) { super.setBaseDamage(value); hpBaseDamage=value; }
+    public double getBaseDamage() { return hpBaseDamage; }
 }

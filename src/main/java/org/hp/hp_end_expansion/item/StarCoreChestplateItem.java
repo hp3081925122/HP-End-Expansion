@@ -8,31 +8,31 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.hp.hp_end_expansion.client.StarCoreChestplateRenderer;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.GeoRenderProvider;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoItem;
+import com.geckolib.animatable.client.GeoRenderProvider;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.util.GeckoLibUtil;
 
-public final class StarCoreChestplateItem extends ArmorItem implements GeoItem {
+public final class StarCoreChestplateItem extends Item implements GeoItem {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.star_core_chestplate.idle");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    public StarCoreChestplateItem(Holder<ArmorMaterial> material, Properties properties) {
-        super(material, Type.CHESTPLATE, properties);
+    public StarCoreChestplateItem(ArmorMaterial material, Properties properties) {
+        super(properties.humanoidArmor(material, net.minecraft.world.item.equipment.ArmorType.CHESTPLATE));
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.star_core_chestplate").withStyle(ChatFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.star_core_chestplate").withStyle(ChatFormatting.GOLD));
     }
 
     @Override
@@ -41,8 +41,7 @@ public final class StarCoreChestplateItem extends ArmorItem implements GeoItem {
             private StarCoreChestplateRenderer renderer;
 
             @Override
-            public <T extends LivingEntity> HumanoidModel<?> getGeoArmorRenderer(@Nullable T livingEntity, ItemStack itemStack,
-                                                                                @Nullable EquipmentSlot equipmentSlot, @Nullable HumanoidModel<T> original) {
+            public com.geckolib.renderer.GeoArmorRenderer<?, ?> getGeoArmorRenderer(ItemStack itemStack, EquipmentSlot equipmentSlot) {
                 if (renderer == null) renderer = new StarCoreChestplateRenderer();
                 return renderer;
             }
@@ -51,7 +50,7 @@ public final class StarCoreChestplateItem extends ArmorItem implements GeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "idle", 0, state -> state.setAndContinue(IDLE)));
+        controllers.add(new AnimationController<>("idle", 0, state -> state.setAndContinue(IDLE)));
     }
 
     @Override

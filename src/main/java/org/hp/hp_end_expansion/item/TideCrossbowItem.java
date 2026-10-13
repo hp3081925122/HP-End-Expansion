@@ -2,28 +2,31 @@ package org.hp.hp_end_expansion.item;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.hp.hp_end_expansion.registry.ModTidelight;
 import org.hp.hp_end_expansion.Hp_end_expansion;
@@ -34,7 +37,7 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID)
 public final class TideCrossbowItem extends CrossbowItem {
-    public static final ResourceLocation CAPACITY_MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "tide_crossbow_capacity");
+    public static final Identifier CAPACITY_MODIFIER_ID = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "tide_crossbow_capacity");
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public TideCrossbowItem(Properties properties) {
@@ -44,7 +47,7 @@ public final class TideCrossbowItem extends CrossbowItem {
     @SubscribeEvent
     public static void onArrowDamage(LivingIncomingDamageEvent event) {
         LivingEntity holder = event.getEntity();
-        if (holder.level().isClientSide || !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) return;
+        if (holder.level().isClientSide() || !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) return;
         if (!(event.getSource().getDirectEntity() instanceof AbstractArrow arrow) || arrow instanceof ThrownTrident) return;
         if (!(holder.getMainHandItem().getItem() instanceof TideCrossbowItem)
             && !(holder.getOffhandItem().getItem() instanceof TideCrossbowItem)) return;
@@ -62,7 +65,7 @@ public final class TideCrossbowItem extends CrossbowItem {
     }
 
     public static void restoreCapacityModifier(LivingEntity entity) {
-        if (entity.level().isClientSide) return;
+        if (entity.level().isClientSide()) return;
         AttributeInstance capacity = entity.getAttribute(ModTidelight.CROSSBOW_CAPACITY);
         if (capacity == null || capacity.getModifier(CAPACITY_MODIFIER_ID) != null) return;
         for (EquipmentSlot slot : List.of(EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND)) {
@@ -87,16 +90,17 @@ public final class TideCrossbowItem extends CrossbowItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (loadedRounds(stack) >= capacity(player)) return InteractionResultHolder.consume(stack);
-        if (player.getProjectile(stack).isEmpty()) return InteractionResultHolder.fail(stack);
+        if (loadedRounds(stack) >= capacity(player)) return InteractionResult.CONSUME;
+        if (player.getProjectile(stack).isEmpty()) return InteractionResult.FAIL;
         player.startUsingItem(hand);
-        return InteractionResultHolder.consume(stack);
+        return InteractionResult.CONSUME;
     }
 
     @Override
-    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+        return false;
     }
 
     @Override
@@ -110,10 +114,12 @@ public final class TideCrossbowItem extends CrossbowItem {
             entity.stopUsingItem();
             return;
         }
-        super.onUseTick(level, entity, stack, timeLeft);
-        if (getUseDuration(stack, entity) - timeLeft < getChargeDuration(stack, entity)) return;
+        if (getUseDuration(stack, entity) - timeLeft < getChargeDuration(stack, entity)) {
+            super.onUseTick(level, entity, stack, timeLeft);
+            return;
+        }
         InteractionHand hand = entity.getUsedItemHand();
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             boolean loaded = loadRound(stack, entity);
             LOGGER.debug("Tide crossbow continuous reload: entity={}, loaded={}, rounds={}, capacity={}",
                 entity.getId(), loaded, loadedRounds(stack), capacity(entity));
@@ -134,7 +140,8 @@ public final class TideCrossbowItem extends CrossbowItem {
         ChargedProjectiles current = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
         stack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
         try {
-            super.releaseUsing(stack, level, entity, getUseDuration(stack, entity) - getChargeDuration(stack, entity));
+            List<ItemStack> drawn = draw(stack, entity.getProjectile(stack), entity);
+            if (!drawn.isEmpty()) stack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.ofNonEmpty(drawn));
             ChargedProjectiles loaded = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
             if (!loaded.isEmpty() && !current.isEmpty()) {
                 List<ChargedProjectiles> reserve = new ArrayList<>(stack.getOrDefault(ModTidelight.CROSSBOW_RESERVE.get(), List.of()));
@@ -145,8 +152,12 @@ public final class TideCrossbowItem extends CrossbowItem {
             if (!current.isEmpty()) stack.set(DataComponents.CHARGED_PROJECTILES, current);
         }
         if (loadedRounds(stack) == previousRounds) return false;
+        EnchantmentHelper.pickHighestLevel(stack, EnchantmentEffectComponents.CROSSBOW_CHARGING_SOUNDS)
+            .map(ChargingSounds::end).orElse(java.util.Optional.of(SoundEvents.CROSSBOW_LOADING_END))
+            .ifPresent(sound -> level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound.value(),
+                entity.getSoundSource(), 1.0F, 1.0F / (level.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
         if (entity instanceof Player player) {
-            player.displayClientMessage(Component.translatable("item.hp_end_expansion.tide_crossbow.ammo", loadedRounds(stack), capacity(entity)), true);
+            player.sendOverlayMessage(Component.translatable("item.hp_end_expansion.tide_crossbow.ammo", loadedRounds(stack), capacity(entity)));
         }
         return true;
     }
@@ -154,10 +165,10 @@ public final class TideCrossbowItem extends CrossbowItem {
     public void shootLoaded(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!(player.level() instanceof ServerLevel) || !player.isAlive() || player.isSpectator()
-            || player.isUsingItem() || stack.getItem() != this || player.getCooldowns().isOnCooldown(this) || !isCharged(stack)) return;
+            || player.isUsingItem() || stack.getItem() != this || player.getCooldowns().isOnCooldown(new ItemStack(this)) || !isCharged(stack)) return;
         ChargedProjectiles current = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
         performShooting(player.level(), player, hand, stack, current.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F, 1.0F, null);
-        player.displayClientMessage(Component.translatable("item.hp_end_expansion.tide_crossbow.ammo", loadedRounds(stack), capacity(player)), true);
+        player.sendOverlayMessage(Component.translatable("item.hp_end_expansion.tide_crossbow.ammo", loadedRounds(stack), capacity(player)));
     }
 
     @Override
@@ -188,18 +199,18 @@ public final class TideCrossbowItem extends CrossbowItem {
                 else stack.set(ModTidelight.CROSSBOW_RESERVE.get(), List.copyOf(reserve.subList(1, reserve.size())));
             }
         }
-        if (shooter instanceof Player player) player.getCooldowns().addCooldown(this, 4);
+        if (shooter instanceof Player player) player.getCooldowns().addCooldown(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(this), 4);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        super.appendHoverText(stack, context, lines, flag);
-        lines.add(Component.translatable("item.hp_end_expansion.tide_crossbow.loaded", loadedRounds(stack)).withStyle(ChatFormatting.AQUA));
-        lines.add(Component.translatable("item.hp_end_expansion.tide_crossbow.controls").withStyle(ChatFormatting.GRAY));
-        lines.add(Component.translatable("item.hp_end_expansion.tide_crossbow.arrow_immunity").withStyle(ChatFormatting.AQUA));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> lines, TooltipFlag flag) {
+        super.appendHoverText(stack,context,display,lines,flag);
+        lines.accept(Component.translatable("item.hp_end_expansion.tide_crossbow.loaded", loadedRounds(stack)).withStyle(ChatFormatting.AQUA));
+        lines.accept(Component.translatable("item.hp_end_expansion.tide_crossbow.controls").withStyle(ChatFormatting.GRAY));
+        lines.accept(Component.translatable("item.hp_end_expansion.tide_crossbow.arrow_immunity").withStyle(ChatFormatting.AQUA));
     }
 
     @Override public Component getName(ItemStack stack) {
-        return Component.translatable(getDescriptionId(stack)).withStyle(ChatFormatting.AQUA);
+        return Component.translatable(getDescriptionId()).withStyle(ChatFormatting.AQUA);
     }
 }

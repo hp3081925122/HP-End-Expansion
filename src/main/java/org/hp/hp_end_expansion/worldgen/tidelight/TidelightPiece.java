@@ -22,10 +22,10 @@ public final class TidelightPiece extends TemplateStructurePiece {
         this.chest = chest; this.sparse = sparse;
     }
     public TidelightPiece(StructureTemplateManager manager, CompoundTag tag) {
-        super(TidelightWorldgen.PIECE.get(), tag, manager, id -> settings(Rotation.valueOf(tag.getString("Rotation")), tag.getBoolean("Sparse")));
-        this.chest = tag.getBoolean("Chest"); this.sparse = tag.getBoolean("Sparse");
+        super(TidelightWorldgen.PIECE.get(), tag, manager, id -> settings(Rotation.valueOf(tag.getStringOr("Rotation", "")), tag.getBooleanOr("Sparse", false)));
+        this.chest = tag.getBooleanOr("Chest", false); this.sparse = tag.getBooleanOr("Sparse", false);
     }
-    private static ResourceLocation id(String name) { return ResourceLocation.fromNamespaceAndPath("hp_end_expansion", "tidelight/" + name); }
+    private static Identifier id(String name) { return Identifier.fromNamespaceAndPath("hp_end_expansion", "tidelight/" + name); }
     private static StructurePlaceSettings settings(Rotation rotation, boolean sparse) {
         StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(rotation).addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
         if (sparse) settings.addProcessor(TidelightRibProcessor.INSTANCE);
@@ -44,7 +44,7 @@ public final class TidelightPiece extends TemplateStructurePiece {
         if (marker.equals("middle_chest") || marker.equals("head_chest") || marker.equals("shrine_chest")) {
             level.setBlock(pos, Blocks.CHEST.defaultBlockState().rotate(placeSettings.getRotation()), 2);
             String loot = marker.equals("shrine_chest") ? "tide_shrine" : "whalefall_reef";
-            if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) container.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath("hp_end_expansion", "chests/" + loot)), random.nextLong());
+            if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) container.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath("hp_end_expansion", "chests/" + loot)), random.nextLong());
         }
     }
 }

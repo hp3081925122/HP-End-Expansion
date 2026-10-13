@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -13,7 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -24,7 +27,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -51,20 +54,20 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 逐星兽（设计文档第 4 节）：出场 → 咬合 / 践踏震荡波 / 彗星冲锋 / 甩尾 → 半血嚎叫进入召星阶段 → 1/4 血过载。
  * 动作由服务端状态机驱动，STATE + ACTION 计数同步给客户端播动画和特效。
  * 星雨生成的不会自然消失，但 32 格内 60 秒没有可攻击的玩家就蜷身化成陨星飞走，不掉落。
  */
-public final class StarChaserEntity extends Monster implements GeoEntity {
+public final class StarChaserEntity extends Monster implements GeoEntity, HpCullingEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final byte NONE = 0, EMERGE = 1, BITE = 2, WINDUP = 3, CHARGE = 4, STAGGER = 5, SWEEP = 6, HOWL = 7, SUMMON = 8, LEAVE = 9, STOMP = 10;
     // 各动作时长比动画长 2 拍，留给 action 控制器的过渡；命中帧同样后移 2 拍
@@ -78,12 +81,12 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     public static final double CHARGE_SPEED = 0.85, CHARGE_RANGE = 12;
     private static final int BITE_CD = 24, CHARGE_CD = 160, SWEEP_CD = 80, SUMMON_CD = 240, STOMP_CD = 100;
     private static final float BITE_DAMAGE = 8;
-    private static final ResourceLocation OVERLOAD_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "star_chaser_overload");
+    private static final Identifier OVERLOAD_SPEED = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "star_chaser_overload");
 
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.BYTE);
-    private static final EntityDataAccessor<Vector3f> AIM = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> AIM = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.VECTOR3);
 
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.star_chaser.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.star_chaser.walk");
@@ -156,7 +159,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
         Difficulty d = level.getDifficulty();
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(d == Difficulty.EASY ? 140 : d == Difficulty.HARD ? 220 : 180);
@@ -176,7 +179,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     public byte getState() { return entityData.get(STATE); }
     public byte getPhase() { return entityData.get(PHASE); }
     public boolean isOverloaded() { return getPhase() >= 2; }
-    public Vec3 getAim() { Vector3f v = entityData.get(AIM); return new Vec3(v.x, v.y, v.z); }
+    public Vec3 getAim() { org.joml.Vector3fc v = entityData.get(AIM); return new Vec3(v.x(), v.y(), v.z()); }
     public int getClientAge() { return clientAge; }
     public int getActionCount() { return entityData.get(ACTION); }
 
@@ -253,12 +256,12 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     public void tick() {
         super.tick();
         if (getState() == BITE && !isDeadOrDying()) faceAim();
-        if (level().isClientSide) clientTick();
+        if (level().isClientSide()) clientTick();
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         int cd = isOverloaded() ? 2 : 1;
         biteCd -= cd;
         chargeCd -= cd;
@@ -388,7 +391,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         int hits = 0;
         for (LivingEntity e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().expandTowards(f.scale(2)).inflate(0.8), this::canHit)) {
             if (e.getBoundingBox().inflate(0.4).distanceToSqr(mouth) > 1.6 * 1.6) continue;
-            if (e.hurt(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("biteDamage"))) {
+            if (e.hurtOrSimulate(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("biteDamage"))) {
                 hit = true;
                 hits++;
             }
@@ -410,7 +413,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         setDeltaMovement(aim.x * CHARGE_SPEED, getDeltaMovement().y, aim.z * CHARGE_SPEED);
         for (LivingEntity e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.5), this::canHit)) {
             if (!chargeHits.add(e.getId())) continue;
-            if (e.hurt(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("chargeDamage"))) {
+            if (e.hurtOrSimulate(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("chargeDamage"))) {
                 e.setDeltaMovement(e.getDeltaMovement().add(aim.x * 1.3, 0.65, aim.z * 1.3));
                 e.hurtMarked = true;
                 playSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.6F, 0.6F);
@@ -432,7 +435,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         for (LivingEntity e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(3.6, 1, 3.6), this::canHit)) {
             double dx = e.getX() - getX(), dz = e.getZ() - getZ(), d = Math.sqrt(dx * dx + dz * dz);
             if (d > 4.4 || d > 1.0E-4 && (f.x * dx + f.z * dz) / d > 0.35) continue;
-            if (e.hurt(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("sweepDamage"))) {
+            if (e.hurtOrSimulate(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("sweepDamage"))) {
                 e.knockback(1.4, getX() - e.getX(), getZ() - e.getZ());
                 e.setDeltaMovement(e.getDeltaMovement().add(0, 0.3, 0));
                 e.hurtMarked = true;
@@ -447,7 +450,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
             Vec3 away = e.position().subtract(stompCenter).multiply(1, 0, 1);
             if (away.lengthSqr() > STOMP_RADIUS * STOMP_RADIUS) continue;
             chargeHits.add(e.getId());
-            if (e.hurt(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("stompDamage"))) {
+            if (e.hurtOrSimulate(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("stompDamage"))) {
                 away = away.lengthSqr() < 1.0E-4 ? forward() : away.normalize();
                 e.knockback(1.2, -away.x, -away.z);
                 e.setDeltaMovement(e.getDeltaMovement().add(0, 0.55, 0));
@@ -478,7 +481,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
             double dx = e.getX() - stompCenter.x, dz = e.getZ() - stompCenter.z, d = Math.sqrt(dx * dx + dz * dz);
             if (d < r0 - 0.6 || d > r1 + 0.6) continue;
             chargeHits.add(e.getId());
-            if (e.hurt(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("waveDamage"))) {
+            if (e.hurtOrSimulate(damageSources().mobAttack(this), CombatConfigs.STAR_CHASER.damage("waveDamage"))) {
                 double k = d < 1.0E-4 ? 0 : 1 / d;
                 e.knockback(0.7, -dx * k, -dz * k);
                 e.setDeltaMovement(e.getDeltaMovement().add(0, 0.4, 0));
@@ -521,10 +524,10 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().inflate(12, 1, 12); }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         byte state = getState();
         if ((state == EMERGE || state == HOWL || state == LEAVE) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
-        return super.hurt(source, isOverloaded() ? amount * 1.25F : amount);
+        return super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, isOverloaded() ? amount * 1.25F : amount);
     }
 
     // ---- 客户端粒子 ----
@@ -603,7 +606,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
                     double a = random.nextDouble() * Math.PI * 2;
                     Vec3 from = paw.add(Math.cos(a) * 1.2, random.nextGaussian() * 0.4, Math.sin(a) * 1.2);
                     Vec3 v = paw.subtract(from).scale(0.18);
-                    level().addParticle(ModParticles.STAR_EMBER.get(), from.x, from.y, from.z, v.x, v.y, v.z);
+                    level().addParticle(ModParticles.STAR_EMBER.get(), from.x, from.y, from.z, v.x(), v.y(), v.z());
                 }
                 if (age == STOMP_HIT) {
                     vfxOrigin = position().add(f.scale(STOMP_REACH));
@@ -630,7 +633,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
                     Vec3 v = new Vec3(tail.x - xo, 0, tail.z - zo);
                     for (int i = 0; i < 5; i++)
                         level().addParticle(ModParticles.STAR_EMBER.get(), tail.x + random.nextGaussian() * 0.5, tail.y + random.nextGaussian() * 0.4, tail.z + random.nextGaussian() * 0.5,
-                            v.z * 0.08 + random.nextGaussian() * 0.08, 0.05 + random.nextDouble() * 0.1, -v.x * 0.08 + random.nextGaussian() * 0.08);
+                            v.z() * 0.08 + random.nextGaussian() * 0.08, 0.05 + random.nextDouble() * 0.1, -v.x() * 0.08 + random.nextGaussian() * 0.08);
                 }
             }
             case HOWL -> {
@@ -648,7 +651,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
                     double a = random.nextDouble() * Math.PI * 2;
                     Vec3 from = core.add(Math.cos(a) * 1.8, random.nextGaussian() * 0.6, Math.sin(a) * 1.8);
                     Vec3 v = core.subtract(from).scale(0.2);
-                    level().addParticle(ParticleTypes.END_ROD, from.x, from.y, from.z, v.x, v.y, v.z);
+                    level().addParticle(ParticleTypes.END_ROD, from.x, from.y, from.z, v.x(), v.y(), v.z());
                 }
                 if (age == SUMMON_CAST) {
                     burst(ModParticles.STAR_EMBER.get(), core, 24, 0.2, 0.35, 0.35);
@@ -662,7 +665,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
                     double a = random.nextDouble() * Math.PI * 2;
                     Vec3 from = core.add(Math.cos(a) * 2.2, random.nextGaussian() * 0.8, Math.sin(a) * 2.2);
                     Vec3 v = core.subtract(from).scale(0.15);
-                    level().addParticle(ModParticles.STAR_EMBER.get(), from.x, from.y, from.z, v.x, v.y, v.z);
+                    level().addParticle(ModParticles.STAR_EMBER.get(), from.x, from.y, from.z, v.x(), v.y(), v.z());
                 } else {
                     if (age == LEAVE_LIFT) {
                         burst(ModParticles.STAR_DEBRIS.get(), position(), 20, 1.0, 0.3, 0.35);
@@ -677,7 +680,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         }
         if (overloadAge == 1) {
             burst(ModParticles.STAR_EMBER.get(), core, 40, 0.3, 0.45, 0.45);
-            level().addParticle(ParticleTypes.FLASH, core.x, core.y, core.z, 0, 0, 0);
+            level().addParticle(net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.FLASH,-1), core.x, core.y, core.z, 0, 0, 0);
         }
         if (isOverloaded() && random.nextInt(2) == 0) {
             double x = getX() + random.nextGaussian() * 0.6, y = getY() + 0.8 + random.nextDouble() * 1.1, z = getZ() + random.nextGaussian() * 0.6;
@@ -708,7 +711,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         }
     }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putByte("Phase", getPhase());
         tag.putBoolean("Howled", howled);
@@ -719,15 +722,15 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         tag.putInt("StompCooldown", stompCd);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        entityData.set(PHASE, tag.getByte("Phase"));
-        howled = tag.getBoolean("Howled");
-        fromStarRain = tag.getBoolean("FromStarRain");
-        aloneTicks = tag.getInt("AloneTicks");
-        chargeCd = tag.getInt("ChargeCooldown");
-        summonCd = tag.getInt("SummonCooldown");
-        stompCd = tag.getInt("StompCooldown");
+        entityData.set(PHASE, tag.getByteOr("Phase", (byte) 0));
+        howled = tag.getBooleanOr("Howled", false);
+        fromStarRain = tag.getBooleanOr("FromStarRain", false);
+        aloneTicks = tag.getIntOr("AloneTicks", 0);
+        chargeCd = tag.getIntOr("ChargeCooldown", 0);
+        summonCd = tag.getIntOr("SummonCooldown", 0);
+        stompCd = tag.getIntOr("StompCooldown", 0);
         // 飞走中途存档时状态不保存，读档后别悬在半空
         setNoGravity(false);
     }
@@ -736,12 +739,12 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 3, state -> {
+        controllers.add(new AnimationController<>("base", 3, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             if (!state.isMoving()) return state.setAndContinue(IDLE);
             return state.setAndContinue(Mth.lengthSquared(getX() - xo, getZ() - zo) > RUN_SPEED * RUN_SPEED ? RUN : WALK);
         }));
-        controllers.add(new AnimationController<>(this, "action", 2, state -> {
+        controllers.add(new AnimationController<>("action", 2, state -> {
             byte s = getState();
             if (isDeadOrDying() || s <= NONE || s >= ACTIONS.length) {
                 animAction = -1;
@@ -750,7 +753,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
             int action = entityData.get(ACTION);
             if (action != animAction) {
                 animAction = action;
-                state.getController().forceAnimationReset();
+                state.controller().reset();
                 LOGGER.debug("Star chaser animation started: entity={}, action={}, state={}", getId(), action, s);
             }
             return state.setAndContinue(ACTIONS[s]);

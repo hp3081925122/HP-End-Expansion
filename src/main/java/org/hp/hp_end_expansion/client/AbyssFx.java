@@ -1,35 +1,36 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 /** 潮灯须鲛特效的绘制工具：发光部分走 eyes（叠加发光），晶体走半透明自发光。所有面两面都画。 */
 final class AbyssFx {
-    static final ResourceLocation GLYPH = tex("glyph"), CRYSTAL = tex("crystal"), ARC = tex("arc"), RING = tex("ring"),
+    static final Identifier GLYPH = tex("glyph"), CRYSTAL = tex("crystal"), ARC = tex("arc"), RING = tex("ring"),
         VORTEX = tex("vortex"), BEAM = tex("beam"), FLARE = tex("flare");
 
     private AbyssFx() {}
 
-    private static ResourceLocation tex(String n) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/abyss_fx_" + n + ".png");
+    private static Identifier tex(String n) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/abyss_fx_" + n + ".png");
     }
 
     /** 叠加发光：亮度即不透明度，k 是 0-1 的强度。 */
-    static VertexConsumer glow(MultiBufferSource b, ResourceLocation t) { return b.getBuffer(RenderType.eyes(t)); }
-    static VertexConsumer solid(MultiBufferSource b, ResourceLocation t) { return b.getBuffer(RenderType.entityTranslucentEmissive(t)); }
+    static VertexConsumer glow(MultiBufferSource b, Identifier t) { return b.getBuffer(RenderTypes.eyes(t)); }
+    static VertexConsumer solid(MultiBufferSource b, Identifier t) { return b.getBuffer(RenderTypes.entityTranslucentEmissive(t)); }
 
     static void v(PoseStack.Pose p, VertexConsumer vc, Vec3 pos, float u, float v, float k) {
         float c = Mth.clamp(k, 0, 1);
         vc.addVertex(p, (float) pos.x, (float) pos.y, (float) pos.z).setColor(c, c, c, c).setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(p, 0, 1, 0);
+            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT).setNormal(p, 0, 1, 0);
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，两面。 */

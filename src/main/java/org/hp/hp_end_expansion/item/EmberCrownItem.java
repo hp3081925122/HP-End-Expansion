@@ -20,7 +20,7 @@ public final class EmberCrownItem extends Item implements ICurioItem {
 
     @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
-        if (!(slotContext.entity() instanceof Player player) || player.level().isClientSide) return;
+        if (!(slotContext.entity() instanceof Player player) || player.level().isClientSide()) return;
         if (player.tickCount % 20 != 0) return;
         ItemStack bow = findDamagedBow(player);
         if (bow.isEmpty() || countStarCrystalShards(player) <= 1 || !consumeStarCrystalShard(player)) return;
@@ -28,14 +28,14 @@ public final class EmberCrownItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.ember_crown.1").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.ember_crown.2").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.ember_crown.3").withStyle(ChatFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.ember_crown.1").withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.ember_crown.2").withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.ember_crown.3").withStyle(ChatFormatting.GOLD));
     }
 
     private static ItemStack findDamagedBow(Player player) {
-        for (ItemStack item : player.getInventory().items) {
+        for (ItemStack item : player.getInventory().getNonEquipmentItems()) {
             if (item.is(ModStarwreck.STAR_BOW.get()) && item.getDamageValue() > 0) return item;
         }
         return ItemStack.EMPTY;
@@ -43,14 +43,14 @@ public final class EmberCrownItem extends Item implements ICurioItem {
 
     private static int countStarCrystalShards(Player player) {
         int count = 0;
-        for (ItemStack item : player.getInventory().items) {
+        for (ItemStack item : player.getInventory().getNonEquipmentItems()) {
             if (item.is(ModStarwreck.STAR_CRYSTAL_SHARD.get())) count += item.getCount();
         }
         return count;
     }
 
     private static boolean consumeStarCrystalShard(Player player) {
-        for (ItemStack item : player.getInventory().items) {
+        for (ItemStack item : player.getInventory().getNonEquipmentItems()) {
             if (item.is(ModStarwreck.STAR_CRYSTAL_SHARD.get())) {
                 item.shrink(1);
                 return true;

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -14,14 +14,14 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
 
 @EventBusSubscriber(modid=Hp_end_expansion.MODID,value=Dist.CLIENT)
-public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<TidebreakerShrimpEntity> {
-    private static ResourceLocation id(String path){return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID,path);}
-    private static ResourceLocation fx(String name){return id("textures/entity/tidebreaker_"+name+".png");}
-    private static final ResourceLocation STREAK=fx("streak"),ARC=fx("arc"),BUBBLE=fx("bubble"),SHARD=fx("shard"),GUARD=fx("guard"),IMPACT=fx("impact");
+public final class TidebreakerShrimpRenderer extends HpGeoEntityRenderer<TidebreakerShrimpEntity> {
+    private static Identifier id(String path){return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID,path);}
+    private static Identifier fx(String name){return id("textures/entity/tidebreaker_"+name+".png");}
+    private static final Identifier STREAK=fx("streak"),ARC=fx("arc"),BUBBLE=fx("bubble"),SHARD=fx("shard"),GUARD=fx("guard"),IMPACT=fx("impact");
     public TidebreakerShrimpRenderer(EntityRendererProvider.Context c){super(c,new Model());shadowRadius=.65F;}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(ModEntities.TIDEBREAKER_SHRIMP.get(),TidebreakerShrimpRenderer::new);}
     @Override protected float getDeathMaxRotation(TidebreakerShrimpEntity e){return 0;}
@@ -29,7 +29,7 @@ public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<Tidebreak
     @Override public void render(TidebreakerShrimpEntity e,float yaw,float pt,PoseStack ps,MultiBufferSource b,int light){
         super.render(e,yaw,pt,ps,b,light);
         if(e.isDeadOrDying())return;
-        Vec3 pos=e.getPosition(pt),cam=entityRenderDispatcher.camera.getPosition().subtract(pos);float age=e.skillAge(pt);PoseStack.Pose p=ps.last();
+        Vec3 pos=e.getPosition(pt),cam=entityRenderDispatcher.camera.position().subtract(pos);float age=e.skillAge(pt);PoseStack.Pose p=ps.last();
         if(e.skill()==TidebreakerShrimpEntity.COMBO){
             for(int side=0;side<2;side++){
                 int hit=side==0?9:15;float t=age-hit;Vec3 fist=e.fist(side,age);
@@ -55,7 +55,7 @@ public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<Tidebreak
             else burst(p,b,center,cam,e.burstAge(pt),1.1F);
         }
     }
-    private static void disc(PoseStack.Pose p,MultiBufferSource b,ResourceLocation tex,Vec3 center,Vec3 axis,double radius,float alpha){
+    private static void disc(PoseStack.Pose p,MultiBufferSource b,Identifier tex,Vec3 center,Vec3 axis,double radius,float alpha){
         Vec3 right=axis.cross(new Vec3(0,1,0)).normalize().scale(radius),up=right.normalize().cross(axis).normalize().scale(radius);
         AbyssFx.quad(p,AbyssFx.glow(b,tex),center.subtract(right).subtract(up),center.add(right).subtract(up),center.add(right).add(up),center.subtract(right).add(up),0,0,1,1,alpha);
     }
@@ -69,9 +69,9 @@ public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<Tidebreak
         AbyssFx.billboard(p,AbyssFx.glow(b,ARC),c,cam.subtract(c),radius*(.65+age*.09),-age*.07,fade*.8F);
         for(int i=0;i<7;i++){double angle=i*2.399;Vec3 shard=c.add(Math.cos(angle)*age*.1*radius,Math.sin(angle)*age*.09*radius-age*age*.003,Math.sin(angle*2)*age*.08*radius);AbyssFx.billboard(p,AbyssFx.glow(b,SHARD),shard,cam.subtract(shard),.09*radius,angle,fade);}
     }
-    private static final class Model extends GeoModel<TidebreakerShrimpEntity>{
-        @Override public ResourceLocation getModelResource(TidebreakerShrimpEntity e){return id("geo/tidebreaker_shrimp.geo.json");}
-        @Override public ResourceLocation getTextureResource(TidebreakerShrimpEntity e){return id("textures/entity/tidebreaker_shrimp.png");}
-        @Override public ResourceLocation getAnimationResource(TidebreakerShrimpEntity e){return id("animations/tidebreaker_shrimp.animation.json");}
+    private static final class Model extends HpGeoModel<TidebreakerShrimpEntity>{
+        @Override public Identifier getModelResource(TidebreakerShrimpEntity e){return id("entity/tidebreaker_shrimp");}
+        @Override public Identifier getTextureResource(TidebreakerShrimpEntity e){return id("textures/entity/tidebreaker_shrimp.png");}
+        @Override public Identifier getAnimationResource(TidebreakerShrimpEntity e){return id("entity/tidebreaker_shrimp");}
     }
 }

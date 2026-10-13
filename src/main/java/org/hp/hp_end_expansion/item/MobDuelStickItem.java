@@ -37,9 +37,9 @@ public final class MobDuelStickItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick.cancel").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick.cancel").withStyle(ChatFormatting.GRAY));
     }
 
     @SubscribeEvent
@@ -49,21 +49,21 @@ public final class MobDuelStickItem extends Item {
         event.setCanceled(true);
         if (!(event.getEntity().level() instanceof ServerLevel level)) return;
         if (!(event.getTarget() instanceof Mob mob) || !mob.isAlive() || mob.isNoAi()) {
-            event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.invalid"), true);
+            event.getEntity().sendOverlayMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.invalid"));
             return;
         }
         if (event.getEntity().isShiftKeyDown()) {
             release(mob);
             clearSelection(stack);
-            event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.canceled"), true);
+            event.getEntity().sendOverlayMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.canceled"));
             return;
         }
         CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (data.hasUUID(SELECTED) && data.getString(DIMENSION).equals(level.dimension().location().toString())
-            && level.getEntity(data.getUUID(SELECTED)) instanceof Mob first && first.isAlive() && !first.isNoAi()) {
+        if (data.read(SELECTED,net.minecraft.core.UUIDUtil.CODEC).isPresent() && data.getStringOr(DIMENSION, "").equals(level.dimension().identifier().toString())
+            && level.getEntity(data.read(SELECTED,net.minecraft.core.UUIDUtil.CODEC).orElse(null)) instanceof Mob first && first.isAlive() && !first.isNoAi()) {
             clearSelection(stack);
             if (first == mob) {
-                event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.selection_canceled"), true);
+                event.getEntity().sendOverlayMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.selection_canceled"));
                 return;
             }
             release(first);
@@ -74,15 +74,15 @@ public final class MobDuelStickItem extends Item {
             if (!sheltered(mob)) mob.setTarget(first);
             LOGGER.debug("Mob duel started with native AI: first={}, firstType={}, second={}, secondType={}",
                 first.getId(), first.getType(), mob.getId(), mob.getType());
-            event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.started",
-                first.getDisplayName(), mob.getDisplayName()), true);
+            event.getEntity().sendOverlayMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.started",
+                first.getDisplayName(), mob.getDisplayName()));
             return;
         }
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            tag.putUUID(SELECTED, mob.getUUID());
-            tag.putString(DIMENSION, level.dimension().location().toString());
+            tag.store(SELECTED,net.minecraft.core.UUIDUtil.CODEC,mob.getUUID());
+            tag.putString(DIMENSION, level.dimension().identifier().toString());
         });
-        event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.selected", mob.getDisplayName()), true);
+        event.getEntity().sendOverlayMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.selected", mob.getDisplayName()));
     }
 
     private static void clearSelection(ItemStack stack) {

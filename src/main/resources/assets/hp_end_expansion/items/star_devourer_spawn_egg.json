@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/star_devourer_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 857628
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 12451824
+      }
+    ]
+  }
+}

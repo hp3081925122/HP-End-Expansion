@@ -1,10 +1,11 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -13,11 +14,11 @@ public final class RiftParticles {
     }
 
     // 裂隙火花：全亮、按寿命切换帧并逐渐缩小
-    public static final class Spark extends TextureSheetParticle {
+    public static final class Spark extends SingleQuadParticle {
         private final SpriteSet sprites;
 
         Spark(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites) {
-            super(level, x, y, z, xd, yd, zd);
+            super(level, x, y, z, xd, yd, zd, sprites.first());
             this.sprites = sprites;
             this.xd = xd;
             this.yd = yd;
@@ -43,22 +44,22 @@ public final class RiftParticles {
         }
 
         @Override
-        protected int getLightColor(float partialTick) {
+        public int getLightCoords(float partialTick) {
             return 15728880;
         }
 
         @Override
-        public ParticleRenderType getRenderType() {
-            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        public SingleQuadParticle.Layer getLayer() {
+            return SingleQuadParticle.Layer.TRANSLUCENT;
         }
     }
 
     // 裂隙碎片：随机造型、受重力下落、旋转并在末段淡出
-    public static final class Shard extends TextureSheetParticle {
+    public static final class Shard extends SingleQuadParticle {
         private final float spin;
 
         Shard(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites) {
-            super(level, x, y, z, xd, yd, zd);
+            super(level, x, y, z, xd, yd, zd, sprites.first());
             this.xd = xd + (this.random.nextDouble() - 0.5D) * 0.08D;
             this.yd = yd + 0.12D + this.random.nextDouble() * 0.1D;
             this.zd = zd + (this.random.nextDouble() - 0.5D) * 0.08D;
@@ -69,7 +70,7 @@ public final class RiftParticles {
             this.roll = this.random.nextFloat() * Mth.TWO_PI;
             this.oRoll = this.roll;
             this.spin = (this.random.nextFloat() - 0.5F) * 0.5F;
-            this.pickSprite(sprites);
+            this.setSprite(sprites.get(this.random));
         }
 
         @Override
@@ -86,20 +87,20 @@ public final class RiftParticles {
         }
 
         @Override
-        protected int getLightColor(float partialTick) {
+        public int getLightCoords(float partialTick) {
             return 15728880;
         }
 
         @Override
-        public ParticleRenderType getRenderType() {
-            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        public SingleQuadParticle.Layer getLayer() {
+            return SingleQuadParticle.Layer.TRANSLUCENT;
         }
     }
 
     // 火花粒子工厂
     public record SparkProvider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
         @Override
-        public Spark createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+        public Spark createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
             return new Spark(level, x, y, z, xd, yd, zd, this.sprites);
         }
     }
@@ -107,7 +108,7 @@ public final class RiftParticles {
     // 碎片粒子工厂
     public record ShardProvider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
         @Override
-        public Shard createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+        public Shard createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
             return new Shard(level, x, y, z, xd, yd, zd, this.sprites);
         }
     }

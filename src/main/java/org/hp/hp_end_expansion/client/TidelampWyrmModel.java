@@ -1,27 +1,27 @@
 package org.hp.hp_end_expansion.client;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidelampWyrmEntity;
-import software.bernie.geckolib.model.GeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
 
-public final class TidelampWyrmModel extends GeoModel<TidelampWyrmEntity> {
-    private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "geo/tidelamp_wyrm.geo.json");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/tidelamp_wyrm.png");
-    private static final ResourceLocation ANIMATION = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "animations/tidelamp_wyrm.animation.json");
+public final class TidelampWyrmModel extends HpGeoModel<TidelampWyrmEntity> {
+    private static final Identifier MODEL = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/tidelamp_wyrm");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/tidelamp_wyrm.png");
+    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/tidelamp_wyrm");
 
     @Override
-    public ResourceLocation getModelResource(TidelampWyrmEntity entity) {
+    public Identifier getModelResource(TidelampWyrmEntity entity) {
         return MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(TidelampWyrmEntity entity) {
+    public Identifier getTextureResource(TidelampWyrmEntity entity) {
         return TEXTURE;
     }
 
     @Override
-    public ResourceLocation getAnimationResource(TidelampWyrmEntity entity) {
+    public Identifier getAnimationResource(TidelampWyrmEntity entity) {
         return ANIMATION;
     }
 }

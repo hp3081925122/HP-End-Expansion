@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.server.level.ServerLevel;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +15,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -39,12 +42,12 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
 
 public final class TidebreakerWarlordEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -70,7 +73,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     public static final int SURGE_LINES = 3, SURGE_COUNT = 6;
     public static final double SURGE_SPREAD = 24, SURGE_START = 3.5, SURGE_STEP = 1.8, GEYSER_RADIUS = 1.0;
 
-    private static final ResourceLocation PHASE_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "tidebreaker_warlord_phase_speed");
+    private static final Identifier PHASE_SPEED = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "tidebreaker_warlord_phase_speed");
 
     // 同步字段
     private static final EntityDataAccessor<Integer> SKILL = data(EntityDataSerializers.INT), START = data(EntityDataSerializers.INT),
@@ -198,8 +201,8 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (isDeadOrDying()) return;
         // 冷却与停顿递减
         for (int i = 1; i < cooldowns.length; i++) {
@@ -394,7 +397,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     private void tickGuard(int age) {
         if (age == GUARD_COUNTER) {
             hitCone(3.6, Math.cos(Math.toRadians(40)), damage("counterDamage"), 0.9, 0.25, false);
-            playSound(SoundEvents.SHIELD_BLOCK, 1.2F, 0.6F);
+            playSound(SoundEvents.SHIELD_BLOCK.value(), 1.2F, 0.6F);
         }
     }
 
@@ -468,7 +471,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     private boolean deal(LivingEntity e, float damage, Vec3 push, double knock, double up) {
         hitIds.add(e.getId());
         e.invulnerableTime = 0;
-        if (!e.hurt(damageSources().mobAttack(this), damage)) return false;
+        if (!e.hurtOrSimulate(damageSources().mobAttack(this), damage)) return false;
         Vec3 dir = Vec3.ZERO;
         if (push.lengthSqr() > 1.0E-4) dir = push.normalize().scale(knock);
         e.setDeltaMovement(e.getDeltaMovement().add(dir.x, up, dir.z));
@@ -498,8 +501,8 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (level().isClientSide) return super.hurt(source, amount);
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        if (level().isClientSide()) return super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         int s = skill();
         int age = (int) skillAge(0);
         // 咆哮期间无敌
@@ -518,10 +521,10 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
         if (s == GUARD && age >= GUARD_START && age < GUARD_COUNTER && front) {
             amount *= (float) CombatConfigs.TIDEBREAKER_WARLORD.value("guardMultiplier");
             entityData.set(GUARD_TIME, (int) level().getGameTime());
-            playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F);
+            playSound(SoundEvents.SHIELD_BLOCK.value(), 1.0F, 0.8F);
             if (DEBUG) LOGGER.info("TidebreakerWarlord guard blocked: entity={}, age={}, amount={}", getId(), age, amount);
         }
-        boolean accepted = super.hurt(source, amount);
+        boolean accepted = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         if (accepted && !isDeadOrDying() && source.getEntity() instanceof LivingEntity attacker && canHit(attacker)) {
             setTarget(attacker);
             lostSight = 0;
@@ -540,16 +543,16 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Enraged", enraged());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
         // 读档后恢复第二阶段
-        if (tag.getBoolean("Enraged")) {
+        if (tag.getBooleanOr("Enraged", false)) {
             entityData.set(ENRAGED, true);
             applyPhaseSpeed();
         }
@@ -558,7 +561,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     @Override
     protected void tickDeath() {
         deathTime++;
-        if (deathTime >= 40 && !level().isClientSide && !isRemoved()) {
+        if (deathTime >= 40 && !level().isClientSide() && !isRemoved()) {
             level().broadcastEntityEvent(this, (byte) 60);
             remove(RemovalReason.KILLED);
         }
@@ -572,24 +575,24 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
             int sequence = entityData.get(SEQUENCE);
             if (seenSequence != sequence) {
                 seenSequence = sequence;
-                state.getController().forceAnimationReset();
+                state.controller().reset();
                 if (DEBUG) LOGGER.info("TidebreakerWarlord animation state received: entity={}, sequence={}, skill={}", getId(), sequence, NAMES[skill()]);
             }
             if (skill() != NONE) {
-                state.getController().setAnimationSpeed(1);
+                state.controller().setAnimationSpeed(1);
                 return state.setAndContinue(ACTIONS[skill()]);
             }
             if (hurtTime > 0) {
-                state.getController().setAnimationSpeed(1);
+                state.controller().setAnimationSpeed(1);
                 return state.setAndContinue(HURT);
             }
             // 走路动画速度跟随实际移动速度
             double speed = new Vec3(getX() - xo, 0, getZ() - zo).length();
             if (state.isMoving() && speed > 0.01) {
-                state.getController().setAnimationSpeed(Mth.clamp(speed / 0.13, 0.6, 1.8));
+                state.controller().setAnimationSpeed(Mth.clamp(speed / 0.13, 0.6, 1.8));
                 return state.setAndContinue(WALK);
             }
-            state.getController().setAnimationSpeed(1);
+            state.controller().setAnimationSpeed(1);
             return state.setAndContinue(IDLE);
         }));
     }
@@ -611,16 +614,15 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
 
     // 技能期间动画时间与服务端技能时间同步
     private static final class SyncedController extends AnimationController<TidebreakerWarlordEntity> {
-        SyncedController(TidebreakerWarlordEntity e, AnimationStateHandler<TidebreakerWarlordEntity> handler) {
-            super(e, "action", 0, handler);
-        }
-
-        @Override
-        protected double adjustTick(double tick) {
-            if (animatable.skill() != NONE && !animatable.isDeadOrDying() && !shouldResetTick && getAnimationState() == State.RUNNING) {
-                return animatable.skillAge((float) (tick - Math.floor(tick)));
-            }
-            return super.adjustTick(tick);
+        SyncedController(TidebreakerWarlordEntity entity, AnimationStateHandler<TidebreakerWarlordEntity> handler) { super("action",0,handler); }
+        @Override public com.geckolib.animation.state.ControllerState extractControllerState(TidebreakerWarlordEntity entity, com.geckolib.renderer.base.GeoRenderState state, AnimatableManager<TidebreakerWarlordEntity> manager, com.geckolib.loading.math.MolangQueries.Actor<TidebreakerWarlordEntity> actor, com.geckolib.model.GeoModel<TidebreakerWarlordEntity> model) {
+            var captured=super.extractControllerState(entity,state,manager,actor,model);
+            var timeline=getTimeline();
+            if(captured==null || timeline==null || entity.skill()==NONE || entity.isDeadOrDying()) return captured;
+            double time=entity.skillAge(state.getPartialTick())/20D;
+            setTimelineTime(time);
+            var point=timeline.createAnimationPoint(time,captured.animationPoint(),captured.easingOverride());
+            return new com.geckolib.animation.state.ControllerState(point,captured.prevAnimationPoint(),timeline.getTransitionTime(time),timeline.getTransitionLength(),captured.additive(),captured.easingOverride(),captured.renderState(),captured.queryValues());
         }
     }
 }

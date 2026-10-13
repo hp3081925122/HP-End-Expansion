@@ -1,34 +1,8 @@
 {
-  "carvers": {},
+  "carvers": [],
   "downfall": 0.5,
   "effects": {
-    "fog_color": 3810328,
-    "mood_sound": {
-      "sound": "minecraft:ambient.basalt_deltas.mood",
-      "tick_delay": 6000,
-      "block_search_extent": 8,
-      "offset": 2
-    },
-    "sky_color": 0,
-    "water_color": 4159204,
-    "water_fog_color": 329011,
-    "ambient_sound": "minecraft:ambient.basalt_deltas.loop",
-    "additions_sound": {
-      "sound": "minecraft:ambient.basalt_deltas.additions",
-      "tick_chance": 0.0111
-    },
-    "particle": {
-      "options": {
-        "type": "hp_end_expansion:star_ember"
-      },
-      "probability": 0.006
-    },
-    "music": {
-      "sound": "hp_end_expansion:music.starwreck_wastes",
-      "min_delay": 600,
-      "max_delay": 2400,
-      "replace_current_music": true
-    }
+    "water_color": 4159204
   },
   "features": [
     [
@@ -51,7 +25,8 @@
     [],
     [
       "hp_end_expansion:starwreck_vegetation"
-    ]
+    ],
+    []
   ],
   "has_precipitation": false,
   "spawn_costs": {},
@@ -110,5 +85,39 @@
     "water_ambient": [],
     "water_creature": []
   },
-  "temperature": 0.5
+  "temperature": 0.5,
+  "attributes": {
+    "minecraft:visual/fog_color": 3810328,
+    "minecraft:visual/sky_color": 0,
+    "minecraft:visual/water_fog_color": 329011,
+    "minecraft:audio/ambient_sounds": {
+      "loop": "minecraft:ambient.basalt_deltas.loop",
+      "mood": {
+        "sound": "minecraft:ambient.basalt_deltas.mood",
+        "tick_delay": 6000,
+        "block_search_extent": 8,
+        "offset": 2
+      },
+      "additions": {
+        "sound": "minecraft:ambient.basalt_deltas.additions",
+        "tick_chance": 0.0111
+      }
+    },
+    "minecraft:audio/background_music": {
+      "default": {
+        "sound": "hp_end_expansion:music.starwreck_wastes",
+        "min_delay": 600,
+        "max_delay": 2400,
+        "replace_current_music": true
+      }
+    },
+    "minecraft:visual/ambient_particles": [
+      {
+        "particle": {
+          "type": "hp_end_expansion:star_ember"
+        },
+        "probability": 0.006
+      }
+    ]
+  }
 }

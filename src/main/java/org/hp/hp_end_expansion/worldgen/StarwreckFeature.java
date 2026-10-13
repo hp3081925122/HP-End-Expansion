@@ -30,7 +30,7 @@ public final class StarwreckFeature extends Feature<StarwreckFeature.Settings> {
     public boolean place(FeaturePlaceContext<Settings> context) {
         WorldGenLevel level=context.level(); RandomSource random=context.random(); Settings settings=context.config();
         int minX=context.origin().getX() & ~15, minZ=context.origin().getZ() & ~15;
-        BoundingBox clip=new BoundingBox(minX-16,level.getMinBuildHeight(),minZ-16,minX+31,level.getMaxBuildHeight()-1,minZ+31);
+        BoundingBox clip=new BoundingBox(minX-16,level.getMinY(),minZ-16,minX+31,level.getMaxY(),minZ+31);
         StarwreckTerrain terrain=new StarwreckTerrain(level,clip,level.getSeed());
         if (settings.kind().equals("surface")) {
             StarwreckNoise noise=new StarwreckNoise(level.getSeed() ^ 0x4D4F5353L);

@@ -28,8 +28,14 @@ public abstract class EndBiomeSourceMixin implements StarwreckBiomeAccess {
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void hp_codec(CallbackInfo ci) {
         if (TerrablenderCompat.isLoaded()) return;
-        CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(RegistryOps.<Biome, TheEndBiomeSource>retrieveGetter(Registries.BIOME))
-            .apply(instance, TheEndBiomeSource::create));
+        CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveElement(Biomes.THE_END),
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveElement(Biomes.END_HIGHLANDS),
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveElement(Biomes.END_MIDLANDS),
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveElement(Biomes.SMALL_END_ISLANDS),
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveElement(Biomes.END_BARRENS),
+            RegistryOps.<Biome, TheEndBiomeSource>retrieveGetter(Registries.BIOME))
+            .apply(instance, (end, highlands, midlands, islands, barrens, registry) -> TheEndBiomeSource.create(registry)));
     }
     @Inject(method = "create", at = @At("RETURN"))
     private static void hp_create(HolderGetter<Biome> registry, CallbackInfoReturnable<TheEndBiomeSource> cir) {

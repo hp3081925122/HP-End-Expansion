@@ -32,7 +32,7 @@ public class StarCoreEntity extends Mob {
         // 保持悬停
         this.setDeltaMovement(0.0D, 0.0D, 0.0D);
         // 客户端星光粒子
-        if (this.level().isClientSide() && this.random.nextInt(2) == 0) {
+        if (this.level().isClientSide() && this.getRandom().nextInt(2) == 0) {
             this.level().addParticle(ParticleTypes.END_ROD, this.getRandomX(0.6D), this.getRandomY(), this.getRandomZ(0.6D), 0.0D, 0.02D, 0.0D);
         }
         // 无主星核 20 秒后消失
@@ -65,7 +65,7 @@ public class StarCoreEntity extends Mob {
     }
 
     @Override
-    protected boolean shouldDropLoot() {
+    protected boolean shouldDropLoot(net.minecraft.server.level.ServerLevel hpServerLevel) {
         return false;
     }
 
@@ -75,7 +75,7 @@ public class StarCoreEntity extends Mob {
     }
 
     @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
+    public boolean causeFallDamage(double fallDistance, float multiplier, DamageSource source) {
         return false;
     }
 }

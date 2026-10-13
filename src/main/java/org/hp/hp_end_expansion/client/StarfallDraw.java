@@ -1,40 +1,41 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 /** 星雨特效共用的贴图和画四边形的工具。加法层的亮度直接写在顶点颜色的 RGB 里。 */
 public final class StarfallDraw {
-    public static final ResourceLocation RIFT = tex("star_rift");
-    public static final ResourceLocation RIFT_GLOW = tex("star_rift_glow");
-    public static final ResourceLocation HALO = tex("star_halo");
-    public static final ResourceLocation TAIL = tex("meteor_tail");
-    public static final ResourceLocation RING = tex("heat_ring");
-    public static final ResourceLocation SCORCH = tex("star_scorch");
-    public static final ResourceLocation METEOR = tex("meteor");
-    public static final ResourceLocation METEOR_GLOW = tex("meteor_glow");
+    public static final Identifier RIFT = tex("star_rift");
+    public static final Identifier RIFT_GLOW = tex("star_rift_glow");
+    public static final Identifier HALO = tex("star_halo");
+    public static final Identifier TAIL = tex("meteor_tail");
+    public static final Identifier RING = tex("heat_ring");
+    public static final Identifier SCORCH = tex("star_scorch");
+    public static final Identifier METEOR = tex("meteor");
+    public static final Identifier METEOR_GLOW = tex("meteor_glow");
 
     private StarfallDraw() {}
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
     }
 
-    public static RenderType additive(ResourceLocation texture) { return RenderType.eyes(texture); }
-    public static RenderType solid(ResourceLocation texture) { return RenderType.entityCutoutNoCull(texture); }
+    public static RenderType additive(Identifier texture) { return RenderTypes.eyes(texture); }
+    public static RenderType solid(Identifier texture) { return RenderTypes.entityCutout(texture); }
 
     public static void vertex(PoseStack.Pose pose, VertexConsumer buffer, Vec3 p, float u, float v, float r, float g, float b, float a) {
         buffer.addVertex(pose, (float) p.x, (float) p.y, (float) p.z)
             .setColor(r, g, b, a)
             .setUv(u, v)
             .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(LightTexture.FULL_BRIGHT)
+            .setLight(LightCoordsUtil.FULL_BRIGHT)
             .setNormal(pose, 0, 1, 0);
     }
 

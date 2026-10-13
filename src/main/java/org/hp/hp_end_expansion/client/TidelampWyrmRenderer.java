@@ -18,11 +18,11 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidelampWyrmEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
-public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEntity> {
+public final class TidelampWyrmRenderer extends HpGeoEntityRenderer<TidelampWyrmEntity> {
     private static final double LIFT = 0.45;
     private static float shake, shakeO;
     private static int ticks;
@@ -64,7 +64,7 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
         if (skill == TidelampWyrmEntity.NONE) return;
         float age = w.getSkillAge(pt);
         float yaw = Mth.rotLerp(pt, w.yBodyRotO, w.yBodyRot);
-        Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(w.getPosition(pt));
+        Vec3 cam = entityRenderDispatcher.camera.position().subtract(w.getPosition(pt));
         PoseStack.Pose p = ps.last();
         switch (skill) {
             case TidelampWyrmEntity.BITE -> bite(age, yaw, cam, p, b);

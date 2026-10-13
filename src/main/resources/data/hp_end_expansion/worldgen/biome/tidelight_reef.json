@@ -1,34 +1,8 @@
 {
-  "carvers": {},
+  "carvers": [],
   "downfall": 0.5,
   "effects": {
-    "fog_color": 932416,
-    "mood_sound": {
-      "sound": "minecraft:ambient.cave",
-      "tick_delay": 6000,
-      "block_search_extent": 8,
-      "offset": 2
-    },
-    "sky_color": 0,
-    "water_color": 3134916,
-    "water_fog_color": 666160,
-    "ambient_sound": "hp_end_expansion:ambient.tidelight_reef.loop",
-    "additions_sound": {
-      "sound": "hp_end_expansion:ambient.tidelight_reef.additions",
-      "tick_chance": 0.0111
-    },
-    "particle": {
-      "options": {
-        "type": "hp_end_expansion:tide_mote"
-      },
-      "probability": 0.012
-    },
-    "music": {
-      "sound": "hp_end_expansion:music.tidelight_reef",
-      "min_delay": 600,
-      "max_delay": 2400,
-      "replace_current_music": true
-    }
+    "water_color": 3134916
   },
   "features": [
     [
@@ -51,7 +25,8 @@
     [
       "hp_end_expansion:tidelight_vegetation",
       "hp_end_expansion:tidelight_curtains"
-    ]
+    ],
+    []
   ],
   "has_precipitation": false,
   "spawn_costs": {},
@@ -72,5 +47,39 @@
     "water_ambient": [],
     "water_creature": []
   },
-  "temperature": 0.5
+  "temperature": 0.5,
+  "attributes": {
+    "minecraft:visual/fog_color": 932416,
+    "minecraft:visual/sky_color": 0,
+    "minecraft:visual/water_fog_color": 666160,
+    "minecraft:audio/ambient_sounds": {
+      "loop": "hp_end_expansion:ambient.tidelight_reef.loop",
+      "mood": {
+        "sound": "minecraft:ambient.cave",
+        "tick_delay": 6000,
+        "block_search_extent": 8,
+        "offset": 2
+      },
+      "additions": {
+        "sound": "hp_end_expansion:ambient.tidelight_reef.additions",
+        "tick_chance": 0.0111
+      }
+    },
+    "minecraft:audio/background_music": {
+      "default": {
+        "sound": "hp_end_expansion:music.tidelight_reef",
+        "min_delay": 600,
+        "max_delay": 2400,
+        "replace_current_music": true
+      }
+    },
+    "minecraft:visual/ambient_particles": [
+      {
+        "particle": {
+          "type": "hp_end_expansion:tide_mote"
+        },
+        "probability": 0.012
+      }
+    ]
+  }
 }

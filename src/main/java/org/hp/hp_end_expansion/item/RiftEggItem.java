@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -23,8 +23,8 @@ public final class RiftEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.rift_egg").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.rift_egg").withStyle(ChatFormatting.GRAY));
     }
 
     @Override
@@ -33,7 +33,7 @@ public final class RiftEggItem extends Item {
         // 仅末地可召唤
         if (level.dimension() != Level.END) {
             if (!level.isClientSide() && context.getPlayer() != null) {
-                context.getPlayer().displayClientMessage(Component.translatable("message.hp_end_expansion.rift_egg.wrong_dimension"), true);
+                context.getPlayer().sendOverlayMessage(Component.translatable("message.hp_end_expansion.rift_egg.wrong_dimension"));
             }
             return InteractionResult.FAIL;
         }
@@ -42,7 +42,7 @@ public final class RiftEggItem extends Item {
         }
         // 在点击方块上方召唤螳后
         BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
-        RiftMatriarchEntity boss = ModEntities.RIFT_MATRIARCH.get().spawn(serverLevel, pos, MobSpawnType.TRIGGERED);
+        RiftMatriarchEntity boss = ModEntities.RIFT_MATRIARCH.get().spawn(serverLevel, pos, EntitySpawnReason.TRIGGERED);
         if (boss == null) {
             return InteractionResult.FAIL;
         }

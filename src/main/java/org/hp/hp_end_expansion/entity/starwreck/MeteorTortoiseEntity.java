@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
@@ -39,13 +41,13 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 陨壳龟（设计文档 9.3）。中立：平时趴着或慢慢挪、啃星苔芽。
@@ -108,7 +110,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
             if (!shelledForStarRain) {
                 shelledForStarRain = true;
                 stopTriggeredAnim("action", "stomp");
-                LOGGER.debug("Meteor tortoise entered star rain shelter: entity={}, dimension={}", getId(), server.dimension().location());
+                LOGGER.debug("Meteor tortoise entered star rain shelter: entity={}, dimension={}", getId(), server.dimension().identifier());
             }
             setTarget(null);
             if (!isShelled()) setMode(SHELLED);
@@ -118,7 +120,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
             shelledForStarRain = false;
             setTarget(null);
             setMode(CALM);
-            LOGGER.debug("Meteor tortoise left star rain shelter: entity={}, dimension={}", getId(), server.dimension().location());
+            LOGGER.debug("Meteor tortoise left star rain shelter: entity={}, dimension={}", getId(), server.dimension().identifier());
         }
     }
 
@@ -137,11 +139,11 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
-    @Override public boolean hurt(DamageSource source, float amount) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         updateStarRainShell();
         if (isShelled() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) amount *= 0.4F;
-        boolean hit = super.hurt(source, amount);
-        if (hit && !level().isClientSide && !shelledForStarRain && isAlive() && source.getEntity() instanceof LivingEntity attacker && attacker != this
+        boolean hit = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (hit && !level().isClientSide() && !shelledForStarRain && isAlive() && source.getEntity() instanceof LivingEntity attacker && attacker != this
             && !(attacker instanceof Player player && (player.isCreative() || player.isSpectator()))) {
             setTarget(attacker);
             if (getMode() == CALM) setMode(SHELLED);
@@ -149,8 +151,8 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
         return hit;
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (stompCooldown > 0) stompCooldown--;
         if (getCrystals() < MAX_CRYSTALS && ++regrowTicks >= REGROW_TICKS) { regrowTicks = 0; setCrystals(getCrystals() + 1); }
         if (shelledForStarRain) return;
@@ -190,7 +192,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
             e -> e != this && e.isAlive() && !(e instanceof MeteorTortoiseEntity) && e.position().distanceToSqr(center) <= STOMP_RADIUS * STOMP_RADIUS + 4)) {
             if (victim instanceof Player player && (player.isCreative() || player.isSpectator())) continue;
             if (victim.position().subtract(center).horizontalDistanceSqr() > STOMP_RADIUS * STOMP_RADIUS) continue;
-            if (victim.hurt(damageSources().mobAttack(this), STOMP_DAMAGE)) {
+            if (victim.hurtOrSimulate(damageSources().mobAttack(this), STOMP_DAMAGE)) {
                 Vec3 away = victim.position().subtract(center).multiply(1, 0, 1);
                 away = away.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : away.normalize();
                 victim.knockback(1.1, -away.x, -away.z);
@@ -215,52 +217,52 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
         ItemStack stack = player.getItemInHand(hand);
         if (!stack.is(ItemTags.PICKAXES)) return super.mobInteract(player, hand);
         if (getCrystals() <= 0) return InteractionResult.PASS;
-        if (!level().isClientSide) {
+        if (!level().isClientSide()) {
             setCrystals(getCrystals() - 1);
             regrowTicks = 0;
-            spawnAtLocation(new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get(), 1 + random.nextInt(2)), 1.0F);
+            spawnAtLocation((net.minecraft.server.level.ServerLevel)level(), new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get(), 1 + random.nextInt(2)), 1.0F);
             level().playSound(null, getX(), getY() + 1, getZ(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.NEUTRAL, 1.0F, 0.9F);
             if (level() instanceof ServerLevel server)
                 server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ModStarwreck.STAR_CRYSTAL_BLOCK.get().defaultBlockState()),
                     getX(), getY() + 1.1, getZ(), 12, 0.3, 0.2, 0.3, 0.1);
             stack.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
         }
-        return InteractionResult.sidedSuccess(level().isClientSide);
+        return InteractionResult.SUCCESS;
     }
 
     // 壳上剩余的晶簇越多，死亡时掉的星晶碎片越多：0～1 簇掉 1 个，2～3 簇掉 2 个，4 簇掉 3 个
     @Override protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
-        spawnAtLocation(new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get(), 1 + getCrystals() / 2));
+        spawnAtLocation((net.minecraft.server.level.ServerLevel)level(), new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get(), 1 + getCrystals() / 2));
     }
 
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.TURTLE_AMBIENT_LAND; }
-    @Override protected SoundEvent getHurtSound(DamageSource source) { return isShelled() ? SoundEvents.SHIELD_BLOCK : SoundEvents.TURTLE_HURT; }
+    @Override protected SoundEvent getHurtSound(DamageSource source) { return isShelled() ? SoundEvents.SHIELD_BLOCK.value() : SoundEvents.TURTLE_HURT; }
     @Override protected SoundEvent getDeathSound() { return SoundEvents.TURTLE_DEATH; }
     @Override protected void playStepSound(BlockPos pos, BlockState state) { playSound(SoundEvents.TURTLE_SHAMBLE, 0.3F, 0.6F); }
     @Override public float getVoicePitch() { return super.getVoicePitch() * 0.6F; }
     @Override public int getAmbientSoundInterval() { return 400; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Crystals", getCrystals());
         tag.putInt("CrystalRegrow", regrowTicks);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Crystals")) setCrystals(tag.getInt("Crystals"));
-        regrowTicks = tag.getInt("CrystalRegrow");
+        if (tag.read("Crystals", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) setCrystals(tag.getIntOr("Crystals", 0));
+        regrowTicks = tag.getIntOr("CrystalRegrow", 0);
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 4, state -> {
+        controllers.add(new AnimationController<>("base", 4, state -> {
             if (isShelled()) return state.setAndContinue(RETRACT);
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
         // 踏地由服务端在进入踏地阶段的同一 tick 触发；冲击波在第 14 tick，对应动画 0.7 s 的砸地帧
-        controllers.add(new AnimationController<>(this, "action", 0, state -> PlayState.STOP).triggerableAnim("stomp", STOMP));
+        controllers.add(new AnimationController<>("action", 0, state -> PlayState.STOP).triggerableAnim("stomp", STOMP));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
@@ -302,7 +304,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
             getLookControl().setLookAt(Vec3.atCenterOf(food));
             if (distanceToSqr(Vec3.atBottomCenterOf(food)) < 2.6 * 2.6) {
                 level().destroyBlock(food, false, MeteorTortoiseEntity.this);
-                playSound(SoundEvents.GENERIC_EAT, 0.6F, 0.7F);
+                playSound(SoundEvents.GENERIC_EAT.value(), 0.6F, 0.7F);
                 food = null;
             } else if (ticks % 40 == 0) {
                 getNavigation().moveTo(food.getX() + 0.5, food.getY(), food.getZ() + 0.5, 0.7);

@@ -1,6 +1,9 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
-import javax.annotation.Nullable;
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -24,7 +27,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
  * 最后 {@link #DROP} tick 碎片从高处插下来，落地那一拍结算伤害。之后竖插在地上 {@link #stand()} tick，期间挡住注视；
  * 裂天那一串碎片的 stand 为 0，落地就碎。伤害由裂天之主创建时传入，不读配置。
  */
-public class SkyShardEntity extends Entity {
+public class SkyShardEntity extends Entity implements HpCullingEntity {
     public static final int DROP = 10, SHATTER = 8;
     private static final EntityDataAccessor<Integer> WARN = SynchedEntityData.defineId(SkyShardEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> STAND = SynchedEntityData.defineId(SkyShardEntity.class, EntityDataSerializers.INT);
@@ -39,7 +42,7 @@ public class SkyShardEntity extends Entity {
     }
 
     static void spawn(ServerLevel level, SkyrenderEntity owner, Vec3 at, float damage, int warn, int stand, float radius) {
-        SkyShardEntity shard = StarwreckEntities.SKY_SHARD.get().create(level);
+        SkyShardEntity shard = StarwreckEntities.SKY_SHARD.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (shard == null) return;
         // 伤害和时长都由本体在释放时给定
         shard.owner = owner;
@@ -47,7 +50,7 @@ public class SkyShardEntity extends Entity {
         shard.entityData.set(WARN, warn);
         shard.entityData.set(STAND, stand);
         shard.entityData.set(RADIUS, radius);
-        shard.moveTo(at.x, at.y, at.z, level.random.nextFloat() * 360, 0);
+        shard.snapTo(at.x, at.y, at.z, level.getRandom().nextFloat() * 360, 0);
         level.addFreshEntity(shard);
     }
 
@@ -79,7 +82,7 @@ public class SkyShardEntity extends Entity {
                 e -> e.isAlive() && !(e instanceof SkyrenderEntity) && !(e instanceof Player p && (p.isCreative() || p.isSpectator())))) {
                 double dx = e.getX() - getX(), dz = e.getZ() - getZ();
                 if (dx * dx + dz * dz > r * r || e.getY() < getY() - 1) continue;
-                e.hurt(source, damage);
+                e.hurtOrSimulate(source, damage);
             }
             sl.sendParticles(ModParticles.SKY_MOTE.get(), getX(), getY() + 0.3, getZ(), 24, r * 0.5, 0.2, r * 0.5, 0.08);
             sl.playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.HOSTILE, 2, 0.5F);
@@ -96,8 +99,9 @@ public class SkyShardEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
     @Override public boolean shouldRenderAtSqrDistance(double d) { return d < 160 * 160; }
     @Override public AABB getBoundingBoxForCulling() { return getBoundingBox().inflate(2, 20, 2); }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

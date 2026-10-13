@@ -1,26 +1,27 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
 /** 星雨碎屑。碎石受重力、落地后继续滚一段并随滚动翻转；星灰几乎不落，慢慢飘散缩小。 */
-public final class StarDebrisParticle extends TextureSheetParticle {
+public final class StarDebrisParticle extends SingleQuadParticle {
     private final boolean ash;
     private final float spin;
 
     private StarDebrisParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites, boolean ash) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.first());
         this.ash = ash;
         this.xd = xd;
         this.yd = yd;
         this.zd = zd;
-        pickSprite(sprites);
+        setSprite(sprites.get(random));
         if (ash) {
             gravity = 0.03F;
             friction = 0.96F;
@@ -57,15 +58,15 @@ public final class StarDebrisParticle extends TextureSheetParticle {
     }
 
     // 碎石带着余热，至少保留一半方块光
-    @Override protected int getLightColor(float partialTick) {
-        int base = super.getLightColor(partialTick);
+    @Override public int getLightCoords(float partialTick) {
+        int base = super.getLightCoords(partialTick);
         return ash ? base : (base & 0xFFFF0000) | Math.max(base & 0xFFFF, 0xA0);
     }
 
-    @Override public ParticleRenderType getRenderType() { return ParticleRenderType.PARTICLE_SHEET_OPAQUE; }
+    @Override public SingleQuadParticle.Layer getLayer() { return SingleQuadParticle.Layer.OPAQUE; }
 
     public record Provider(SpriteSet sprites, boolean ash) implements ParticleProvider<SimpleParticleType> {
-        @Override public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+        @Override public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
             return new StarDebrisParticle(level, x, y, z, xd, yd, zd, sprites, ash);
         }
     }

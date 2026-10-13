@@ -12,7 +12,7 @@ import net.neoforged.neoforge.registries.*;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class TidelightWorldgen {
-    public static final ResourceKey<Biome> BIOME = ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "tidelight_reef"));
+    public static final ResourceKey<Biome> BIOME = ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "tidelight_reef"));
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructureType<?>> STRUCTURES = DeferredRegister.create(Registries.STRUCTURE_TYPE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, Hp_end_expansion.MODID);

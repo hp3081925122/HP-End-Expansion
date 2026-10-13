@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/glimmerfin_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 2059911
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 12058608
+      }
+    ]
+  }
+}

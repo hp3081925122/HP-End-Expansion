@@ -4,14 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.StarCoreEntity;
 
-public final class StarCoreRenderer extends EntityRenderer<StarCoreEntity> {
+public final class StarCoreRenderer extends HpEntityRenderer<StarCoreEntity> {
     public StarCoreRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 0.0F;
@@ -24,7 +24,7 @@ public final class StarCoreRenderer extends EntityRenderer<StarCoreEntity> {
         // 面向镜头的星核光斑，受击时变暗闪烁
         poseStack.pushPose();
         poseStack.translate(0.0D, 0.6D, 0.0D);
-        poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.mulPose(this.entityRenderDispatcher.camera.rotation());
         poseStack.mulPose(Axis.ZP.rotationDegrees(age * 6.0F));
         VertexConsumer buffer = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = 1.1F * pulse;
@@ -39,7 +39,7 @@ public final class StarCoreRenderer extends EntityRenderer<StarCoreEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(StarCoreEntity entity) {
+    public Identifier getTextureLocation(StarCoreEntity entity) {
         return VoidRayDraw.TIDE_STAR;
     }
 }

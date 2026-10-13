@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
@@ -34,13 +36,13 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.util.GeckoLibUtil;
 
 public final class RiftMantisEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -109,8 +111,8 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected boolean shouldDropLoot() {
-        return !this.minion && super.shouldDropLoot();
+    protected boolean shouldDropLoot(net.minecraft.server.level.ServerLevel hpServerLevel) {
+        return !this.minion && super.shouldDropLoot(hpServerLevel);
     }
 
     @Override
@@ -196,17 +198,17 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         if (skill == SKILL_TEAR && t < 11) {
             charging = true;
         }
-        if (!charging || this.random.nextInt(2) != 0) {
+        if (!charging || this.getRandom().nextInt(2) != 0) {
             return;
         }
         float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
         Vec3 forward = new Vec3(-Mth.sin(yaw), 0.0D, Mth.cos(yaw));
         Vec3 side = new Vec3(Mth.cos(yaw), 0.0D, Mth.sin(yaw));
         double sign = 1.0D;
-        if (this.random.nextBoolean()) {
+        if (this.getRandom().nextBoolean()) {
             sign = -1.0D;
         }
-        Vec3 p = this.position().add(forward.scale(1.05D)).add(side.scale(0.825D * sign)).add(0.0D, 2.4D + this.random.nextDouble() * 0.75D, 0.0D);
+        Vec3 p = this.position().add(forward.scale(1.05D)).add(side.scale(0.825D * sign)).add(0.0D, 2.4D + this.getRandom().nextDouble() * 0.75D, 0.0D);
         this.level().addParticle(ModParticles.RIFT_SPARK.get(), p.x, p.y, p.z, 0.0D, 0.02D, 0.0D);
     }
 
@@ -379,7 +381,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             if (dist > 0.3D && rel.normalize().dot(forward) < minDot) {
                 continue;
             }
-            if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), damage)) {
                 victim.knockback(knock, -forward.x, -forward.z);
                 victim.addEffect(new MobEffectInstance(MobEffects.WITHER, 30, 0), this);
             }
@@ -390,7 +392,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     boolean tryStartSkill(LivingEntity target) {
         double dist = this.distanceTo(target);
         boolean sight = this.hasLineOfSight(target);
-        if (this.tearCooldown <= 0 && sight && dist > 4.5D && dist < 12.0D && this.random.nextInt(3) == 0) {
+        if (this.tearCooldown <= 0 && sight && dist > 4.5D && dist < 12.0D && this.getRandom().nextInt(3) == 0) {
             this.startSkill(SKILL_TEAR, "tear");
             return true;
         }
@@ -418,10 +420,10 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean result = super.hurt(source, amount);
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        boolean result = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         if (result && !this.level().isClientSide() && source.getEntity() instanceof Player player) {
-            LOGGER.debug("Rift Mantis {} was damaged by player {}; retaliation target is available", this.getId(), player.getGameProfile().getName());
+            LOGGER.debug("Rift Mantis {} was damaged by player {}; retaliation target is available", this.getId(), player.getGameProfile().name());
         }
         // 空闲状态受击播放短动画
         if (result && !this.level().isClientSide() && !this.isCasting() && this.isAlive()) {
@@ -474,11 +476,11 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
 
     @Override
     public float getVoicePitch() {
-        return 0.5F + this.random.nextFloat() * 0.1F;
+        return 0.5F + this.getRandom().nextFloat() * 0.1F;
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("BlinkCooldown", this.blinkCooldown);
         tag.putInt("BladeCooldown", this.bladeCooldown);
@@ -487,12 +489,12 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        this.blinkCooldown = tag.getInt("BlinkCooldown");
-        this.bladeCooldown = tag.getInt("BladeCooldown");
-        this.tearCooldown = tag.getInt("TearCooldown");
-        this.minion = tag.getBoolean("Minion");
+        this.blinkCooldown = tag.getIntOr("BlinkCooldown", 0);
+        this.bladeCooldown = tag.getIntOr("BladeCooldown", 0);
+        this.tearCooldown = tag.getIntOr("TearCooldown", 0);
+        this.minion = tag.getBooleanOr("Minion", false);
         if (this.minion) {
             this.xpReward = 0;
         }
@@ -501,7 +503,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 基础控制器：死亡、移动、待机
-        controllers.add(new AnimationController<>(this, "base", 5, state -> {
+        controllers.add(new AnimationController<>("base", 5, state -> {
             if (this.isDeadOrDying()) {
                 return state.setAndContinue(DEATH);
             }
@@ -511,7 +513,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             return state.setAndContinue(IDLE);
         }));
         // 技能控制器：只播放服务端触发的动画
-        controllers.add(new AnimationController<>(this, "skill", 2, state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("skill", 2, state -> PlayState.STOP)
             .triggerableAnim("slash", SLASH)
             .triggerableAnim("blink", BLINK)
             .triggerableAnim("blade", BLADE)

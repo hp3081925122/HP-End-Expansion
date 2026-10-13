@@ -1,25 +1,25 @@
 package org.hp.hp_end_expansion.client;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class VoidRayDraw {
     // 虚空紫特效贴图：裂隙螳后使用
-    public static final ResourceLocation BEAM = tex("void_beam");
-    public static final ResourceLocation RING = tex("void_ring");
-    public static final ResourceLocation RUNE = tex("void_rune");
-    public static final ResourceLocation WARN = tex("void_warn");
-    public static final ResourceLocation STAR = tex("void_star");
+    public static final Identifier BEAM = tex("void_beam");
+    public static final Identifier RING = tex("void_ring");
+    public static final Identifier RUNE = tex("void_rune");
+    public static final Identifier WARN = tex("void_warn");
+    public static final Identifier STAR = tex("void_star");
     // 潮光青特效贴图：裂空鳐、噬星鳐王与星核使用
-    public static final ResourceLocation TIDE_BEAM = tex("tide_beam");
-    public static final ResourceLocation TIDE_RING = tex("tide_ring");
-    public static final ResourceLocation TIDE_RUNE = tex("tide_rune");
-    public static final ResourceLocation TIDE_WARN = tex("tide_warn");
-    public static final ResourceLocation TIDE_STAR = tex("tide_star");
-    public static final ResourceLocation TIDE_ARC = tex("tide_arc");
+    public static final Identifier TIDE_BEAM = tex("tide_beam");
+    public static final Identifier TIDE_RING = tex("tide_ring");
+    public static final Identifier TIDE_RUNE = tex("tide_rune");
+    public static final Identifier TIDE_WARN = tex("tide_warn");
+    public static final Identifier TIDE_STAR = tex("tide_star");
+    public static final Identifier TIDE_ARC = tex("tide_arc");
 
     // 一整套特效贴图
-    public record Palette(ResourceLocation beam, ResourceLocation ring, ResourceLocation rune, ResourceLocation warn, ResourceLocation star) {
+    public record Palette(Identifier beam, Identifier ring, Identifier rune, Identifier warn, Identifier star) {
     }
 
     public static final Palette VOID = new Palette(BEAM, RING, RUNE, WARN, STAR);
@@ -36,7 +36,7 @@ public final class VoidRayDraw {
     private VoidRayDraw() {
     }
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
     }
 }

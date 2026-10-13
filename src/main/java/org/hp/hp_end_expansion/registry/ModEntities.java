@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.registry;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.FluidTags;
@@ -7,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.monster.Monster;
@@ -51,7 +52,7 @@ public final class ModEntities {
         () -> EntityType.Builder.of(RiftMantisEntity::new, MobCategory.MONSTER)
             .sized(2.7F, 3.6F)
             .clientTrackingRange(10)
-            .build("hp_end_expansion:rift_mantis")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:rift_mantis")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<RiftMatriarchEntity>> RIFT_MATRIARCH = ENTITY_TYPES.register(
         "rift_matriarch",
@@ -59,7 +60,7 @@ public final class ModEntities {
             .sized(4.5F, 6.0F)
             .eyeHeight(4.8F)
             .clientTrackingRange(12)
-            .build("hp_end_expansion:rift_matriarch")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:rift_matriarch")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<VoidRayEntity>> VOID_RAY = ENTITY_TYPES.register(
         "void_ray",
@@ -67,7 +68,7 @@ public final class ModEntities {
             .sized(3.0F, 1.2F)
             .eyeHeight(0.9F)
             .clientTrackingRange(10)
-            .build("hp_end_expansion:void_ray")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:void_ray")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<StarDevourerEntity>> STAR_DEVOURER = ENTITY_TYPES.register(
         "star_devourer",
@@ -75,7 +76,7 @@ public final class ModEntities {
             .sized(7.5F, 3.0F)
             .eyeHeight(2.4F)
             .clientTrackingRange(12)
-            .build("hp_end_expansion:star_devourer")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:star_devourer")))
     );
     // 末晶萤：末地小型被动生物
     public static final DeferredHolder<EntityType<?>, EntityType<EndMoteEntity>> END_MOTE = ENTITY_TYPES.register(
@@ -83,28 +84,28 @@ public final class ModEntities {
         () -> EntityType.Builder.of(EndMoteEntity::new, MobCategory.CREATURE)
             .sized(0.5F, 0.5F)
             .clientTrackingRange(8)
-            .build("hp_end_expansion:end_mote")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:end_mote")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<LanternJellyfishEntity>> LANTERN_JELLYFISH = ENTITY_TYPES.register(
         "lantern_jellyfish",
         () -> EntityType.Builder.of(LanternJellyfishEntity::new, MobCategory.CREATURE)
             .sized(0.8F, 1.2F)
             .clientTrackingRange(8)
-            .build("hp_end_expansion:lantern_jellyfish")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:lantern_jellyfish")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<GlimmerfinEntity>> GLIMMERFIN = ENTITY_TYPES.register(
         "glimmerfin",
         () -> EntityType.Builder.of(GlimmerfinEntity::new, MobCategory.CREATURE)
             .sized(1.0F, 0.55F)
             .clientTrackingRange(8)
-            .build("hp_end_expansion:glimmerfin")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:glimmerfin")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<TideRemnantHermitCrabEntity>> TIDE_REMNANT_HERMIT_CRAB = ENTITY_TYPES.register(
         "tide_remnant_hermit_crab",
         () -> EntityType.Builder.of(TideRemnantHermitCrabEntity::new, MobCategory.CREATURE)
             .sized(2.5F, 1.4F)
             .clientTrackingRange(8)
-            .build("hp_end_expansion:tide_remnant_hermit_crab")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tide_remnant_hermit_crab")))
     );
     // 潮骸寄居蟹的潮压水箭
     public static final DeferredHolder<EntityType<?>, EntityType<TideWaterBoltEntity>> TIDE_WATER_BOLT = ENTITY_TYPES.register(
@@ -114,7 +115,7 @@ public final class ModEntities {
             .noSave()
             .clientTrackingRange(8)
             .updateInterval(1)
-            .build("hp_end_expansion:tide_water_bolt")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tide_water_bolt")))
     );
     // 骸潮炮的间歇泉和潮汐水墙
     public static final DeferredHolder<EntityType<?>, EntityType<TideVfxEntity>> TIDE_VFX = ENTITY_TYPES.register(
@@ -126,7 +127,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(8)
             .updateInterval(20)
-            .build("hp_end_expansion:tide_vfx")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tide_vfx")))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<org.hp.hp_end_expansion.entity.tidelight.AbyssVfxEntity>> ABYSS_VFX = ENTITY_TYPES.register(
         "abyss_vfx",
@@ -137,7 +138,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(10)
             .updateInterval(20)
-            .build("hp_end_expansion:abyss_vfx")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:abyss_vfx")))
     );
     // 吞星星核
     public static final DeferredHolder<EntityType<?>, EntityType<StarCoreEntity>> STAR_CORE = ENTITY_TYPES.register(
@@ -147,7 +148,7 @@ public final class ModEntities {
             .noSave()
             .fireImmune()
             .clientTrackingRange(10)
-            .build("hp_end_expansion:star_core")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:star_core")))
     );
     // 裂空鳐技能特效：预警线、冲击环、漩涡、星陨
     public static final DeferredHolder<EntityType<?>, EntityType<VoidRayVfxEntity>> VOID_RAY_VFX = ENTITY_TYPES.register(
@@ -159,7 +160,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(8)
             .updateInterval(20)
-            .build("hp_end_expansion:void_ray_vfx")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:void_ray_vfx")))
     );
     // 弧光与裂隙门等短命特效
     public static final DeferredHolder<EntityType<?>, EntityType<RiftVfxEntity>> RIFT_VFX = ENTITY_TYPES.register(
@@ -171,7 +172,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(8)
             .updateInterval(20)
-            .build("hp_end_expansion:rift_vfx")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:rift_vfx")))
     );
     // 裂隙飞刃投射物
     public static final DeferredHolder<EntityType<?>, EntityType<RiftBladeEntity>> RIFT_BLADE = ENTITY_TYPES.register(
@@ -182,7 +183,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(8)
             .updateInterval(1)
-            .build("hp_end_expansion:rift_blade")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:rift_blade")))
     );
     // 地裂突刺
     public static final DeferredHolder<EntityType<?>, EntityType<RiftFissureEntity>> RIFT_FISSURE = ENTITY_TYPES.register(
@@ -194,7 +195,7 @@ public final class ModEntities {
             .fireImmune()
             .clientTrackingRange(8)
             .updateInterval(20)
-            .build("hp_end_expansion:rift_fissure")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:rift_fissure")))
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<TidelampWyrmEntity>> TIDELAMP_WYRM = ENTITY_TYPES.register(
@@ -204,21 +205,21 @@ public final class ModEntities {
             .eyeHeight(3.8F)
             .clientTrackingRange(12)
             .updateInterval(1)
-            .build("hp_end_expansion:tidelamp_wyrm")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tidelamp_wyrm")))
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<TidecrownAnemoneEntity>> TIDECROWN_ANEMONE = ENTITY_TYPES.register(
         "tidecrown_anemone",
         () -> EntityType.Builder.of(TidecrownAnemoneEntity::new, MobCategory.MONSTER)
             .sized(1.5F, 2.4F).eyeHeight(1.45F).clientTrackingRange(12).updateInterval(1)
-            .build("hp_end_expansion:tidecrown_anemone")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tidecrown_anemone")))
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<TidebreakerShrimpEntity>> TIDEBREAKER_SHRIMP = ENTITY_TYPES.register(
         "tidebreaker_shrimp",
         () -> EntityType.Builder.of(TidebreakerShrimpEntity::new, MobCategory.MONSTER)
             .sized(1.1F, 0.95F).eyeHeight(0.75F).clientTrackingRange(12).updateInterval(1)
-            .build("hp_end_expansion:tidebreaker_shrimp")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tidebreaker_shrimp")))
     );
 
     // 碎潮锤将
@@ -226,7 +227,7 @@ public final class ModEntities {
         "tidebreaker_warlord",
         () -> EntityType.Builder.of(TidebreakerWarlordEntity::new, MobCategory.MONSTER)
             .sized(1.8F, 3.2F).eyeHeight(2.7F).clientTrackingRange(12).updateInterval(1)
-            .build("hp_end_expansion:tidebreaker_warlord")
+            .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, Identifier.parse("hp_end_expansion:tidebreaker_warlord")))
     );
 
     private ModEntities() {
@@ -281,68 +282,68 @@ public final class ModEntities {
             ModEntities::tidecrownSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 
-    private static boolean voidRaySpawn(EntityType<VoidRayEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean voidRaySpawn(EntityType<VoidRayEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        if (reason != MobSpawnType.NATURAL && reason != MobSpawnType.CHUNK_GENERATION) {
+        if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
             return true;
         }
         return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 2;
     }
-    private static boolean tidelampWyrmSpawn(EntityType<TidelampWyrmEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tidelampWyrmSpawn(EntityType<TidelampWyrmEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getEntitiesOfClass(TidelampWyrmEntity.class, new AABB(pos).inflate(96.0D), e -> e.isAlive()).isEmpty();
     }
-    private static boolean tideCrabSpawn(EntityType<TideRemnantHermitCrabEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tideCrabSpawn(EntityType<TideRemnantHermitCrabEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+        if ((reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION)
             && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getEntitiesOfClass(TideRemnantHermitCrabEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
     }
 
-    private static boolean tidecrownSpawn(EntityType<TidecrownAnemoneEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tidecrownSpawn(EntityType<TidecrownAnemoneEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+        if ((reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION)
             && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getEntitiesOfClass(TidecrownAnemoneEntity.class, new AABB(pos).inflate(40.0D), e -> e.isAlive()).isEmpty();
     }
 
-    private static boolean tidebreakerSpawn(EntityType<TidebreakerShrimpEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tidebreakerSpawn(EntityType<TidebreakerShrimpEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+        if ((reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION)
             && !validTidelightSpawnGround(level.getBlockState(pos.below()))) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getEntitiesOfClass(TidebreakerShrimpEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
     }
 
-    private static boolean tidebreakerWarlordSpawn(EntityType<TidebreakerWarlordEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tidebreakerWarlordSpawn(EntityType<TidebreakerWarlordEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
         // 非自然生成不做额外限制
-        if (reason != MobSpawnType.NATURAL && reason != MobSpawnType.CHUNK_GENERATION) {
+        if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
             return true;
         }
         // 只在潮光礁石或珍珠沙上生成，96 格内已有一只则不再生成
@@ -356,23 +357,23 @@ public final class ModEntities {
         return ReefstoneBlock.isReef(state) || state.is(ModTidelight.PEARL_SAND.get());
     }
 
-    private static <T extends Mob> boolean lanternJellyfishSpawn(EntityType<T> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static <T extends Mob> boolean lanternJellyfishSpawn(EntityType<T> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getBiome(pos).is(TidelightWorldgen.BIOME)
             && level.getEntitiesOfClass(LanternJellyfishEntity.class, new AABB(pos).inflate(16.0D), e -> e.isAlive()).isEmpty();
     }
 
-    private static boolean glimmerfinSpawn(EntityType<GlimmerfinEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
-        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION)
+    private static boolean glimmerfinSpawn(EntityType<GlimmerfinEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
+        if ((reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION)
             && (!level.getFluidState(pos).is(FluidTags.WATER) || !level.getFluidState(pos.above()).is(FluidTags.WATER))) {
             return false;
         }
-        return reason != MobSpawnType.NATURAL
-            && reason != MobSpawnType.CHUNK_GENERATION
+        return reason != EntitySpawnReason.NATURAL
+            && reason != EntitySpawnReason.CHUNK_GENERATION
             || level.getBiome(pos).is(TidelightWorldgen.BIOME)
             && level.getEntitiesOfClass(GlimmerfinEntity.class, new AABB(pos).inflate(12.0D), e -> e.isAlive()).isEmpty();
     }

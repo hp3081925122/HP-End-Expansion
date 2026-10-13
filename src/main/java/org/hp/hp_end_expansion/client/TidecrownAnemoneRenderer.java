@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -15,18 +15,18 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidecrownAnemoneEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
-public final class TidecrownAnemoneRenderer extends GeoEntityRenderer<TidecrownAnemoneEntity> {
-    private static final ResourceLocation RIBBON = tex("ribbon"), FOAM = tex("foam"), FLARE = tex("flare"), PETAL = tex("petal"), SEAL = tex("seal");
+public final class TidecrownAnemoneRenderer extends HpGeoEntityRenderer<TidecrownAnemoneEntity> {
+    private static final Identifier RIBBON = tex("ribbon"), FOAM = tex("foam"), FLARE = tex("flare"), PETAL = tex("petal"), SEAL = tex("seal");
     public TidecrownAnemoneRenderer(EntityRendererProvider.Context context) {
         super(context, new Model()); shadowRadius = 0.9F; addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
-    private static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
-    private static ResourceLocation tex(String name) { return id("textures/entity/tidecrown_fx_" + name + ".png"); }
+    private static Identifier id(String path) { return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
+    private static Identifier tex(String name) { return id("textures/entity/tidecrown_fx_" + name + ".png"); }
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TIDECROWN_ANEMONE.get(), TidecrownAnemoneRenderer::new);
     }
@@ -37,7 +37,7 @@ public final class TidecrownAnemoneRenderer extends GeoEntityRenderer<TidecrownA
     @Override public void render(TidecrownAnemoneEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buffers, int light) {
         super.render(e, yaw, pt, ps, buffers, light);
         if (e.isDeadOrDying() || e.skill() == TidecrownAnemoneEntity.NONE) return;
-        Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(e.getPosition(pt));
+        Vec3 cam = entityRenderDispatcher.camera.position().subtract(e.getPosition(pt));
         float age = e.skillAge(pt);
         switch (e.skill()) {
             case TidecrownAnemoneEntity.LASH -> lash(e, age, cam, ps.last(), buffers);
@@ -125,9 +125,9 @@ public final class TidecrownAnemoneRenderer extends GeoEntityRenderer<TidecrownA
         Vec3 base = center.add(radial.scale(r)), tip = center.add(radial.scale(r * 0.78)).add(0, h, 0);
         AbyssFx.quad(p, AbyssFx.glow(b, PETAL), tip.subtract(tangent), tip.add(tangent), base.add(tangent), base.subtract(tangent), 0, 0, 1, 1, fade);
     }
-    private static final class Model extends GeoModel<TidecrownAnemoneEntity> {
-        @Override public ResourceLocation getModelResource(TidecrownAnemoneEntity e) { return id("geo/tidecrown_anemone.geo.json"); }
-        @Override public ResourceLocation getTextureResource(TidecrownAnemoneEntity e) { return id("textures/entity/tidecrown_anemone.png"); }
-        @Override public ResourceLocation getAnimationResource(TidecrownAnemoneEntity e) { return id("animations/tidecrown_anemone.animation.json"); }
+    private static final class Model extends HpGeoModel<TidecrownAnemoneEntity> {
+        @Override public Identifier getModelResource(TidecrownAnemoneEntity e) { return id("entity/tidecrown_anemone"); }
+        @Override public Identifier getTextureResource(TidecrownAnemoneEntity e) { return id("textures/entity/tidecrown_anemone.png"); }
+        @Override public Identifier getAnimationResource(TidecrownAnemoneEntity e) { return id("entity/tidecrown_anemone"); }
     }
 }

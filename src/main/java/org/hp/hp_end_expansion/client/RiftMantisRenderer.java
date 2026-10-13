@@ -2,10 +2,10 @@ package org.hp.hp_end_expansion.client;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import org.hp.hp_end_expansion.entity.RiftMantisEntity;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
-public final class RiftMantisRenderer extends GeoEntityRenderer<RiftMantisEntity> {
+public final class RiftMantisRenderer extends HpGeoEntityRenderer<RiftMantisEntity> {
     public RiftMantisRenderer(EntityRendererProvider.Context context) {
         super(context, new RiftMantisModel());
         this.shadowRadius = 1.05F;

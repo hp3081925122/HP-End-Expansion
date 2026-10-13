@@ -1,27 +1,27 @@
 package org.hp.hp_end_expansion.client;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
-import software.bernie.geckolib.model.GeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
 
-public final class LanternJellyfishModel extends GeoModel<LanternJellyfishEntity> {
-    private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "geo/lantern_jellyfish.geo.json");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/lantern_jellyfish.png");
-    private static final ResourceLocation ANIMATION = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "animations/lantern_jellyfish.animation.json");
+public final class LanternJellyfishModel extends HpGeoModel<LanternJellyfishEntity> {
+    private static final Identifier MODEL = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/lantern_jellyfish");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/lantern_jellyfish.png");
+    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/lantern_jellyfish");
 
     @Override
-    public ResourceLocation getModelResource(LanternJellyfishEntity entity) {
+    public Identifier getModelResource(LanternJellyfishEntity entity) {
         return MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(LanternJellyfishEntity entity) {
+    public Identifier getTextureResource(LanternJellyfishEntity entity) {
         return TEXTURE;
     }
 
     @Override
-    public ResourceLocation getAnimationResource(LanternJellyfishEntity entity) {
+    public Identifier getAnimationResource(LanternJellyfishEntity entity) {
         return ANIMATION;
     }
 }

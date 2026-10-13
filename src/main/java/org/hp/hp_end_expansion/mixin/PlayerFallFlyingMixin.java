@@ -16,7 +16,7 @@ public abstract class PlayerFallFlyingMixin {
         Player player = (Player) (Object) this;
         if (!player.onGround() && !player.isFallFlying() && !player.isInWater() && !player.hasEffect(MobEffects.LEVITATION)) {
             ItemStack wings = DevourerWingsItem.getFlightStack(player, net.minecraft.world.entity.EquipmentSlot.CHEST);
-            if (wings.getItem() instanceof DevourerWingsItem && wings.canElytraFly(player)) {
+            if (wings.getItem() instanceof DevourerWingsItem && net.minecraft.world.entity.LivingEntity.canGlideUsing(wings,net.minecraft.world.entity.EquipmentSlot.CHEST)) {
                 player.startFallFlying();
                 cir.setReturnValue(true);
             }

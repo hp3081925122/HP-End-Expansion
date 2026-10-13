@@ -4,10 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -17,7 +17,7 @@ import org.hp.hp_end_expansion.entity.starwreck.StarImpactEntity;
  * 陨星落地：一拍白热闪光和沿来路的残影，接着贴地的热浪环推到 4 格，环上立一圈不到 2 格高的热墙，
  * 地面留一片贴着方块顶面的焦痕，5 秒内从黄白冷到暗红再熄灭。
  */
-public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
+public final class StarImpactRenderer extends HpEntityRenderer<StarImpactEntity> {
     private static final int SEGMENTS = 40;
     private static final int SCORCH_CELLS = 3;
     private static final float SCORCH_RADIUS = SCORCH_CELLS + 0.5F;
@@ -38,7 +38,7 @@ public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
         if (age < 4) {
             // 陨星实体在落点上方一拍就消失了，这道残影把最后几格补上
             Vec3 back = entity.getViewVector(1).scale(-1);
-            Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(entity.position()).normalize();
+            Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(entity.position()).normalize();
             float k = 1 - age / 4;
             StarfallDraw.ribbon(pose, buffers.getBuffer(StarfallDraw.additive(StarfallDraw.TAIL)), new Vec3(0, 0.4, 0), back, toCamera,
                 9 * k, 1.0F, 0.25F, 0, 0.25F, k, k, k);
@@ -48,7 +48,7 @@ public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
             float size = 3 + age * 1.3F;
             poseStack.pushPose();
             poseStack.translate(0, 0.6, 0);
-            poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
+            poseStack.mulPose(entityRenderDispatcher.camera.rotation());
             StarfallDraw.rect(poseStack.last(), buffers.getBuffer(StarfallDraw.additive(StarfallDraw.HALO)), -size, -size, size, size, 0,
                 0, 0, 1, 1, k, 0.82F * k, 0.55F * k);
             poseStack.popPose();
@@ -134,5 +134,5 @@ public final class StarImpactRenderer extends EntityRenderer<StarImpactEntity> {
         return entity.shouldRender(x, y, z) && frustum.isVisible(entity.getBoundingBox().inflate(6, 9, 6));
     }
 
-    @Override public ResourceLocation getTextureLocation(StarImpactEntity entity) { return StarfallDraw.SCORCH; }
+    @Override public Identifier getTextureLocation(StarImpactEntity entity) { return StarfallDraw.SCORCH; }
 }

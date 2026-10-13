@@ -10,10 +10,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
-public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
+public final class VoidRayRenderer extends HpGeoEntityRenderer<VoidRayEntity> {
     // 射线圆柱分段数
     private static final int BEAM_SIDES = 8;
 
@@ -63,7 +63,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
         // 落点光斑：面向镜头的方片
         poseStack.pushPose();
         poseStack.translate(end.x, end.y, end.z);
-        poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.mulPose(this.entityRenderDispatcher.camera.rotation());
         VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = 0.9F * open * pulse;
         RiftVfxDraw.quad(poseStack.last(), star, new Vec3(-s, s, 0.0D), new Vec3(s, s, 0.0D), new Vec3(s, -s, 0.0D), new Vec3(-s, -s, 0.0D),
@@ -117,7 +117,7 @@ public final class VoidRayRenderer extends GeoEntityRenderer<VoidRayEntity> {
     public boolean shouldRender(VoidRayEntity entity, Frustum frustum, double x, double y, double z) {
         // 射线期间裁剪范围覆盖到落点
         if (entity.isBeamFiring()) {
-            AABB box = entity.getBoundingBoxForCulling();
+            AABB box = getBoundingBoxForCulling(entity);
             Vec3 point = entity.getBeamPoint();
             return frustum.isVisible(box.minmax(new AABB(point, point).inflate(1.0D)));
         }

@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
@@ -16,7 +16,7 @@ import org.joml.Quaternionf;
  * 陨星：五块互相咬合的星骸岩团成约 1.5 格的不规则石块，裂缝单独一层加法发光；
  * 身后三层朝镜头的尾焰沿位移反方向拉出，长度跟速度走，所以刚出裂隙时很短。
  */
-public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity> {
+public final class FallingStarRenderer extends HpEntityRenderer<FallingStarEntity> {
     // 每块：中心 xyz、尺寸 xyz、绕 y / x 的角度、贴图 u/v 偏移
     private static final float[][] LUMPS = {
         {0, 0, 0, 1.1F, 0.95F, 1.0F, 0, 0, 0, 0},
@@ -41,7 +41,7 @@ public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity>
         // 刚从芯里挤出来时整体偏小、偏亮，几拍后长到原样
         float emerge = Mth.clamp(age / 5, 0, 1);
         Vec3 world = entity.getPosition(partialTick).add(CENTER);
-        Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(world).normalize();
+        Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(world).normalize();
 
         poseStack.pushPose();
         if (entity.isSmall()) poseStack.scale(0.5F, 0.5F, 0.5F);
@@ -70,7 +70,7 @@ public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity>
     private void renderGlow(PoseStack poseStack, MultiBufferSource buffers, float age, float emerge) {
         poseStack.pushPose();
         poseStack.translate(CENTER.x, CENTER.y, CENTER.z);
-        poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
+        poseStack.mulPose(entityRenderDispatcher.camera.rotation());
         PoseStack.Pose pose = poseStack.last();
         VertexConsumer buffer = buffers.getBuffer(StarfallDraw.additive(StarfallDraw.HALO));
         float size = 1.9F * (0.95F + 0.05F * Mth.sin(age * 1.9F));
@@ -142,5 +142,5 @@ public final class FallingStarRenderer extends EntityRenderer<FallingStarEntity>
         return entity.shouldRender(x, y, z) && frustum.isVisible(entity.getBoundingBox().inflate(8));
     }
 
-    @Override public ResourceLocation getTextureLocation(FallingStarEntity entity) { return StarfallDraw.METEOR; }
+    @Override public Identifier getTextureLocation(FallingStarEntity entity) { return StarfallDraw.METEOR; }
 }

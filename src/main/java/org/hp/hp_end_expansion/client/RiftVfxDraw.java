@@ -1,37 +1,38 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class RiftVfxDraw {
     // 特效贴图
-    public static final ResourceLocation ARC = tex("rift_arc");
-    public static final ResourceLocation PORTAL = tex("rift_portal");
-    public static final ResourceLocation PORTAL_GLOW = tex("rift_portal_glow");
-    public static final ResourceLocation CRACK = tex("rift_crack");
-    public static final ResourceLocation SPIKE = tex("rift_spike");
+    public static final Identifier ARC = tex("rift_arc");
+    public static final Identifier PORTAL = tex("rift_portal");
+    public static final Identifier PORTAL_GLOW = tex("rift_portal_glow");
+    public static final Identifier CRACK = tex("rift_crack");
+    public static final Identifier SPIKE = tex("rift_spike");
 
     private RiftVfxDraw() {
     }
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
     }
 
     // 加法混合、全亮，用于弧光、辉光与地裂
-    public static RenderType additive(ResourceLocation texture) {
-        return RenderType.eyes(texture);
+    public static RenderType additive(Identifier texture) {
+        return RenderTypes.eyes(texture);
     }
 
     // 透明全亮、双面，用于裂隙本体与晶刺
-    public static RenderType translucent(ResourceLocation texture) {
-        return RenderType.entityTranslucentEmissive(texture);
+    public static RenderType translucent(Identifier texture) {
+        return RenderTypes.entityTranslucentEmissive(texture);
     }
 
     // 输出一个四边形，double 为真时补一个反向面
@@ -54,7 +55,7 @@ public final class RiftVfxDraw {
             .setColor(color)
             .setUv(u, v)
             .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(LightTexture.FULL_BRIGHT)
+            .setLight(LightCoordsUtil.FULL_BRIGHT)
             .setNormal(pose, 0.0F, 1.0F, 0.0F);
     }
 

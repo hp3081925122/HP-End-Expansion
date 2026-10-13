@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -24,7 +24,7 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID)
 public final class VoidCoreItem extends Item implements ICurioItem {
-    private static final ResourceLocation CAPACITY_ID = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "void_core_capacity");
+    private static final Identifier CAPACITY_ID = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "void_core_capacity");
     private static final AttributeModifier CAPACITY = new AttributeModifier(CAPACITY_ID, 3.0D, AttributeModifier.Operation.ADD_VALUE);
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -33,14 +33,14 @@ public final class VoidCoreItem extends Item implements ICurioItem {
     }
 
     @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
+    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, Identifier id, ItemStack stack) {
         return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY, CAPACITY);
     }
 
     @SubscribeEvent
     public static void maintainCapacity(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
-        if (player.level().isClientSide) return;
+        if (player.level().isClientSide()) return;
         AttributeInstance capacity = player.getAttribute(ModTidelight.CROSSBOW_CAPACITY);
         if (capacity == null) return;
         boolean equipped = CuriosApi.getCuriosInventory(player).map(handler -> handler.isEquipped(ModItems.VOID_CORE.get())).orElse(false);

@@ -1,28 +1,28 @@
 package org.hp.hp_end_expansion.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import org.hp.hp_end_expansion.client.render.HpGuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -47,12 +47,12 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3f;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import com.geckolib.animation.state.AnimationTest;
+import org.hp.hp_end_expansion.client.render.HpBakedModel;
+import org.hp.hp_end_expansion.client.render.HpBone;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
 /**
  * 裂天之主的客户端：本体渲染和它身上挂的画面（召唤裂口与兆石、跃袭落点暗影、爪扫后的空中裂痕、
@@ -61,29 +61,29 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
  */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class SkyrenderClient {
-    static final ResourceLocation SHARD = id("textures/effect/sky_shard.png");
-    static final ResourceLocation SHARD_GLOW = id("textures/effect/sky_shard_glow.png");
-    static final ResourceLocation TEAR = id("textures/effect/sky_tear.png");
-    static final ResourceLocation TEAR_GLOW = id("textures/effect/sky_tear_glow.png");
-    static final ResourceLocation RIBBON = id("textures/effect/sky_ribbon.png");
-    static final ResourceLocation RIBBON_GLOW = id("textures/effect/sky_ribbon_glow.png");
-    static final ResourceLocation SHADOW = id("textures/effect/sky_shadow.png");
-    static final ResourceLocation SHADOW_GLOW = id("textures/effect/sky_shadow_glow.png");
-    static final ResourceLocation GLOW = id("textures/effect/sky_glow.png");
-    static final ResourceLocation RAYS = id("textures/effect/sky_gaze_rays.png");
-    static final ResourceLocation VIGNETTE = id("textures/effect/gaze_vignette.png");
-    static final ResourceLocation GAZE_OVERLAY = id("textures/effect/gaze_overlay.png");
-    static final ResourceLocation GAZE_OVERLAY_GLOW = id("textures/effect/gaze_overlay_glow.png");
-    static final ResourceLocation STAR_FLARE = id("textures/effect/sky_star_flare.png");
-    static final ResourceLocation STAR_CORONA = id("textures/effect/sky_star_corona.png");
-    static final ResourceLocation METEOR_VIGNETTE = id("textures/effect/meteor_vignette.png");
-    static final ResourceLocation AIR_SHEATH = id("textures/effect/sky_air_sheath.png");
+    static final Identifier SHARD = id("textures/effect/sky_shard.png");
+    static final Identifier SHARD_GLOW = id("textures/effect/sky_shard_glow.png");
+    static final Identifier TEAR = id("textures/effect/sky_tear.png");
+    static final Identifier TEAR_GLOW = id("textures/effect/sky_tear_glow.png");
+    static final Identifier RIBBON = id("textures/effect/sky_ribbon.png");
+    static final Identifier RIBBON_GLOW = id("textures/effect/sky_ribbon_glow.png");
+    static final Identifier SHADOW = id("textures/effect/sky_shadow.png");
+    static final Identifier SHADOW_GLOW = id("textures/effect/sky_shadow_glow.png");
+    static final Identifier GLOW = id("textures/effect/sky_glow.png");
+    static final Identifier RAYS = id("textures/effect/sky_gaze_rays.png");
+    static final Identifier VIGNETTE = id("textures/effect/gaze_vignette.png");
+    static final Identifier GAZE_OVERLAY = id("textures/effect/gaze_overlay.png");
+    static final Identifier GAZE_OVERLAY_GLOW = id("textures/effect/gaze_overlay_glow.png");
+    static final Identifier STAR_FLARE = id("textures/effect/sky_star_flare.png");
+    static final Identifier STAR_CORONA = id("textures/effect/sky_star_corona.png");
+    static final Identifier METEOR_VIGNETTE = id("textures/effect/meteor_vignette.png");
+    static final Identifier AIR_SHEATH = id("textures/effect/sky_air_sheath.png");
     private static final int TEAR_SEGMENTS = 14, REND_SEGMENTS = 18;
     @Nullable private static ItemStack omen;
 
     private SkyrenderClient() {}
 
-    static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
+    static Identifier id(String path) { return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
 
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(StarwreckEntities.SKYRENDER.get(), BossRenderer::new);
@@ -101,7 +101,8 @@ public final class SkyrenderClient {
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, id("skyrender_gaze"), SkyrenderClient::gazeLayer);
     }
 
-    static void gazeLayer(GuiGraphics g, DeltaTracker delta) {
+    static void gazeLayer(net.minecraft.client.gui.GuiGraphicsExtractor graphics, DeltaTracker delta) {
+        HpGuiGraphics g=new HpGuiGraphics(graphics);
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         // 注视只罩生存玩家
@@ -123,24 +124,24 @@ public final class SkyrenderClient {
         float beat = (float) Math.pow(0.5 + 0.5 * Math.sin(age * (0.16F + 0.15F * k)), 3);
         float glow = Math.max(k * (0.45F + 0.55F * beat), Mth.clamp(1 - (charge - age) / 8, 0, 1));
         int x = -inset, y = -inset, dw = w + inset * 2, dh = h + inset * 2;
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+
+        g.setGlow(false);
         g.setColor(1, 1, 1, Mth.clamp((0.25F + k) * fade, 0, 1));
         g.blit(GAZE_OVERLAY, x, y, dw, dh, 0, 0, 256, 144, 256, 144);
         // 发光层走加法：黑的地方不加光，只有裂边和裂纹亮
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        g.setGlow(true);
         g.setColor(1, 1, 1, Mth.clamp(glow * fade, 0, 1));
         g.blit(GAZE_OVERLAY_GLOW, x, y, dw, dh, 0, 0, 256, 144, 256, 144);
-        RenderSystem.defaultBlendFunc();
+        g.setGlow(false);
         g.setColor(1, 1, 1, 1);
-        RenderSystem.disableBlend();
+
         if (age >= charge) g.fill(0, 0, w, h, ((int) (Mth.clamp(fade, 0, 1) * 230) << 24) | 0xFFF4E8);
     }
 
     // ---------- 共用：画四边形 ----------
     static void vertex(PoseStack.Pose pose, VertexConsumer vc, Vec3 p, float u, float v, float r, float g, float b, float a) {
         vc.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(Mth.clamp(r, 0, 1), Mth.clamp(g, 0, 1), Mth.clamp(b, 0, 1), Mth.clamp(a, 0, 1))
-            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，正反两面都画。 */
@@ -175,11 +176,11 @@ public final class SkyrenderClient {
                         float haloHalfWidth, float haloHeight, float haloDrop, float halo, float glow) {
         upright(ps, buffers.getBuffer(StarfallDraw.additive(GLOW)), camera, world, at.add(0, -haloDrop, 0), haloHalfWidth, haloHeight, -0.08F,
             halo, halo * 0.8F, halo * 0.55F, 1);
-        upright(ps, buffers.getBuffer(RenderType.entityTranslucent(TEAR)), camera, world, at, halfWidth, height, 0, 1, 1, 1, 1);
+        upright(ps, buffers.getBuffer(RenderTypes.entityTranslucent(TEAR)), camera, world, at, halfWidth, height, 0, 1, 1, 1, 1);
         upright(ps, buffers.getBuffer(StarfallDraw.additive(TEAR_GLOW)), camera, world, at, halfWidth, height, 0.02F, glow, glow, glow, 1);
     }
 
-    static void sprite(PoseStack ps, MultiBufferSource buffers, Quaternionf camera, ResourceLocation tex, Vec3 at, float size, float spin, float r, float g, float b) {
+    static void sprite(PoseStack ps, MultiBufferSource buffers, Quaternionf camera, Identifier tex, Vec3 at, float size, float spin, float r, float g, float b) {
         if (size <= 0.001F) return;
         ps.pushPose();
         ps.translate(at.x, at.y, at.z);
@@ -193,7 +194,7 @@ public final class SkyrenderClient {
     private static float clamp01(float v) { return Mth.clamp(v, 0, 1); }
 
     // ---------- 本体 ----------
-    static final class BossRenderer extends GeoEntityRenderer<SkyrenderEntity> {
+    static final class BossRenderer extends HpGeoEntityRenderer<SkyrenderEntity> {
         BossRenderer(EntityRendererProvider.Context context) {
             super(context, new BossModel());
             withScale(SkyrenderEntity.MODEL_SCALE);
@@ -203,7 +204,7 @@ public final class SkyrenderClient {
 
         @Override protected float getDeathMaxRotation(SkyrenderEntity animatable) { return 0; }
 
-        @Override public void preRender(PoseStack poseStack, SkyrenderEntity animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
+        @Override public void preRender(PoseStack poseStack, SkyrenderEntity animatable, HpBakedModel model, @Nullable MultiBufferSource bufferSource,
                                         @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
             // 发光层重画时 GeckoLib 会覆盖本体的变换，先存下来再还原，眼睛的位置才对得上
             Matrix4f base = entityRenderTranslations;
@@ -212,7 +213,7 @@ public final class SkyrenderClient {
             else model.getBone("eye").ifPresent(bone -> bone.setTrackingMatrices(true));
         }
 
-        @Override public void renderFinal(PoseStack poseStack, SkyrenderEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource,
+        @Override public void renderFinal(PoseStack poseStack, SkyrenderEntity animatable, HpBakedModel model, MultiBufferSource bufferSource,
                                           @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
             super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
             // 眼睛骨骼的轴心就是竖瞳中心，记下来给注视的眼光用
@@ -225,7 +226,7 @@ public final class SkyrenderClient {
         @Override public void render(SkyrenderEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buffers, int light) {
             byte state = e.getState();
             Vec3 pos = e.getPosition(pt);
-            Vec3 camera = entityRenderDispatcher.camera.getPosition();
+            Vec3 camera = entityRenderDispatcher.camera.position();
             float age = e.getClientAge() + pt;
             // 仪式：模型还在天外，只画裂口和兆石
             if (state != SkyrenderEntity.RITUAL) super.render(e, yaw, pt, ps, buffers, light);
@@ -264,8 +265,7 @@ public final class SkyrenderClient {
             ps.translate(at.x, at.y, at.z);
             ps.mulPose(Axis.YP.rotationDegrees(spin));
             ps.scale(1.6F, 1.6F, 1.6F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(omen, ItemDisplayContext.GROUND, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
-                ps, buffers, e.level(), e.getId());
+            submitItem(e,omen,ItemDisplayContext.GROUND,ps,LightCoordsUtil.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
             ps.popPose();
         }
 
@@ -279,7 +279,7 @@ public final class SkyrenderClient {
             Vec3 s = new Vec3(-f.z, 0, f.x);
             double scale = 0.7 + 0.3 * k;
             Vec3 lf = f.scale(3.8 * scale), ls = s.scale(2.6 * scale);
-            quad(ps.last(), buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), c.add(lf).subtract(ls), c.add(lf).add(ls), c.subtract(lf).add(ls),
+            quad(ps.last(), buffers.getBuffer(RenderTypes.entityTranslucent(SHADOW)), c.add(lf).subtract(ls), c.add(lf).add(ls), c.subtract(lf).add(ls),
                 c.subtract(lf).subtract(ls), 0, 0, 1, 1, 1, 1, 1, 0.25F + 0.65F * k);
             float glow = clamp01((age - (SkyrenderEntity.LEAP_LAND - 8)) / 8);
             if (glow > 0) quad(ps.last(), buffers.getBuffer(StarfallDraw.additive(SHADOW_GLOW)), c.add(lf).subtract(ls).add(0, 0.02, 0), c.add(lf).add(ls).add(0, 0.02, 0),
@@ -292,7 +292,7 @@ public final class SkyrenderClient {
             float close = 1;
             if (age > SkyrenderEntity.RAKE_SNAP - 3) close = clamp01((SkyrenderEntity.RAKE_SNAP - age) / 3);
             float glow = 0.8F + 0.2F * (1 - close);
-            drawTears(e, age, close, ps.last(), buffers.getBuffer(RenderType.entityTranslucent(RIBBON)), 1);
+            drawTears(e, age, close, ps.last(), buffers.getBuffer(RenderTypes.entityTranslucent(RIBBON)), 1);
             drawTears(e, age, close, ps.last(), buffers.getBuffer(StarfallDraw.additive(RIBBON_GLOW)), glow);
         }
 
@@ -331,7 +331,7 @@ public final class SkyrenderClient {
             Vec3 f = e.forward();
             double length = e.getAim().subtract(e.getPosition(pt)).horizontalDistance();
             Vec3[] dirs = e.getPhase() >= 3 ? new Vec3[]{rotate(f, 18), rotate(f, -18)} : new Vec3[]{f};
-            VertexConsumer sky = buffers.getBuffer(RenderType.entityTranslucent(RIBBON));
+            VertexConsumer sky = buffers.getBuffer(RenderTypes.entityTranslucent(RIBBON));
             for (Vec3 d : dirs) renderRendLine(ps.last(), sky, d, length, open, 1);
             float glow = open * (0.85F + 0.15F * Mth.sin(age * 0.6F));
             VertexConsumer lit = buffers.getBuffer(StarfallDraw.additive(RIBBON_GLOW));
@@ -373,7 +373,7 @@ public final class SkyrenderClient {
             Vec3 eye = e.eyeAnchor;
             if (eye == null) return;
             int charge = e.gazeCharge();
-            Quaternionf cam = entityRenderDispatcher.cameraOrientation();
+            Quaternionf cam = entityRenderDispatcher.camera.rotation();
             if (age < charge) {
                 float k = age / charge;
                 float pulse = 0.85F + 0.15F * Mth.sin(age * 0.9F);
@@ -386,27 +386,27 @@ public final class SkyrenderClient {
         }
     }
 
-    static final class BossModel extends GeoModel<SkyrenderEntity> {
-        private final ResourceLocation model = id("geo/skyrender.geo.json"), texture = id("textures/entity/skyrender.png"),
+    static final class BossModel extends HpGeoModel<SkyrenderEntity> {
+        private final Identifier model = id("entity/skyrender"), texture = id("textures/entity/skyrender.png"),
             enraged = id("textures/entity/skyrender_enraged.png"), petrify = id("textures/entity/skyrender_petrify.png"),
-            animation = id("animations/skyrender.animation.json");
+            animation = id("entity/skyrender");
 
-        @Override public ResourceLocation getModelResource(SkyrenderEntity e) { return model; }
-        @Override public ResourceLocation getAnimationResource(SkyrenderEntity e) { return animation; }
+        @Override public Identifier getModelResource(SkyrenderEntity e) { return model; }
+        @Override public Identifier getAnimationResource(SkyrenderEntity e) { return animation; }
 
         // 熄瞳：死亡 1.5 秒后整张换成石化贴图；第三阶段裂缝烧得发白
-        @Override public ResourceLocation getTextureResource(SkyrenderEntity e) {
+        @Override public Identifier getTextureResource(SkyrenderEntity e) {
             if (e.deathTime > 30) return petrify;
             if (e.getPhase() >= 3) return enraged;
             return texture;
         }
 
-        @Override public void setCustomAnimations(SkyrenderEntity e, long instanceId, AnimationState<SkyrenderEntity> state) {
+        @Override public void setCustomAnimations(SkyrenderEntity e, long instanceId, AnimationTest<SkyrenderEntity> state) {
             super.setCustomAnimations(e, instanceId, state);
             // 眼睑左右滑开，开合程度按阶段和招式算
-            float open = lidOpen(e, e.getClientAge() + state.getPartialTick());
-            GeoBone left = getAnimationProcessor().getBone("lid_left");
-            GeoBone right = getAnimationProcessor().getBone("lid_right");
+            float open = lidOpen(e, e.getClientAge() + state.renderState().getPartialTick());
+            HpBone left = getAnimationProcessor().getBone("lid_left");
+            HpBone right = getAnimationProcessor().getBone("lid_right");
             if (left != null) left.setPosX(2.6F * open);
             if (right != null) right.setPosX(-2.6F * open);
         }
@@ -433,13 +433,13 @@ public final class SkyrenderClient {
     }
 
     // ---------- 天幕坠片 ----------
-    static final class ShardRenderer extends EntityRenderer<SkyShardEntity> {
+    static final class ShardRenderer extends HpEntityRenderer<SkyShardEntity> {
         ShardRenderer(EntityRendererProvider.Context context) {
             super(context);
             shadowRadius = 0;
         }
 
-        @Override public ResourceLocation getTextureLocation(SkyShardEntity e) { return SHARD; }
+        @Override public Identifier getTextureLocation(SkyShardEntity e) { return SHARD; }
 
         @Override public void render(SkyShardEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buffers, int light) {
             float t = e.tickCount + pt;
@@ -451,7 +451,7 @@ public final class SkyrenderClient {
             if (t > warn) fade = clamp01(1 - (t - warn) / 6);
             if (fade > 0) {
                 float s = r * (0.6F + 0.5F * k);
-                quad(ps.last(), buffers.getBuffer(RenderType.entityTranslucent(SHADOW)), new Vec3(-s, 0.05, -s), new Vec3(s, 0.05, -s), new Vec3(s, 0.05, s),
+                quad(ps.last(), buffers.getBuffer(RenderTypes.entityTranslucent(SHADOW)), new Vec3(-s, 0.05, -s), new Vec3(s, 0.05, -s), new Vec3(s, 0.05, s),
                     new Vec3(-s, 0.05, s), 0, 0, 1, 1, 1, 1, 1, (0.2F + 0.7F * k) * fade);
                 // 快砸下来时暗影里的裂纹亮起来
                 float crack = clamp01((k - 0.55F) / 0.45F) * fade * 0.8F;
@@ -475,7 +475,7 @@ public final class SkyrenderClient {
             ps.mulPose(Axis.YP.rotationDegrees(-e.getYRot()));
             if (drop > 0) ps.mulPose(Axis.ZP.rotationDegrees(t * 9));
             PoseStack.Pose pose = ps.last();
-            shardQuads(pose, buffers.getBuffer(RenderType.entityTranslucent(SHARD)), scale, 1, alpha);
+            shardQuads(pose, buffers.getBuffer(RenderTypes.entityTranslucent(SHARD)), scale, 1, alpha);
             // 碎边的光跟着碎片一起淡掉
             shardQuads(pose, buffers.getBuffer(StarfallDraw.additive(SHARD_GLOW)), scale, alpha * (0.8F + 0.2F * Mth.sin(t * 0.4F)), 1);
             ps.popPose();
@@ -493,15 +493,15 @@ public final class SkyrenderClient {
     }
 
     // ---------- 天幕碎屑粒子：小碎片边飘边翻转 ----------
-    static final class Mote extends TextureSheetParticle {
+    static final class Mote extends SingleQuadParticle {
         private final float spin;
 
         Mote(ClientLevel level, double x, double y, double z, double dx, double dy, double dz, SpriteSet sprites) {
-            super(level, x, y, z, dx, dy, dz);
+            super(level, x, y, z, dx, dy, dz, sprites.first());
             xd = dx + (random.nextDouble() - 0.5) * 0.04;
             yd = dy + 0.01 + random.nextDouble() * 0.02;
             zd = dz + (random.nextDouble() - 0.5) * 0.04;
-            pickSprite(sprites);
+            setSprite(sprites.get(random));
             lifetime = 30 + random.nextInt(30);
             quadSize = 0.12F + random.nextFloat() * 0.14F;
             gravity = -0.01F;
@@ -518,12 +518,12 @@ public final class SkyrenderClient {
             alpha = 1 - (float) age / lifetime;
         }
 
-        @Override public ParticleRenderType getRenderType() { return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT; }
-        @Override protected int getLightColor(float partialTick) { return LightTexture.FULL_BRIGHT; }
+        @Override public SingleQuadParticle.Layer getLayer() { return SingleQuadParticle.Layer.TRANSLUCENT; }
+        @Override public int getLightCoords(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
     }
 
     record MoteProvider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
-        @Override public Mote createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double dx, double dy, double dz) {
+        @Override public Mote createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double dx, double dy, double dz, net.minecraft.util.RandomSource random) {
             return new Mote(level, x, y, z, dx, dy, dz, sprites);
         }
     }

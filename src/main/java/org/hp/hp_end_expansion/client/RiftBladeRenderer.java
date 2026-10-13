@@ -4,14 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.RiftBladeEntity;
 
-public final class RiftBladeRenderer extends EntityRenderer<RiftBladeEntity> {
+public final class RiftBladeRenderer extends HpEntityRenderer<RiftBladeEntity> {
     // 月牙弧段数
     private static final int SEGMENTS = 10;
 
@@ -59,7 +59,7 @@ public final class RiftBladeRenderer extends EntityRenderer<RiftBladeEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(RiftBladeEntity entity) {
+    public Identifier getTextureLocation(RiftBladeEntity entity) {
         return RiftVfxDraw.ARC;
     }
 }

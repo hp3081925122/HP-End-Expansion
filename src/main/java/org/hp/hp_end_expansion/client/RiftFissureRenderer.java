@@ -5,15 +5,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.RiftFissureEntity;
 
-public final class RiftFissureRenderer extends EntityRenderer<RiftFissureEntity> {
+public final class RiftFissureRenderer extends HpEntityRenderer<RiftFissureEntity> {
     public RiftFissureRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 0.0F;
@@ -124,7 +124,7 @@ public final class RiftFissureRenderer extends EntityRenderer<RiftFissureEntity>
     }
 
     @Override
-    public ResourceLocation getTextureLocation(RiftFissureEntity entity) {
+    public Identifier getTextureLocation(RiftFissureEntity entity) {
         return RiftVfxDraw.CRACK;
     }
 }

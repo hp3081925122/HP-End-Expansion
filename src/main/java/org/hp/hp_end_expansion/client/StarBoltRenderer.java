@@ -1,14 +1,14 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -31,11 +31,11 @@ import org.joml.Vector3f;
  * 贴图由 art/star_bow_fx.py 生成。另外给群星之弓注册拉弓的 pull/pulling 属性，原版只给自己的弓注册了。
  */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
-public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
-    private static final ResourceLocation BODY = tex("entity/star_bolt");
-    private static final ResourceLocation GLOW = tex("entity/star_bolt_glow");
-    private static final ResourceLocation TRAIL = tex("effect/star_bolt_trail");
-    private static final ResourceLocation FLARE = tex("effect/star_bolt_flare");
+public final class StarBoltRenderer extends HpEntityRenderer<StarBoltEntity> {
+    private static final Identifier BODY = tex("entity/star_bolt");
+    private static final Identifier GLOW = tex("entity/star_bolt_glow");
+    private static final Identifier TRAIL = tex("effect/star_bolt_trail");
+    private static final Identifier FLARE = tex("effect/star_bolt_flare");
     private static final float LEN = 1.0F, HALF_H = 0.125F;
     /** 拉满弓一拍飞 3 格，拖尾最长画 14 格，再长就成激光了。 */
     private static final float MAX_TRAIL = 14;
@@ -44,24 +44,17 @@ public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
         super(context);
     }
 
-    private static ResourceLocation tex(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/" + path + ".png");
+    private static Identifier tex(String path) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/" + path + ".png");
     }
 
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(StarwreckEntities.STAR_BOLT.get(), StarBoltRenderer::new);
     }
 
-    @SubscribeEvent public static void setup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            ItemProperties.register(ModStarwreck.STAR_BOW.get(), ResourceLocation.withDefaultNamespace("pull"), (stack, level, entity, seed) ->
-                entity == null ? 0 : StarBowItem.getPullProgress(stack, entity));
-            ItemProperties.register(ModStarwreck.STAR_BOW.get(), ResourceLocation.withDefaultNamespace("pulling"), (stack, level, entity, seed) ->
-                entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1 : 0);
-        });
-    }
 
-    @Override public ResourceLocation getTextureLocation(StarBoltEntity e) { return BODY; }
+
+    @Override public Identifier getTextureLocation(StarBoltEntity e) { return BODY; }
 
     @Override public void render(StarBoltEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buffers, int light) {
         float t = e.tickCount + pt;
@@ -76,7 +69,7 @@ public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
         if (!stuck) ps.mulPose(Axis.XP.rotationDegrees(t * 18));   // 飞行时绕自身慢慢转，晶面会闪
         PoseStack.Pose pose = ps.last();
         float h = LEN / 2;
-        VertexConsumer body = buffers.getBuffer(RenderType.entityCutoutNoCull(BODY));
+        VertexConsumer body = buffers.getBuffer(RenderTypes.entityCutout(BODY));
         for (int i = 0; i < 2; i++) {
             Vec3 up = i == 0 ? new Vec3(0, HALF_H, 0) : new Vec3(0, 0, HALF_H);
             Vec3 a = new Vec3(-h, 0, 0).add(up), b = new Vec3(h, 0, 0).add(up), c = new Vec3(h, 0, 0).subtract(up), d = new Vec3(-h, 0, 0).subtract(up);
@@ -90,7 +83,7 @@ public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
         }
         ps.popPose();
 
-        Quaternionf cam = entityRenderDispatcher.cameraOrientation();
+        Quaternionf cam = entityRenderDispatcher.camera.rotation();
         Vec3 right = rotate(cam, 1, 0, 0), up = rotate(cam, 0, 1, 0);
         double yr = Math.toRadians(yRot), xr = Math.toRadians(xRot);
         Vec3 dir = new Vec3(Math.sin(yr) * Math.cos(xr), Math.sin(xr), Math.cos(yr) * Math.cos(xr));
@@ -116,7 +109,7 @@ public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
         int n = e.trailCount;
         if (n < 2) return;
         Vec3 here = e.getPosition(pt);
-        Vec3 eye = entityRenderDispatcher.camera.getPosition().subtract(here);
+        Vec3 eye = entityRenderDispatcher.camera.position().subtract(here);
         Vec3[] pts = new Vec3[n + 1];
         pts[0] = Vec3.ZERO;
         for (int i = 0; i < n; i++) pts[i + 1] = e.trail[i].subtract(here);

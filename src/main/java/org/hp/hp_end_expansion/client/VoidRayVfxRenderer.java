@@ -5,14 +5,14 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.VoidRayVfxEntity;
 
-public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
+public final class VoidRayVfxRenderer extends HpEntityRenderer<VoidRayVfxEntity> {
     // 环形分段数
     private static final int RING_SEGMENTS = 32;
 
@@ -203,7 +203,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
         RiftVfxDraw.quad(pose, beam, new Vec3(0.0D, tail, -w), new Vec3(0.0D, tail, w), new Vec3(0.0D, 0.0D, w), new Vec3(0.0D, 0.0D, -w),
             0.0F, 0.0F, 1.0F, 1.0F, RiftVfxDraw.fade(0.8F), true);
         // 晶核：朝向镜头并自转
-        poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.mulPose(this.entityRenderDispatcher.camera.rotation());
         poseStack.mulPose(Axis.ZP.rotationDegrees(age * 20.0F));
         PoseStack.Pose core = poseStack.last();
         VertexConsumer starBuf = buffers.getBuffer(RiftVfxDraw.additive(tex.star()));
@@ -264,7 +264,7 @@ public final class VoidRayVfxRenderer extends EntityRenderer<VoidRayVfxEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(VoidRayVfxEntity entity) {
+    public Identifier getTextureLocation(VoidRayVfxEntity entity) {
         return VoidRayDraw.RING;
     }
 }

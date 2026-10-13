@@ -3,7 +3,7 @@ package org.hp.hp_end_expansion.worldgen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -29,8 +29,8 @@ public final class StarwreckPiece extends StructurePiece {
     }
     public StarwreckPiece(CompoundTag tag) {
         super(StarwreckWorldgen.TERRAIN_PIECE.get(),tag);
-        center=new BlockPos(tag.getInt("CX"),tag.getInt("CY"),tag.getInt("CZ"));
-        ground=tag.getInt("Ground");radius=tag.getInt("Radius");depth=tag.getInt("Depth");platform=tag.getBoolean("Platform");seed=tag.getLong("Seed");spawned=tag.getBoolean("Spawned");
+        center=new BlockPos(tag.getIntOr("CX", 0),tag.getIntOr("CY", 0),tag.getIntOr("CZ", 0));
+        ground=tag.getIntOr("Ground", 0);radius=tag.getIntOr("Radius", 0);depth=tag.getIntOr("Depth", 0);platform=tag.getBooleanOr("Platform", false);seed=tag.getLongOr("Seed", 0L);spawned=tag.getBooleanOr("Spawned", false);
     }
     @Override
     protected void addAdditionalSaveData(StructurePieceSerializationContext context,CompoundTag tag) {
@@ -74,12 +74,12 @@ public final class StarwreckPiece extends StructurePiece {
         if(!spawned && clip.isInside(spawn)) {
             // 陨壳龟趴在巨型残骸旁的坑底：从预定点向下找到第一块实心地面
             BlockPos floor=spawn;
-            for(int i=0;i<12 && floor.getY()>level.getMinBuildHeight() && level.isEmptyBlock(floor.below());i++) floor=floor.below();
+            for(int i=0;i<12 && floor.getY()>level.getMinY() && level.isEmptyBlock(floor.below());i++) floor=floor.below();
             for(int i=0;i<6 && !level.isEmptyBlock(floor);i++) floor=floor.above();
-            MeteorTortoiseEntity tortoise=StarwreckEntities.METEOR_TORTOISE.get().create(level.getLevel());
+            MeteorTortoiseEntity tortoise=StarwreckEntities.METEOR_TORTOISE.get().create(level.getLevel(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if(tortoise!=null) {
-                tortoise.moveTo(floor.getX()+0.5,floor.getY(),floor.getZ()+0.5,level.getRandom().nextFloat()*360,0);
-                tortoise.finalizeSpawn(level,level.getCurrentDifficultyAt(floor),MobSpawnType.STRUCTURE,null);
+                tortoise.snapTo(floor.getX()+0.5,floor.getY(),floor.getZ()+0.5,level.getRandom().nextFloat()*360,0);
+                tortoise.finalizeSpawn(level,level.getCurrentDifficultyAt(floor),EntitySpawnReason.STRUCTURE,null);
                 tortoise.setPersistenceRequired();level.addFreshEntity(tortoise);spawned=true;
             }
         }

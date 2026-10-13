@@ -7,15 +7,9 @@
     "ECE"
   ],
   "key": {
-    "C": {
-      "item": "hp_end_expansion:star_crystal_shard"
-    },
-    "X": {
-      "item": "hp_end_expansion:star_core_ember"
-    },
-    "E": {
-      "item": "hp_end_expansion:ember"
-    }
+    "C": "hp_end_expansion:star_crystal_shard",
+    "X": "hp_end_expansion:star_core_ember",
+    "E": "hp_end_expansion:ember"
   },
   "result": {
     "id": "hp_end_expansion:star_core_chestplate",

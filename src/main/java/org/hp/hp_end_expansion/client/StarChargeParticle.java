@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -7,8 +8,8 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.item.StarBowItem;
 
-public final class StarChargeParticle extends TextureSheetParticle {
+public final class StarChargeParticle extends SingleQuadParticle {
     private static final int STREAM = 0;
     private static final int RING = 1;
     private static final int PULSE = 2;
@@ -42,7 +43,7 @@ public final class StarChargeParticle extends TextureSheetParticle {
     private float localForward;
 
     private StarChargeParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.first());
         this.sprites = sprites;
         ownerId = (int) xd;
         mode = (int) yd;
@@ -191,7 +192,7 @@ public final class StarChargeParticle extends TextureSheetParticle {
         z = world.z;
     }
 
-    @Override public void render(VertexConsumer buffer, Camera camera, float partialTick) {
+    @Override public void extract(net.minecraft.client.renderer.state.level.QuadParticleRenderState buffer, Camera camera, float partialTick) {
         LivingEntity owner = owner();
         if (owner == null) return;
         Vec3 world = StarBowChargeFx.toWorld(owner, partialTick,
@@ -207,7 +208,7 @@ public final class StarChargeParticle extends TextureSheetParticle {
         x = xo = world.x;
         y = yo = world.y;
         z = zo = world.z;
-        super.render(buffer, camera, partialTick);
+        super.extract(buffer, camera, partialTick);
         x = x0;
         y = y0;
         z = z0;
@@ -231,17 +232,17 @@ public final class StarChargeParticle extends TextureSheetParticle {
         };
     }
 
-    @Override protected int getLightColor(float partialTick) {
-        return LightTexture.FULL_BRIGHT;
+    @Override public int getLightCoords(float partialTick) {
+        return LightCoordsUtil.FULL_BRIGHT;
     }
 
-    @Override public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+    @Override public SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.TRANSLUCENT;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
         @Override public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
-                                                 double xd, double yd, double zd) {
+                                                 double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
             return new StarChargeParticle(level, x, y, z, xd, yd, zd, sprites);
         }
     }

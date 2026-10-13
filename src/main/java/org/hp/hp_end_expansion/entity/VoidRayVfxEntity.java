@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.UUID;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.hp.hp_end_expansion.registry.ModParticles;
 
-public final class VoidRayVfxEntity extends Entity {
+public final class VoidRayVfxEntity extends Entity implements HpCullingEntity {
     // 特效种类：俯冲预警线、地面冲击环、引力漩涡、星陨落点
     public static final int KIND_WARN_LINE = 0;
     public static final int KIND_SHOCK = 1;
@@ -71,7 +73,7 @@ public final class VoidRayVfxEntity extends Entity {
         VoidRayVfxEntity vfx = new VoidRayVfxEntity(ModEntities.VOID_RAY_VFX.get(), level);
         vfx.damage = damage;
         vfx.secondaryDamage = secondaryDamage;
-        vfx.moveTo(pos.x, pos.y, pos.z, yaw, 0.0F);
+        vfx.snapTo(pos.x, pos.y, pos.z, yaw, 0.0F);
         vfx.entityData.set(KIND, kind);
         vfx.entityData.set(SIZE, size);
         vfx.entityData.set(DELAY, delay);
@@ -167,9 +169,9 @@ public final class VoidRayVfxEntity extends Entity {
     // 客户端辅助：漩涡碎片螺旋吸入，星陨下落拖尾
     private void clientTick(int kind) {
         int t = this.tickCount - this.getDelay();
-        if (kind == KIND_VORTEX && t >= VORTEX_ARM && t < this.getLife() - 4 && this.random.nextInt(2) == 0) {
-            double a = this.random.nextDouble() * Math.PI * 2.0D;
-            double r = this.getSize() * (0.6D + this.random.nextDouble() * 0.4D);
+        if (kind == KIND_VORTEX && t >= VORTEX_ARM && t < this.getLife() - 4 && this.getRandom().nextInt(2) == 0) {
+            double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+            double r = this.getSize() * (0.6D + this.getRandom().nextDouble() * 0.4D);
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
             // 切向加向心速度形成螺旋
@@ -178,18 +180,18 @@ public final class VoidRayVfxEntity extends Entity {
         }
         // 黑洞：碎片从外圈旋入
         if (kind == KIND_BLACK_HOLE && t >= HOLE_ARM && t < this.getLife() - 2) {
-            double a = this.random.nextDouble() * Math.PI * 2.0D;
-            double r = 4.0D + this.random.nextDouble() * 5.0D;
+            double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+            double r = 4.0D + this.getRandom().nextDouble() * 5.0D;
             double ox = Math.cos(a) * r;
             double oz = Math.sin(a) * r;
-            double oy = (this.random.nextDouble() - 0.5D) * 4.0D;
+            double oy = (this.getRandom().nextDouble() - 0.5D) * 4.0D;
             this.level().addParticle(this.shardParticle(), this.getX() + ox, this.getY() + oy, this.getZ() + oz,
                 -ox * 0.07D - oz * 0.05D, -oy * 0.07D, -oz * 0.07D + ox * 0.05D);
         }
         // 星尘：地面闪烁
-        if (kind == KIND_STARDUST && this.random.nextInt(3) == 0) {
-            double a = this.random.nextDouble() * Math.PI * 2.0D;
-            double r = this.random.nextDouble() * this.getSize();
+        if (kind == KIND_STARDUST && this.getRandom().nextInt(3) == 0) {
+            double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+            double r = this.getRandom().nextDouble() * this.getSize();
             this.level().addParticle(this.sparkParticle(), this.getX() + Math.cos(a) * r, this.getY() + 0.1D, this.getZ() + Math.sin(a) * r, 0.0D, 0.03D, 0.0D);
         }
         if ((kind == KIND_STAR || kind == KIND_BIG_STAR) && t > STAR_FALL - 10 && t < STAR_FALL) {
@@ -224,9 +226,9 @@ public final class VoidRayVfxEntity extends Entity {
             }
             if (dist < 1.5D && (t - VORTEX_ARM) % 10 == 0) {
                 if (owner instanceof LivingEntity livingOwner) {
-                    victim.hurt(this.damageSources().indirectMagic(this, livingOwner), this.damage >= 0 ? this.damage : 3.0F);
+                    victim.hurtOrSimulate(this.damageSources().indirectMagic(this, livingOwner), this.damage >= 0 ? this.damage : 3.0F);
                 } else {
-                    victim.hurt(this.damageSources().magic(), this.damage >= 0 ? this.damage : 3.0F);
+                    victim.hurtOrSimulate(this.damageSources().magic(), this.damage >= 0 ? this.damage : 3.0F);
                 }
             }
         }
@@ -247,9 +249,9 @@ public final class VoidRayVfxEntity extends Entity {
     private boolean hurtVictim(ServerLevel serverLevel, LivingEntity victim, float damage) {
         Entity owner = this.getOwner(serverLevel);
         if (owner instanceof LivingEntity livingOwner) {
-            return victim.hurt(this.damageSources().indirectMagic(this, livingOwner), damage);
+            return victim.hurtOrSimulate(this.damageSources().indirectMagic(this, livingOwner), damage);
         }
-        return victim.hurt(this.damageSources().magic(), damage);
+        return victim.hurtOrSimulate(this.damageSources().magic(), damage);
     }
 
     // 黑洞生效：半径 10 吸引，核心伤害，吞噬弹射物与掉落物，结束时坍缩
@@ -375,10 +377,11 @@ public final class VoidRayVfxEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }
