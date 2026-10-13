@@ -61,9 +61,10 @@ public final class TidelightClient {
     public static void particles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModTidelight.TIDE_MOTE.get(), sprites -> new TidelightParticle.Provider(sprites, false));
         event.registerSpriteSet(ModTidelight.TIDE_BUBBLE.get(), sprites -> new TidelightParticle.Provider(sprites, true));
+        com.mojang.logging.LogUtils.getLogger().debug("Registered tide_mote and tide_bubble particle providers");
     }
     @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-    public static final class Registration {
+    public static final class TidelightRegistration {
         @SubscribeEvent public static void setup(FMLClientSetupEvent event) { crossbow(event); }
         @SubscribeEvent public static void registerParticles(RegisterParticleProvidersEvent event) { particles(event); }
     }

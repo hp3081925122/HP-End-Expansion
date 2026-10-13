@@ -36,6 +36,7 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
     public static void registerRenderer(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TIDELAMP_WYRM.get(), TidelampWyrmRenderer::new);
         event.registerEntityRenderer(ModEntities.ABYSS_VFX.get(), AbyssVfxRenderer::new);
+        com.mojang.logging.LogUtils.getLogger().info("Registered client renderers for tidelamp_wyrm and abyss_vfx");
     }
 
     // 死亡由动画表现，不叠加原版侧翻
@@ -248,7 +249,7 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
         e.setRoll(e.getRoll() + Mth.sin(t * 3.1F + 0.5F) * s * 0.6F);
     }
     @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-    public static final class Registration {
+    public static final class TidelampWyrmRegistration {
         @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) { registerRenderer(event); }
     }
 }
