@@ -97,10 +97,18 @@ public final class ModTidelight {
     private static void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ((FlowerPotBlock)Blocks.FLOWER_POT).addPlant(LANTERN_ANEMONE.getId(), POTTED_LANTERN_ANEMONE);
-            net.minecraftforge.common.brewing.BrewingRecipeRegistry.addRecipe(
-                net.minecraft.world.item.crafting.Ingredient.of(net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.AWKWARD)),
-                net.minecraft.world.item.crafting.Ingredient.of(TIDELIGHT_GEL.get()),
-                net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.SLOW_FALLING));
+            net.minecraftforge.common.brewing.BrewingRecipeRegistry.addRecipe(new net.minecraftforge.common.brewing.IBrewingRecipe() {
+                @Override public boolean isInput(ItemStack input) {
+                    return (input.is(Items.POTION) || input.is(Items.SPLASH_POTION) || input.is(Items.LINGERING_POTION))
+                        && net.minecraft.world.item.alchemy.PotionUtils.getPotion(input) == Potions.AWKWARD;
+                }
+                @Override public boolean isIngredient(ItemStack ingredient) { return ingredient.is(TIDELIGHT_GEL.get()); }
+                @Override public ItemStack getOutput(ItemStack input, ItemStack ingredient) {
+                    return isInput(input) && isIngredient(ingredient)
+                        ? net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(input.getItem()), Potions.SLOW_FALLING)
+                        : ItemStack.EMPTY;
+                }
+            });
         });
     }
 }
