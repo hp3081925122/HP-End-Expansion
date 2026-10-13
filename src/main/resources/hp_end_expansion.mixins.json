@@ -16,7 +16,8 @@
   },
   "refmap": "hp_end_expansion.refmap.json",
   "client": [
-    "MinecraftMusicMixin"
+    "MinecraftMusicMixin",
+    "EntityRendererDiagnosticsMixin"
   ],
   "minVersion": "0.8"
 }
