@@ -86,7 +86,7 @@ public final class SkyrenderClient {
     @Nullable private static ItemStack omen;
 
     @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-    public static final class Registration {
+    public static final class SkyrenderRegistration {
         @SubscribeEvent public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) { renderers(event); }
         @SubscribeEvent public static void registerParticles(RegisterParticleProvidersEvent event) { particles(event); }
         @SubscribeEvent public static void registerOverlays(RegisterGuiOverlaysEvent event) { guiLayers(event); }

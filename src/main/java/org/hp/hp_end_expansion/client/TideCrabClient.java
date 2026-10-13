@@ -401,7 +401,7 @@ public final class TideCrabClient {
         e.setRoll(e.getRoll() + Mth.sin(t * 3.3F + 0.5F) * s * 0.6F);
     }
     @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-    public static final class Registration {
+    public static final class TideCrabRegistration {
         @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) { renderers(event); }
     }
 }
