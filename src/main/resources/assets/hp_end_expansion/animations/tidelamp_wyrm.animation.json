@@ -1,7 +1,7 @@
 {
   "format_version": "1.8.0",
   "animations": {
-    "animation.abyss_watcher.idle": {
+    "animation.tidelamp_wyrm.idle": {
       "loop": true,
       "animation_length": 3,
       "bones": {
@@ -6470,7 +6470,7 @@
         }
       }
     },
-    "animation.abyss_watcher.move": {
+    "animation.tidelamp_wyrm.move": {
       "loop": true,
       "animation_length": 1.5,
       "bones": {
@@ -9789,7 +9789,7 @@
         }
       }
     },
-    "animation.abyss_watcher.bite": {
+    "animation.tidelamp_wyrm.bite": {
       "animation_length": 2,
       "bones": {
         "body": {
@@ -14157,7 +14157,7 @@
         }
       }
     },
-    "animation.abyss_watcher.sweep": {
+    "animation.tidelamp_wyrm.sweep": {
       "animation_length": 2,
       "bones": {
         "body": {
@@ -18525,7 +18525,7 @@
         }
       }
     },
-    "animation.abyss_watcher.volley": {
+    "animation.tidelamp_wyrm.volley": {
       "animation_length": 2.5,
       "bones": {
         "body": {
@@ -24304,7 +24304,7 @@
         }
       }
     },
-    "animation.abyss_watcher.gaze": {
+    "animation.tidelamp_wyrm.gaze": {
       "animation_length": 4,
       "bones": {
         "body": {
@@ -32872,7 +32872,7 @@
         }
       }
     },
-    "animation.abyss_watcher.maelstrom": {
+    "animation.tidelamp_wyrm.maelstrom": {
       "animation_length": 6.5,
       "bones": {
         "body": {
@@ -46690,7 +46690,7 @@
         }
       }
     },
-    "animation.abyss_watcher.roar": {
+    "animation.tidelamp_wyrm.roar": {
       "animation_length": 2,
       "bones": {
         "body": {
@@ -51058,7 +51058,7 @@
         }
       }
     },
-    "animation.abyss_watcher.stun": {
+    "animation.tidelamp_wyrm.stun": {
       "animation_length": 3,
       "bones": {
         "body": {
@@ -57526,7 +57526,7 @@
         }
       }
     },
-    "animation.abyss_watcher.death": {
+    "animation.tidelamp_wyrm.death": {
       "loop": "hold_on_last_frame",
       "animation_length": 3,
       "bones": {

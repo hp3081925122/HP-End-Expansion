@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.tidelight.AbyssVfxEntity;
 
-/** 深渊守望者的独立特效：晶核弹道 + 预警法阵 + 晶刺丛、地面漩涡、冲击波、星芒爆闪。 */
+/** 潮灯须鲛的独立特效：晶核弹道 + 预警法阵 + 晶刺丛、地面漩涡、冲击波、星芒爆闪。 */
 final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
     AbyssVfxRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
 

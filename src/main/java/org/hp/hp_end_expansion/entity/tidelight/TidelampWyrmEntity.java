@@ -44,10 +44,10 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 
 /**
- * 深渊守望者：潮光礁海的漂浮精英怪。按 Boss 的结构设计（读招、阶段、破绽、终结技），数值保持精英级。
- * 技能时间轴与 animations/abyss_watcher.animation.json 一一对应（1 tick = 0.05 秒）。
+ * 潮灯须鲛：潮光礁海的漂浮精英怪。按 Boss 的结构设计（读招、阶段、破绽、终结技），数值保持精英级。
+ * 技能时间轴与 animations/tidelamp_wyrm.animation.json 一一对应（1 tick = 0.05 秒）。
  */
-public final class AbyssWatcherEntity extends Monster implements GeoEntity {
+public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     public static final byte NONE = 0, BITE = 1, SWEEP = 2, VOLLEY = 3, GAZE = 4, MAELSTROM = 5, ROAR = 6, STUN = 7;
     private static final int[] DURATION = {0, 40, 40, 50, 80, 130, 40, 60};
     private static final String[] ANIM = {"", "bite", "sweep", "volley", "gaze", "maelstrom", "roar", "stun"};
@@ -76,21 +76,21 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     private static final int BITE_CD = 100, SWEEP_CD = 140, VOLLEY_CD = 160, GAZE_CD = 260, MAEL_CD = 800, GLOBAL_CD = 24;
     private static final double HOVER = 2.6, TRACK_RANGE = 32;
 
-    private static final EntityDataAccessor<Byte> SKILL = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> SKILL = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.BYTE);
     // 每次起技能 +1，同一个技能连放两次（连咬）时客户端也能重置动画和特效计时
-    private static final EntityDataAccessor<Integer> SKILL_SEQ = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> SKILL_START = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SKILL_SEQ = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SKILL_START = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.INT);
     public static final double MOUTH_HEIGHT = 3.25, MOUTH_FORWARD = 3.0, BEAM_RADIUS = 0.55;
-    private static final EntityDataAccessor<Boolean> ENRAGED = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Float> BEAM_YAW = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.FLOAT);
-    private static final EntityDataAccessor<Float> BEAM_PITCH = SynchedEntityData.defineId(AbyssWatcherEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> ENRAGED = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> BEAM_YAW = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> BEAM_PITCH = SynchedEntityData.defineId(TidelampWyrmEntity.class, EntityDataSerializers.FLOAT);
 
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.abyss_watcher.idle");
-    private static final RawAnimation MOVE = RawAnimation.begin().thenLoop("animation.abyss_watcher.move");
-    private static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.abyss_watcher.death");
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.tidelamp_wyrm.idle");
+    private static final RawAnimation MOVE = RawAnimation.begin().thenLoop("animation.tidelamp_wyrm.move");
+    private static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.tidelamp_wyrm.death");
     private static final RawAnimation[] SKILL_ANIMS = new RawAnimation[ANIM.length];
     static {
-        for (int i = 1; i < ANIM.length; i++) SKILL_ANIMS[i] = RawAnimation.begin().thenPlay("animation.abyss_watcher." + ANIM[i]);
+        for (int i = 1; i < ANIM.length; i++) SKILL_ANIMS[i] = RawAnimation.begin().thenPlay("animation.tidelamp_wyrm." + ANIM[i]);
     }
 
     private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
@@ -107,7 +107,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     private float maelDamage;
     private int clientSkillStart, animResetSeen = -1;
 
-    public AbyssWatcherEntity(EntityType<? extends AbyssWatcherEntity> type, Level level) {
+    public TidelampWyrmEntity(EntityType<? extends TidelampWyrmEntity> type, Level level) {
         super(type, level);
         setNoGravity(true);
         xpReward = 60;
@@ -145,7 +145,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     public Vec3 beamDirection() { return Vec3.directionFromRotation(entityData.get(BEAM_PITCH), entityData.get(BEAM_YAW)); }
 
     public static boolean canHit(Entity e) {
-        return e instanceof LivingEntity l && l.isAlive() && !(e instanceof AbyssWatcherEntity)
+        return e instanceof LivingEntity l && l.isAlive() && !(e instanceof TidelampWyrmEntity)
             && !(e instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
@@ -156,7 +156,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
     // ---------------- 受伤与阶段 ----------------
 
     @Override public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() instanceof AbyssWatcherEntity) return false;
+        if (source.getEntity() instanceof TidelampWyrmEntity) return false;
         byte skill = getSkill();
         if (skill == MAELSTROM && skillTicks < MAEL_DIVE) amount *= 0.6F;   // 升空盘旋时减伤
         if (skill == STUN) amount *= 1.3F;                                     // 破绽：被打断后受到的伤害提高
@@ -233,7 +233,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
             biteSpeed = Mth.clamp((aim.length() + 0.5) / (BITE_SNAP - BITE_DASH), 0.95, 1.6);
         }
         if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && t != null) {
-            com.mojang.logging.LogUtils.getLogger().info("Abyss watcher attack: skill={}, mouthY={}, targetY={}, biteDirection={}", skill, mouth().y, t.getEyeY(), biteDirection);
+            com.mojang.logging.LogUtils.getLogger().info("Tidelamp wyrm attack: skill={}, mouthY={}, targetY={}, biteDirection={}", skill, mouth().y, t.getEyeY(), biteDirection);
         }
         float cdScale = isEnraged() ? 0.7F : 1F;
         switch (skill) {
@@ -388,7 +388,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         Vec3 end = from.add(dir.scale(len));
         if (skillTicks % 4 != 0) return;
         AABB box = new AABB(from, end).inflate(1);
-        for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, AbyssWatcherEntity::canHit)) {
+        for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, TidelampWyrmEntity::canHit)) {
             if (distanceToSegment(v.getBoundingBox().getCenter(), from, end) > BEAM_RADIUS + v.getBbWidth() * 0.5) continue;
             v.invulnerableTime = 0;
             if (v.hurt(damageSources().indirectMagic(this, this), GAZE_DAMAGE))
@@ -488,7 +488,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
                 double recovery = Mth.clamp((safeHoverY - getY()) * 0.15, 0, 0.4);
                 if (velocity.y < recovery) setDeltaMovement(velocity.x, recovery, velocity.z);
                 if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && tickCount % 40 == 0) {
-                    com.mojang.logging.LogUtils.getLogger().info("Abyss watcher void guard: id={}, y={}, safeY={}, velocity={}", getId(), getY(), safeHoverY, getDeltaMovement());
+                    com.mojang.logging.LogUtils.getLogger().info("Tidelamp wyrm void guard: id={}, y={}, safeY={}, velocity={}", getId(), getY(), safeHoverY, getDeltaMovement());
                 }
             } else {
                 safeHoverY = Math.max(getY(), floor + 0.15);
@@ -499,7 +499,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
         Vec3 requested = getDeltaMovement();
         move(net.minecraft.world.entity.MoverType.SELF, getDeltaMovement());
         if (Boolean.getBoolean("hp_end_expansion.debugAbyssMovement") && tickCount % 20 == 0) {
-            com.mojang.logging.LogUtils.getLogger().info("Abyss watcher movement: id={}, skill={}, requested={}, actual={}, horizontalCollision={}, verticalCollision={}, avoidanceTicks={}",
+            com.mojang.logging.LogUtils.getLogger().info("Tidelamp wyrm movement: id={}, skill={}, requested={}, actual={}, horizontalCollision={}, verticalCollision={}, avoidanceTicks={}",
                 getId(), getSkill(), requested, position().subtract(before), horizontalCollision, verticalCollision, avoidanceTicks);
         }
         setDeltaMovement(getDeltaMovement().scale(0.91));
@@ -516,7 +516,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
             float moveYaw = (float) (Mth.atan2(desired.z, desired.x) * Mth.RAD_TO_DEG) - 90;
             faceTowardsYaw(moveYaw, 4);
             if (Boolean.getBoolean("hp_end_expansion.debugAbyssHeading") && tickCount % 20 == 0) {
-                com.mojang.logging.LogUtils.getLogger().info("Abyss watcher heading: id={}, bodyYaw={}, moveYaw={}, velocity={}", getId(), yBodyRot, moveYaw, getDeltaMovement());
+                com.mojang.logging.LogUtils.getLogger().info("Tidelamp wyrm heading: id={}, bodyYaw={}, moveYaw={}, velocity={}", getId(), yBodyRot, moveYaw, getDeltaMovement());
             }
         }
     }
@@ -544,7 +544,7 @@ public final class AbyssWatcherEntity extends Monster implements GeoEntity {
             avoidanceMotion = escape.scale(speed);
             avoidanceTicks = 16;
             if (Boolean.getBoolean("hp_end_expansion.debugAbyssMovement")) {
-                com.mojang.logging.LogUtils.getLogger().info("Abyss watcher avoidance: id={}, position={}, desired={}, escape={}", getId(), position(), desired, avoidanceMotion);
+                com.mojang.logging.LogUtils.getLogger().info("Tidelamp wyrm avoidance: id={}, position={}, desired={}, escape={}", getId(), position(), desired, avoidanceMotion);
             }
             return avoidanceMotion;
         }

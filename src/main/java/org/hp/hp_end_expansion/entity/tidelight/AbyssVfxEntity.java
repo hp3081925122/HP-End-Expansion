@@ -19,7 +19,7 @@ import org.hp.hp_end_expansion.registry.ModEntities;
 import org.joml.Vector3f;
 
 /**
- * 深渊守望者的地面/空中特效，全部由 AbyssVfxRenderer 用自绘贴图画出，不堆原版粒子。
+ * 潮灯须鲛的地面/空中特效，全部由 AbyssVfxRenderer 用自绘贴图画出，不堆原版粒子。
  * SPIKE：晶核从 START 沿弧线飞到落点（0-8 tick），落点亮起法阵预警（8-24），第 24 tick 晶刺丛破土并结算伤害，之后碎裂淡出。
  * VORTEX：地面漩涡，半径 SIZE，跟随渊潮漩涡的盘旋段。
  * SHOCKWAVE：贴地扩散的冲击波环 + 立起的环墙，最大半径 SIZE，只有表现。
@@ -86,7 +86,7 @@ public final class AbyssVfxEntity extends Entity {
             com.mojang.logging.LogUtils.getLogger().info("Abyss spike hitbox: center={}, radius={}, age={}", position(), SPIKE_RADIUS, getAge(0));
         }
         AABB box = new AABB(getX() - SPIKE_RADIUS, getY() - 1, getZ() - SPIKE_RADIUS, getX() + SPIKE_RADIUS, getY() + 3, getZ() + SPIKE_RADIUS);
-        for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, AbyssWatcherEntity::canHit)) {
+        for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, TidelampWyrmEntity::canHit)) {
             if (v.position().subtract(position()).horizontalDistance() > SPIKE_RADIUS + v.getBbWidth() * 0.5) continue;
             v.invulnerableTime = 0;
             if (v.hurt(source(), SPIKE_DAMAGE)) {

@@ -32,10 +32,10 @@ import org.hp.hp_end_expansion.entity.StarDevourerEntity;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
 import org.hp.hp_end_expansion.entity.VoidRayVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
-import org.hp.hp_end_expansion.entity.tidelight.AbyssWatcherEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidelampWyrmEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TidecrownAnemoneEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
-import org.hp.hp_end_expansion.entity.tidelight.LobsterEliteEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidebreakerWarlordEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideWaterBoltEntity;
@@ -197,14 +197,14 @@ public final class ModEntities {
             .build("hp_end_expansion:rift_fissure")
     );
 
-    public static final DeferredHolder<EntityType<?>, EntityType<AbyssWatcherEntity>> ABYSS_WATCHER = ENTITY_TYPES.register(
-        "abyss_watcher",
-        () -> EntityType.Builder.of(AbyssWatcherEntity::new, MobCategory.MONSTER)
+    public static final DeferredHolder<EntityType<?>, EntityType<TidelampWyrmEntity>> TIDELAMP_WYRM = ENTITY_TYPES.register(
+        "tidelamp_wyrm",
+        () -> EntityType.Builder.of(TidelampWyrmEntity::new, MobCategory.MONSTER)
             .sized(4.0F, 5.7F)
             .eyeHeight(3.8F)
             .clientTrackingRange(12)
             .updateInterval(1)
-            .build("hp_end_expansion:abyss_watcher")
+            .build("hp_end_expansion:tidelamp_wyrm")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<TidecrownAnemoneEntity>> TIDECROWN_ANEMONE = ENTITY_TYPES.register(
@@ -221,19 +221,12 @@ public final class ModEntities {
             .build("hp_end_expansion:tidebreaker_shrimp")
     );
 
-    public static final DeferredHolder<EntityType<?>, EntityType<TidebreakerShrimpEntity>> TIDEBREAKER_SHRIMP_TEST = ENTITY_TYPES.register(
-        "tidebreaker_shrimp_test",
-        () -> EntityType.Builder.of(TidebreakerShrimpEntity::new, MobCategory.MONSTER)
-            .sized(1.1F, 0.95F).eyeHeight(0.75F).clientTrackingRange(12).updateInterval(1)
-            .build("hp_end_expansion:tidebreaker_shrimp_test")
-    );
-
-    // 龙虾精英
-    public static final DeferredHolder<EntityType<?>, EntityType<LobsterEliteEntity>> LOBSTER_ELITE = ENTITY_TYPES.register(
-        "lobster_elite",
-        () -> EntityType.Builder.of(LobsterEliteEntity::new, MobCategory.MONSTER)
-            .sized(2.4F, 3.6F).eyeHeight(3.0F).clientTrackingRange(12).updateInterval(1)
-            .build("hp_end_expansion:lobster_elite")
+    // 碎潮锤将
+    public static final DeferredHolder<EntityType<?>, EntityType<TidebreakerWarlordEntity>> TIDEBREAKER_WARLORD = ENTITY_TYPES.register(
+        "tidebreaker_warlord",
+        () -> EntityType.Builder.of(TidebreakerWarlordEntity::new, MobCategory.MONSTER)
+            .sized(1.8F, 3.2F).eyeHeight(2.7F).clientTrackingRange(12).updateInterval(1)
+            .build("hp_end_expansion:tidebreaker_warlord")
     );
 
     private ModEntities() {
@@ -248,9 +241,8 @@ public final class ModEntities {
     private static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(TIDECROWN_ANEMONE.get(), TidecrownAnemoneEntity.createAttributes().build());
         event.put(TIDEBREAKER_SHRIMP.get(), TidebreakerShrimpEntity.createAttributes().build());
-        event.put(TIDEBREAKER_SHRIMP_TEST.get(), TidebreakerShrimpEntity.createAttributes().build());
-        event.put(LOBSTER_ELITE.get(), LobsterEliteEntity.createAttributes().build());
-        event.put(ABYSS_WATCHER.get(), AbyssWatcherEntity.createAttributes().build());
+        event.put(TIDEBREAKER_WARLORD.get(), TidebreakerWarlordEntity.createAttributes().build());
+        event.put(TIDELAMP_WYRM.get(), TidelampWyrmEntity.createAttributes().build());
         event.put(RIFT_MANTIS.get(), RiftMantisEntity.createAttributes().build());
         event.put(RIFT_MATRIARCH.get(), RiftMatriarchEntity.createAttributes().build());
         event.put(VOID_RAY.get(), VoidRayEntity.createAttributes().build());
@@ -269,8 +261,8 @@ public final class ModEntities {
         // 裂空鳐：空中生成，不要求黑暗，自然生成限制附近数量
         event.register(VOID_RAY.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::voidRaySpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(ABYSS_WATCHER.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            ModEntities::abyssWatcherSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(TIDELAMP_WYRM.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::tidelampWyrmSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         // 末晶萤：地面生成，无亮度限制
         event.register(END_MOTE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             PathfinderMob::checkMobSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
@@ -282,6 +274,9 @@ public final class ModEntities {
             ModEntities::tideCrabSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDEBREAKER_SHRIMP.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::tidebreakerSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        // 碎潮锤将：礁石地面生成，附近只允许一只
+        event.register(TIDEBREAKER_WARLORD.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            ModEntities::tidebreakerWarlordSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(TIDECROWN_ANEMONE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             ModEntities::tidecrownSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
@@ -295,13 +290,13 @@ public final class ModEntities {
         }
         return level.getEntitiesOfClass(VoidRayEntity.class, new AABB(pos).inflate(64.0D)).size() < 2;
     }
-    private static boolean abyssWatcherSpawn(EntityType<AbyssWatcherEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    private static boolean tidelampWyrmSpawn(EntityType<TidelampWyrmEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
         if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
             return false;
         }
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
-            || level.getEntitiesOfClass(AbyssWatcherEntity.class, new AABB(pos).inflate(96.0D), e -> e.isAlive()).isEmpty();
+            || level.getEntitiesOfClass(TidelampWyrmEntity.class, new AABB(pos).inflate(96.0D), e -> e.isAlive()).isEmpty();
     }
     private static boolean tideCrabSpawn(EntityType<TideRemnantHermitCrabEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
         if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) {
@@ -340,6 +335,21 @@ public final class ModEntities {
         return reason != MobSpawnType.NATURAL
             && reason != MobSpawnType.CHUNK_GENERATION
             || level.getEntitiesOfClass(TidebreakerShrimpEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
+    }
+
+    private static boolean tidebreakerWarlordSpawn(EntityType<TidebreakerWarlordEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (!Monster.checkAnyLightMonsterSpawnRules(type, level, reason, pos, random)) {
+            return false;
+        }
+        // 非自然生成不做额外限制
+        if (reason != MobSpawnType.NATURAL && reason != MobSpawnType.CHUNK_GENERATION) {
+            return true;
+        }
+        // 只在潮光礁石或珍珠沙上生成，96 格内已有一只则不再生成
+        if (!validTidelightSpawnGround(level.getBlockState(pos.below()))) {
+            return false;
+        }
+        return level.getEntitiesOfClass(TidebreakerWarlordEntity.class, new AABB(pos).inflate(96.0D), e -> e.isAlive()).isEmpty();
     }
 
     private static boolean validTidelightSpawnGround(BlockState state) {

@@ -23,7 +23,7 @@ public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<Tidebreak
     private static ResourceLocation fx(String name){return id("textures/entity/tidebreaker_"+name+".png");}
     private static final ResourceLocation STREAK=fx("streak"),ARC=fx("arc"),BUBBLE=fx("bubble"),SHARD=fx("shard"),GUARD=fx("guard"),IMPACT=fx("impact");
     public TidebreakerShrimpRenderer(EntityRendererProvider.Context c){super(c,new Model());shadowRadius=.65F;}
-    @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(ModEntities.TIDEBREAKER_SHRIMP.get(),TidebreakerShrimpRenderer::new);e.registerEntityRenderer(ModEntities.TIDEBREAKER_SHRIMP_TEST.get(),TidebreakerShrimpRenderer::new);}
+    @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(ModEntities.TIDEBREAKER_SHRIMP.get(),TidebreakerShrimpRenderer::new);}
     @Override protected float getDeathMaxRotation(TidebreakerShrimpEntity e){return 0;}
     @Override public boolean shouldRender(TidebreakerShrimpEntity e,Frustum f,double x,double y,double z){return e.shouldRender(x,y,z)&&f.isVisible(e.getBoundingBox().inflate(e.skill()==0?2:9));}
     @Override public void render(TidebreakerShrimpEntity e,float yaw,float pt,PoseStack ps,MultiBufferSource b,int light){
@@ -70,9 +70,8 @@ public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<Tidebreak
         for(int i=0;i<7;i++){double angle=i*2.399;Vec3 shard=c.add(Math.cos(angle)*age*.1*radius,Math.sin(angle)*age*.09*radius-age*age*.003,Math.sin(angle*2)*age*.08*radius);AbyssFx.billboard(p,AbyssFx.glow(b,SHARD),shard,cam.subtract(shard),.09*radius,angle,fade);}
     }
     private static final class Model extends GeoModel<TidebreakerShrimpEntity>{
-        private static String prefix(TidebreakerShrimpEntity e){return e.getType()==ModEntities.TIDEBREAKER_SHRIMP_TEST.get()?"tidebreaker_shrimp_test":"tidebreaker_shrimp";}
-        @Override public ResourceLocation getModelResource(TidebreakerShrimpEntity e){return id("geo/"+prefix(e)+".geo.json");}
-        @Override public ResourceLocation getTextureResource(TidebreakerShrimpEntity e){return id("textures/entity/"+prefix(e)+".png");}
-        @Override public ResourceLocation getAnimationResource(TidebreakerShrimpEntity e){return id("animations/"+prefix(e)+".animation.json");}
+        @Override public ResourceLocation getModelResource(TidebreakerShrimpEntity e){return id("geo/tidebreaker_shrimp.geo.json");}
+        @Override public ResourceLocation getTextureResource(TidebreakerShrimpEntity e){return id("textures/entity/tidebreaker_shrimp.png");}
+        @Override public ResourceLocation getAnimationResource(TidebreakerShrimpEntity e){return id("animations/tidebreaker_shrimp.animation.json");}
     }
 }
