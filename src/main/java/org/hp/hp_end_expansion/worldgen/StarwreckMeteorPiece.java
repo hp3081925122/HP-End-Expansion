@@ -3,7 +3,7 @@ package org.hp.hp_end_expansion.worldgen;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Rotation;
@@ -14,12 +14,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 
 public final class StarwreckMeteorPiece extends TemplateStructurePiece {
-    private static final ResourceLocation TEMPLATE=ResourceLocation.fromNamespaceAndPath("hp_end_expansion","starwreck/giant_meteor");
+    private static final Identifier TEMPLATE=Identifier.fromNamespaceAndPath("hp_end_expansion","starwreck/giant_meteor");
     public StarwreckMeteorPiece(StructureTemplateManager manager,BlockPos pos,Rotation rotation) {
         super(StarwreckWorldgen.METEOR_PIECE.get(),0,manager,TEMPLATE,TEMPLATE.toString(),settings(rotation),pos);
     }
     public StarwreckMeteorPiece(StructureTemplateManager manager,CompoundTag tag) {
-        super(StarwreckWorldgen.METEOR_PIECE.get(),tag,manager,id -> settings(Rotation.valueOf(tag.getString("Rotation"))));
+        super(StarwreckWorldgen.METEOR_PIECE.get(),tag,manager,id -> settings(Rotation.valueOf(tag.getStringOr("Rotation", ""))));
     }
     private static StructurePlaceSettings settings(Rotation rotation) {
         return new StructurePlaceSettings().setRotation(rotation).setRotationPivot(new BlockPos(8,0,8))

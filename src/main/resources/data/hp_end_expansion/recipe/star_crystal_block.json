@@ -6,9 +6,7 @@
     "##"
   ],
   "key": {
-    "#": {
-      "item": "hp_end_expansion:star_crystal_shard"
-    }
+    "#": "hp_end_expansion:star_crystal_shard"
   },
   "result": {
     "id": "hp_end_expansion:star_crystal_block",

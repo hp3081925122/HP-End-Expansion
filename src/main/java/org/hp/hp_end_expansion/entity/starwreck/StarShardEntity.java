@@ -1,6 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
-import javax.annotation.Nullable;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +35,7 @@ public final class StarShardEntity extends Entity {
     }
 
     public static void throwAt(ServerLevel level, LivingEntity owner, Vec3 from, Vec3 to) {
-        StarShardEntity shard = StarwreckEntities.STAR_SHARD.get().create(level);
+        StarShardEntity shard = StarwreckEntities.STAR_SHARD.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (shard == null) return;
         shard.owner = owner;
         shard.target = to;
@@ -41,7 +43,7 @@ public final class StarShardEntity extends Entity {
         double t = FLIGHT;
         Vec3 d = to.subtract(from);
         shard.setDeltaMovement(d.x / t, (d.y + GRAVITY * t * (t - 1) / 2) / t, d.z / t);
-        shard.moveTo(from.x, from.y, from.z, 0, 0);
+        shard.snapTo(from.x, from.y, from.z, 0, 0);
         level.addFreshEntity(shard);
         BearerVfxEntity.spawn(level, BearerVfxEntity.BRAND, to, 0, 1, FLIGHT);
     }
@@ -53,7 +55,7 @@ public final class StarShardEntity extends Entity {
         Vec3 v = getDeltaMovement();
         setPos(position().add(v));
         setDeltaMovement(v.x, v.y - GRAVITY, v.z);
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             level().addParticle(ModParticles.BEARER_FLAME.get(), getX(), getY(), getZ(), -v.x * 0.1, 0.02, -v.z * 0.1);
             if (tickCount % 2 == 0) level().addParticle(ModParticles.BEARER_SHARD.get(), getX(), getY(), getZ(), -v.x * 0.2, 0.05, -v.z * 0.2);
             return;
@@ -67,7 +69,7 @@ public final class StarShardEntity extends Entity {
         for (LivingEntity living : level().getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(RADIUS, 2, RADIUS),
             e -> e.isAlive() && !StarBearerEntity.isKin(e))) {
             if (living.distanceToSqr(at.x, living.getY(), at.z) > RADIUS * RADIUS) continue;
-            if (living.hurt(owner != null ? damageSources().mobProjectile(this, owner) : damageSources().magic(), DAMAGE))
+            if (living.hurtOrSimulate(owner != null ? damageSources().mobProjectile(this, owner) : damageSources().magic(), DAMAGE))
                 living.knockback(0.5, at.x - living.getX(), at.z - living.getZ());
         }
         BearerVfxEntity.spawn(server, BearerVfxEntity.SLAM, at, 0, RADIUS / BearerVfxEntity.RING_TO * 1.1F, 0);
@@ -80,6 +82,7 @@ public final class StarShardEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

@@ -1,8 +1,10 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -47,20 +49,20 @@ public final class TideVfxEntity extends Entity {
     public static void spawnWave(ServerLevel level, LivingEntity owner, Vec3 at) { spawn(level, owner, at, WAVE); }
 
     private static void spawn(ServerLevel level, LivingEntity owner, Vec3 at, byte kind) {
-        TideVfxEntity vfx = ModEntities.TIDE_VFX.get().create(level);
+        TideVfxEntity vfx = ModEntities.TIDE_VFX.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (vfx == null) return;
         vfx.owner = owner;
         vfx.entityData.set(KIND, kind);
-        vfx.moveTo(at.x, at.y, at.z, 0, 0);
+        vfx.snapTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(vfx);
     }
 
     public static void spawnSplash(ServerLevel level, Vec3 at, float scale) {
-        TideVfxEntity vfx = ModEntities.TIDE_VFX.get().create(level);
+        TideVfxEntity vfx = ModEntities.TIDE_VFX.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (vfx == null) return;
         vfx.entityData.set(KIND, SPLASH);
         vfx.entityData.set(SCALE, scale);
-        vfx.moveTo(at.x, at.y, at.z, 0, 0);
+        vfx.snapTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(vfx);
     }
 
@@ -92,7 +94,7 @@ public final class TideVfxEntity extends Entity {
             AABB box = new AABB(getX() - GEYSER_RADIUS, getY(), getZ() - GEYSER_RADIUS, getX() + GEYSER_RADIUS, getY() + GEYSER_HEIGHT, getZ() + GEYSER_RADIUS);
             for (LivingEntity e : level().getEntitiesOfClass(LivingEntity.class, box, TideRemnantHermitCrabEntity::canHit)) {
                 e.invulnerableTime = 0;
-                if (e.hurt(source(), 4)) {
+                if (e.hurtOrSimulate(source(), 4)) {
                     e.setDeltaMovement(e.getDeltaMovement().multiply(0.5, 0, 0.5).add(0, 0.8, 0));
                     e.hurtMarked = true;
                 }
@@ -115,7 +117,7 @@ public final class TideVfxEntity extends Entity {
                 double dist = d.length();
                 if (dist > r + e.getBbWidth() * 0.5 || Math.abs(e.getY() - getY()) > 2) continue;
                 hit.add(e.getId());
-                if (e.hurt(source(), 6)) {
+                if (e.hurtOrSimulate(source(), 6)) {
                     Vec3 away = dist < 1.0E-3 ? new Vec3(0, 0, 1) : d.scale(1 / dist);
                     e.knockback(1.2, -away.x, -away.z);
                     e.setDeltaMovement(e.getDeltaMovement().add(0, 0.3, 0));
@@ -138,14 +140,14 @@ public final class TideVfxEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
 
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key) { super.onSyncedDataUpdated(key); }
 
     @Override public boolean isOnFire() { return false; }
 
-    @Override public boolean hurt(DamageSource source, float amount) { return false; }
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) { return false; }
 
     @Override public void push(Entity entity) {}
 }

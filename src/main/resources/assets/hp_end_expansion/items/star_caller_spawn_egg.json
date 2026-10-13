@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/star_caller_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 4997179
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 16240226
+      }
+    ]
+  }
+}

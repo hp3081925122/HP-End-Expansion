@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -15,12 +16,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.FlightAvoidance;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
 
 public final class LanternJellyfishEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Boolean> FLEEING = SynchedEntityData.defineId(LanternJellyfishEntity.class, EntityDataSerializers.BOOLEAN);
@@ -57,14 +58,14 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
     }
 
     @Override
-    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+    public boolean causeFallDamage(double distance, float multiplier, DamageSource source) {
         return false;
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean hit = super.hurt(source, amount);
-        if (hit && !level().isClientSide) {
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        boolean hit = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (hit && !level().isClientSide()) {
             fleeTicks = 60;
             destination = position().add(0, 8, 0);
         }
@@ -72,8 +73,8 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         setNoGravity(true);
         if (fleeTicks > 0) {
             fleeTicks--;
@@ -109,7 +110,7 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 6, state -> state.setAndContinue(isFleeing() ? FLEE : IDLE)));
+        controllers.add(new AnimationController<>("base", 6, state -> state.setAndContinue(isFleeing() ? FLEE : IDLE)));
     }
 
     @Override

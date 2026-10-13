@@ -7,12 +7,8 @@
     "EEE"
   ],
   "key": {
-    "E": {
-      "item": "hp_end_expansion:emberbloom"
-    },
-    "X": {
-      "item": "hp_end_expansion:star_crystal_block"
-    }
+    "E": "hp_end_expansion:emberbloom",
+    "X": "hp_end_expansion:star_crystal_block"
   },
   "result": {
     "id": "hp_end_expansion:ember_crown",

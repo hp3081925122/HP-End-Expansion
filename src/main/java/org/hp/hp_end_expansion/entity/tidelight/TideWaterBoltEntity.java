@@ -29,10 +29,10 @@ public final class TideWaterBoltEntity extends ThrowableProjectile {
     }
 
     public static void shoot(Level level, LivingEntity owner, Vec3 from, Vec3 aim) {
-        TideWaterBoltEntity bolt = ModEntities.TIDE_WATER_BOLT.get().create(level);
+        TideWaterBoltEntity bolt = ModEntities.TIDE_WATER_BOLT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (bolt == null) return;
         bolt.setOwner(owner);
-        bolt.moveTo(from.x, from.y, from.z, owner.getYRot(), 0);
+        bolt.snapTo(from.x, from.y, from.z, owner.getYRot(), 0);
         Vec3 d = aim.subtract(from);
         // 补偿重力下坠，让水箭在中段对准瞄准点
         double flight = d.length() / SPEED;
@@ -46,7 +46,7 @@ public final class TideWaterBoltEntity extends ThrowableProjectile {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             Vec3 v = getDeltaMovement();
             level().addParticle(ParticleTypes.SPLASH, getX(), getY(), getZ(), -v.x * 0.1, 0.02, -v.z * 0.1);
             if (tickCount % 2 == 0) level().addParticle(ParticleTypes.FALLING_WATER, getX(), getY(), getZ(), 0, 0, 0);
@@ -63,20 +63,20 @@ public final class TideWaterBoltEntity extends ThrowableProjectile {
         super.onHitEntity(result);
         if (!(result.getEntity() instanceof LivingEntity living)) return;
         Entity owner = getOwner();
-        if (living.hurt(damageSources().mobProjectile(this, owner instanceof LivingEntity o ? o : null), DAMAGE)) {
+        if (living.hurtOrSimulate(damageSources().mobProjectile(this, owner instanceof LivingEntity o ? o : null), DAMAGE)) {
             Vec3 v = getDeltaMovement().multiply(1, 0, 1);
             if (v.lengthSqr() > 1.0E-6) {
                 v = v.normalize();
                 living.knockback(0.6, -v.x, -v.z);
             }
-            living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0), owner);
+            living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 0), owner);
         }
         living.clearFire();
     }
 
     @Override protected void onHit(HitResult result) {
         super.onHit(result);
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         if (level() instanceof ServerLevel server) {
             Vec3 at = result.getLocation();
             server.sendParticles(ParticleTypes.SPLASH, at.x, at.y, at.z, 16, 0.25, 0.25, 0.25, 0.2);

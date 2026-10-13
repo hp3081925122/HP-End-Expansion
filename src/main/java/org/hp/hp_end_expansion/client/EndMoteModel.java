@@ -1,28 +1,28 @@
 package org.hp.hp_end_expansion.client;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.EndMoteEntity;
-import software.bernie.geckolib.model.GeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
 
-public final class EndMoteModel extends GeoModel<EndMoteEntity> {
+public final class EndMoteModel extends HpGeoModel<EndMoteEntity> {
 
-    private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "geo/end_mote.geo.json");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/end_mote.png");
-    private static final ResourceLocation ANIMATION = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "animations/end_mote.animation.json");
+    private static final Identifier MODEL = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/end_mote");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/end_mote.png");
+    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "entity/end_mote");
 
     @Override
-    public ResourceLocation getModelResource(EndMoteEntity entity) {
+    public Identifier getModelResource(EndMoteEntity entity) {
         return MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(EndMoteEntity entity) {
+    public Identifier getTextureResource(EndMoteEntity entity) {
         return TEXTURE;
     }
 
     @Override
-    public ResourceLocation getAnimationResource(EndMoteEntity entity) {
+    public Identifier getAnimationResource(EndMoteEntity entity) {
         return ANIMATION;
     }
 }

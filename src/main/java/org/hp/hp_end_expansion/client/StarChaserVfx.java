@@ -11,8 +11,8 @@ import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
+import org.hp.hp_end_expansion.client.render.HpBakedModel;
+import org.hp.hp_end_expansion.client.render.HpBone;
 
 /**
  * 逐星兽的胸核光晕与攻击特效，模型画完后按贴图分三遍画（光晕 → 笔触 → 热浪环），
@@ -33,12 +33,12 @@ public final class StarChaserVfx {
     private final byte state;
     private final float age, time, fade;
 
-    private StarChaserVfx(StarChaserEntity e, BakedGeoModel model, PoseStack poseStack, MultiBufferSource buffers, float pt) {
+    private StarChaserVfx(StarChaserEntity e, HpBakedModel model, PoseStack poseStack, MultiBufferSource buffers, float pt) {
         this.e = e;
         this.pose = poseStack.last();
         this.buffers = buffers;
         origin = e.getPosition(pt);
-        cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().subtract(origin);
+        cam = Minecraft.getInstance().gameRenderer.getMainCamera().position().subtract(origin);
         float yaw = Mth.rotLerp(pt, e.yBodyRotO, e.yBodyRot) * Mth.DEG_TO_RAD;
         f = new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw));
         side = new Vec3(-f.z, 0, f.x);
@@ -61,7 +61,7 @@ public final class StarChaserVfx {
         fade = e.isDeadOrDying() ? Mth.clamp(1 - (e.deathTime + pt) / 24, 0, 1) : 1;
     }
 
-    public static void render(StarChaserEntity entity, BakedGeoModel model, PoseStack poseStack, MultiBufferSource buffers, float partialTick) {
+    public static void render(StarChaserEntity entity, HpBakedModel model, PoseStack poseStack, MultiBufferSource buffers, float partialTick) {
         StarChaserVfx vfx = new StarChaserVfx(entity, model, poseStack, buffers, partialTick);
         if (vfx.fade <= 0) return;
         vfx.glowPass();
@@ -76,8 +76,8 @@ public final class StarChaserVfx {
         return new Vec3(p.x, p.y, p.z);
     }
 
-    private static Vec3 anchor(BakedGeoModel model, String bone, float x, float y, float z, @Nullable Vec3 fallback) {
-        GeoBone b = model.getBone(bone).orElse(null);
+    private static Vec3 anchor(HpBakedModel model, String bone, float x, float y, float z, @Nullable Vec3 fallback) {
+        HpBone b = model.getBone(bone).orElse(null);
         if (b == null) return fallback;
         // 骨骼的本地矩阵相对实体渲染原点，模型画完后才可用
         Vector3f p = b.getLocalSpaceMatrix().transformPosition(new Vector3f(x, y, z));

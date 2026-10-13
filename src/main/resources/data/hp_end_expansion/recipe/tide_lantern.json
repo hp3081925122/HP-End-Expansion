@@ -7,20 +7,12 @@
     "RCR"
   ],
   "key": {
-    "R": {
-      "item": "hp_end_expansion:reefstone"
-    },
+    "R": "hp_end_expansion:reefstone",
     "C": [
-      {
-        "item": "hp_end_expansion:lumen_coral_branch"
-      },
-      {
-        "item": "hp_end_expansion:tidelight_gel"
-      }
+      "hp_end_expansion:lumen_coral_branch",
+      "hp_end_expansion:tidelight_gel"
     ],
-    "P": {
-      "item": "hp_end_expansion:tide_pearl"
-    }
+    "P": "hp_end_expansion:tide_pearl"
   },
   "result": {
     "id": "hp_end_expansion:tide_lantern",

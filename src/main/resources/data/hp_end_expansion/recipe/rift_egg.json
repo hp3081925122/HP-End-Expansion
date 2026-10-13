@@ -6,15 +6,9 @@
     "CSC"
   ],
   "key": {
-    "C": {
-      "item": "hp_end_expansion:rift_carapace"
-    },
-    "E": {
-      "item": "minecraft:ender_eye"
-    },
-    "S": {
-      "item": "hp_end_expansion:rift_sickle"
-    }
+    "C": "hp_end_expansion:rift_carapace",
+    "E": "minecraft:ender_eye",
+    "S": "hp_end_expansion:rift_sickle"
   },
   "result": {
     "id": "hp_end_expansion:rift_egg",

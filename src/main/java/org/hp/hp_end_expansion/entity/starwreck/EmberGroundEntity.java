@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +32,7 @@ public final class EmberGroundEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             if (random.nextInt(2) == 0) {
                 double angle = random.nextDouble() * Math.PI * 2, r = random.nextDouble() * getBbWidth() * 0.5;
                 level().addParticle(ModParticles.STAR_EMBER.get(), getX() + Math.cos(angle) * r, getY() + 0.05, getZ() + Math.sin(angle) * r, 0, 0, 0);
@@ -43,7 +45,7 @@ public final class EmberGroundEntity extends Entity {
         if (age % 20 == 0) {
             AABB area = getBoundingBox().inflate(0, 0.3, 0);
             for (LivingEntity victim : level().getEntitiesOfClass(LivingEntity.class, area, e -> e.isAlive() && !(e instanceof EmberBeetleEntity)))
-                victim.hurt(damageSources().inFire(), 1);
+                victim.hurtOrSimulate(damageSources().inFire(), 1);
         }
         if (++age >= life) discard();
     }
@@ -51,18 +53,19 @@ public final class EmberGroundEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) { age = tag.getInt("Age"); }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) { tag.putInt("Age", age); }
+    @Override protected void readAdditionalSaveData(ValueInput tag) { age = tag.getIntOr("Age", 0); }
+    @Override protected void addAdditionalSaveData(ValueOutput tag) { tag.putInt("Age", age); }
 
     public static void spawn(ServerLevel level, Entity source, EntityType<EmberGroundEntity> type) {
         spawn(level, source.position(), type, LIFETIME);
     }
 
     public static void spawn(ServerLevel level, Vec3 at, EntityType<EmberGroundEntity> type, int life) {
-        EmberGroundEntity ground = type.create(level);
+        EmberGroundEntity ground = type.create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (ground == null) return;
         ground.life = life;
-        ground.moveTo(at.x, at.y, at.z, 0, 0);
+        ground.snapTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(ground);
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

@@ -1,15 +1,16 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -25,12 +26,12 @@ import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideWaterBoltEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.joml.Vector3f;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpBakedModel;
+import org.hp.hp_end_expansion.client.render.HpBone;
+import com.geckolib.animation.state.AnimationTest;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
 /**
  * 潮骸寄居蟹客户端：本体（含骸潮炮水柱）、水箭、间歇泉、潮汐水墙的渲染，以及技能震屏。
@@ -38,21 +39,21 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
  */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class TideCrabClient {
-    private static final ResourceLocation BOLT = tex("tide_water_bolt");
-    private static final ResourceLocation BEAM = tex("tide_cannon_beam");
-    private static final ResourceLocation GEYSER = tex("tide_geyser");
-    private static final ResourceLocation WAVE = tex("tide_wave");
+    private static final Identifier BOLT = tex("tide_water_bolt");
+    private static final Identifier BEAM = tex("tide_cannon_beam");
+    private static final Identifier GEYSER = tex("tide_geyser");
+    private static final Identifier WAVE = tex("tide_wave");
     private static float shake, shakeO;
     private static int ticks;
 
     private TideCrabClient() {}
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/entity/" + name + ".png");
     }
 
-    private static VertexConsumer buffer(MultiBufferSource buffers, ResourceLocation texture) {
-        return buffers.getBuffer(RenderType.beaconBeam(texture, true));
+    private static VertexConsumer buffer(MultiBufferSource buffers, Identifier texture) {
+        return buffers.getBuffer(RenderTypes.beaconBeam(texture, true));
     }
 
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -67,7 +68,7 @@ public final class TideCrabClient {
         buffer.addVertex(pose, (float) p.x, (float) p.y, (float) p.z)
             .setColor(1, 1, 1, Mth.clamp(alpha, 0, 1))
             .setUv(u, v)
-            .setLight(LightTexture.FULL_BRIGHT)
+            .setLight(LightCoordsUtil.FULL_BRIGHT)
             .setNormal(pose, 0, 1, 0);
     }
 
@@ -96,21 +97,21 @@ public final class TideCrabClient {
 
     // ---------------- 本体 ----------------
 
-    private static final class CrabModel extends GeoModel<TideRemnantHermitCrabEntity> {
-        private static final ResourceLocation MODEL = id("geo/tide_remnant_hermit_crab.geo.json");
-        private static final ResourceLocation TEXTURE = id("textures/entity/tide_remnant_hermit_crab.png");
-        private static final ResourceLocation ANIMATION = id("animations/tide_remnant_hermit_crab.animation.json");
-        private static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
-        @Override public ResourceLocation getModelResource(TideRemnantHermitCrabEntity animatable) { return MODEL; }
-        @Override public ResourceLocation getTextureResource(TideRemnantHermitCrabEntity animatable) { return TEXTURE; }
-        @Override public ResourceLocation getAnimationResource(TideRemnantHermitCrabEntity animatable) { return ANIMATION; }
+    private static final class CrabModel extends HpGeoModel<TideRemnantHermitCrabEntity> {
+        private static final Identifier MODEL = id("entity/tide_remnant_hermit_crab");
+        private static final Identifier TEXTURE = id("textures/entity/tide_remnant_hermit_crab.png");
+        private static final Identifier ANIMATION = id("entity/tide_remnant_hermit_crab");
+        private static Identifier id(String path) { return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
+        @Override public Identifier getModelResource(TideRemnantHermitCrabEntity animatable) { return MODEL; }
+        @Override public Identifier getTextureResource(TideRemnantHermitCrabEntity animatable) { return TEXTURE; }
+        @Override public Identifier getAnimationResource(TideRemnantHermitCrabEntity animatable) { return ANIMATION; }
 
-        @Override public void setCustomAnimations(TideRemnantHermitCrabEntity animatable, long instanceId, AnimationState<TideRemnantHermitCrabEntity> animationState) {
+        @Override public void setCustomAnimations(TideRemnantHermitCrabEntity animatable, long instanceId, AnimationTest<TideRemnantHermitCrabEntity> animationState) {
             super.setCustomAnimations(animatable, instanceId, animationState);
             boolean broken = animatable.isSkullBroken();
-            GeoBone skull = getAnimationProcessor().getBone("skull");
+            HpBone skull = getAnimationProcessor().getBone("skull");
             if (skull != null) skull.setHidden(broken);
-            GeoBone shell = getAnimationProcessor().getBone("shell");
+            HpBone shell = getAnimationProcessor().getBone("shell");
             if (shell != null) {
                 shell.setHidden(broken);
                 shell.setChildrenHidden(broken);
@@ -118,7 +119,7 @@ public final class TideCrabClient {
         }
     }
 
-    private static final class CrabRenderer extends GeoEntityRenderer<TideRemnantHermitCrabEntity> {
+    private static final class CrabRenderer extends HpGeoEntityRenderer<TideRemnantHermitCrabEntity> {
         CrabRenderer(EntityRendererProvider.Context context) {
             super(context, new CrabModel());
             shadowRadius = 1.0F;
@@ -128,13 +129,13 @@ public final class TideCrabClient {
         // 死亡由动画表现，不叠加原版侧翻
         @Override protected float getDeathMaxRotation(TideRemnantHermitCrabEntity animatable) { return 0; }
 
-        @Override public void preRender(PoseStack poseStack, TideRemnantHermitCrabEntity animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
+        @Override public void preRender(PoseStack poseStack, TideRemnantHermitCrabEntity animatable, HpBakedModel model, @Nullable MultiBufferSource bufferSource,
                                         @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
             super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
             if (!isReRender) model.getBone("vfx_snout").ifPresent(bone -> bone.setTrackingMatrices(true));
         }
 
-        @Override public void renderFinal(PoseStack poseStack, TideRemnantHermitCrabEntity crab, BakedGeoModel model, MultiBufferSource bufferSource,
+        @Override public void renderFinal(PoseStack poseStack, TideRemnantHermitCrabEntity crab, HpBakedModel model, MultiBufferSource bufferSource,
                                           @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
             super.renderFinal(poseStack, crab, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
             if (crab.getSkill() != TideRemnantHermitCrabEntity.CANNON || crab.isDeadOrDying()) return;
@@ -150,7 +151,7 @@ public final class TideCrabClient {
             // 头 3 tick 由细变粗，最后 2 tick 收细
             float fade = Mth.clamp(Math.min((age - TideRemnantHermitCrabEntity.CANNON_SWEEP) / 3, (TideRemnantHermitCrabEntity.CANNON_SWEEP_END + 1 - age) / 2), 0, 1);
             double w = 0.42 * fade * (1 + 0.06 * Math.sin(age * 2.3));
-            Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(base.add(origin)).normalize();
+            Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(base.add(origin)).normalize();
             // 贴图 16x32：宽 2w 对应一整块的高 4w，V 方向随时间滚动成流动的水柱
             float v0 = -age * 0.35F;
             float v1 = v0 + (float) (length / (4 * Math.max(w, 0.05)));
@@ -169,7 +170,7 @@ public final class TideCrabClient {
 
     // ---------------- 水箭 ----------------
 
-    private static final class BoltRenderer extends EntityRenderer<TideWaterBoltEntity> {
+    private static final class BoltRenderer extends HpEntityRenderer<TideWaterBoltEntity> {
         BoltRenderer(EntityRendererProvider.Context context) {
             super(context);
             shadowRadius = 0;
@@ -179,7 +180,7 @@ public final class TideCrabClient {
             Vec3 v = bolt.getDeltaMovement();
             if (v.lengthSqr() > 1.0E-6) {
                 Vec3 axis = v.normalize();
-                Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(bolt.getPosition(partialTick)).normalize();
+                Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(bolt.getPosition(partialTick)).normalize();
                 // 16x16 水滴：圆头在上（v=0）朝前，尾巴拖在后面。长 0.6、宽 0.6 保持方形不拉伸
                 Vec3 head = axis.scale(0.25).add(0, bolt.getBbHeight() * 0.5, 0);
                 ribbon(poseStack.last(), buffer(buffers, BOLT), head, axis.scale(-1), toCamera, 0.6, 0.3, 0, 1, 1);
@@ -187,12 +188,12 @@ public final class TideCrabClient {
             super.render(bolt, yaw, partialTick, poseStack, buffers, light);
         }
 
-        @Override public ResourceLocation getTextureLocation(TideWaterBoltEntity entity) { return BOLT; }
+        @Override public Identifier getTextureLocation(TideWaterBoltEntity entity) { return BOLT; }
     }
 
     // ---------------- 间歇泉 / 潮汐水墙 ----------------
 
-    private static final class VfxRenderer extends EntityRenderer<TideVfxEntity> {
+    private static final class VfxRenderer extends HpEntityRenderer<TideVfxEntity> {
         private static final int SEGMENTS = 40;
 
         VfxRenderer(EntityRendererProvider.Context context) {
@@ -338,7 +339,7 @@ public final class TideCrabClient {
         }
 
         private Vec3 horizontalToCamera(TideVfxEntity vfx, float partialTick) {
-            Vec3 toCamera = entityRenderDispatcher.camera.getPosition().subtract(vfx.getPosition(partialTick)).multiply(1, 0, 1);
+            Vec3 toCamera = entityRenderDispatcher.camera.position().subtract(vfx.getPosition(partialTick)).multiply(1, 0, 1);
             return toCamera.lengthSqr() < 1.0E-6 ? new Vec3(0, 0, 1) : toCamera.normalize();
         }
 
@@ -358,7 +359,7 @@ public final class TideCrabClient {
             }
         }
 
-        @Override public ResourceLocation getTextureLocation(TideVfxEntity entity) { return WAVE; }
+        @Override public Identifier getTextureLocation(TideVfxEntity entity) { return WAVE; }
     }
 
     // ---------------- 震屏 ----------------

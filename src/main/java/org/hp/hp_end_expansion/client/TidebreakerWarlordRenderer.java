@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -14,25 +14,25 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidebreakerWarlordEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpGeoModel;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
-public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<TidebreakerWarlordEntity> {
-    private static final ResourceLocation GEO = id("geo/tidebreaker_warlord.geo.json");
-    private static final ResourceLocation TEXTURE = id("textures/entity/tidebreaker_warlord.png");
-    private static final ResourceLocation ANIMATION = id("animations/tidebreaker_warlord.animation.json");
+public final class TidebreakerWarlordRenderer extends HpGeoEntityRenderer<TidebreakerWarlordEntity> {
+    private static final Identifier GEO = id("entity/tidebreaker_warlord");
+    private static final Identifier TEXTURE = id("textures/entity/tidebreaker_warlord.png");
+    private static final Identifier ANIMATION = id("entity/tidebreaker_warlord");
 
     // 特效贴图：自绘路线与裂地，其余沿用潮光系列
-    private static final ResourceLocation LANE = id("textures/entity/tidebreaker_warlord_fx_lane.png");
-    private static final ResourceLocation CRACK = id("textures/entity/tidebreaker_warlord_fx_crack.png");
-    private static final ResourceLocation SEAL = id("textures/entity/tidecrown_fx_seal.png");
-    private static final ResourceLocation FOAM = id("textures/entity/tidecrown_fx_foam.png");
-    private static final ResourceLocation WAVE = id("textures/entity/tide_wave.png");
-    private static final ResourceLocation IMPACT = id("textures/entity/tidebreaker_impact.png");
-    private static final ResourceLocation GUARD = id("textures/entity/tidebreaker_guard.png");
-    private static final ResourceLocation STREAK = id("textures/entity/tidebreaker_streak.png");
-    private static final ResourceLocation DISC = id("textures/entity/tidebreaker_arc.png");
+    private static final Identifier LANE = id("textures/entity/tidebreaker_warlord_fx_lane.png");
+    private static final Identifier CRACK = id("textures/entity/tidebreaker_warlord_fx_crack.png");
+    private static final Identifier SEAL = id("textures/entity/tidecrown_fx_seal.png");
+    private static final Identifier FOAM = id("textures/entity/tidecrown_fx_foam.png");
+    private static final Identifier WAVE = id("textures/entity/tide_wave.png");
+    private static final Identifier IMPACT = id("textures/entity/tidebreaker_impact.png");
+    private static final Identifier GUARD = id("textures/entity/tidebreaker_guard.png");
+    private static final Identifier STREAK = id("textures/entity/tidebreaker_streak.png");
+    private static final Identifier DISC = id("textures/entity/tidebreaker_arc.png");
 
     // 锤头相对身体的角度表（0 为正前，90 为左侧），来自动画实测
     private static final float[][] SWEEP = {{8, -76}, {10, -54}, {11, -12}, {12, 23}, {13, 36}, {14, 45}};
@@ -40,8 +40,8 @@ public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<Tidebrea
     private static final float[][] SPIN = {{12, -90}, {14, -27}, {16, 101}, {18, 180}, {20, 277}, {22, 330}};
     private static final float[][] COUNTER = {{21, 40}, {23, 0}, {25, -35}};
 
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, path);
+    private static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, path);
     }
 
     public TidebreakerWarlordRenderer(EntityRendererProvider.Context context) {
@@ -73,7 +73,7 @@ public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<Tidebrea
         super.render(e, yaw, pt, ps, b, light);
         if (e.isDeadOrDying()) return;
         Vec3 pos = e.getPosition(pt);
-        Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(pos);
+        Vec3 cam = entityRenderDispatcher.camera.position().subtract(pos);
         float age = e.skillAge(pt);
         float bodyYaw = e.aimYaw();
         PoseStack.Pose p = ps.last();
@@ -239,16 +239,16 @@ public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<Tidebrea
         AbyssFx.billboard(p, AbyssFx.glow(b, FOAM), top, cam.subtract(top), 0.6 + 0.2 * rise, t * 0.2, fade);
     }
 
-    private static void disc(PoseStack.Pose p, MultiBufferSource b, ResourceLocation tex, Vec3 center, Vec3 axis, double radius, float alpha) {
+    private static void disc(PoseStack.Pose p, MultiBufferSource b, Identifier tex, Vec3 center, Vec3 axis, double radius, float alpha) {
         Vec3 right = axis.cross(new Vec3(0, 1, 0)).normalize().scale(radius);
         Vec3 up = right.normalize().cross(axis).normalize().scale(radius);
         AbyssFx.quad(p, AbyssFx.glow(b, tex), center.subtract(right).subtract(up), center.add(right).subtract(up), center.add(right).add(up), center.subtract(right).add(up), 0, 0, 1, 1, alpha);
     }
 
     // 模型、贴图、动画资源路径
-    private static final class Model extends GeoModel<TidebreakerWarlordEntity> {
-        @Override public ResourceLocation getModelResource(TidebreakerWarlordEntity entity) { return GEO; }
-        @Override public ResourceLocation getTextureResource(TidebreakerWarlordEntity entity) { return TEXTURE; }
-        @Override public ResourceLocation getAnimationResource(TidebreakerWarlordEntity entity) { return ANIMATION; }
+    private static final class Model extends HpGeoModel<TidebreakerWarlordEntity> {
+        @Override public Identifier getModelResource(TidebreakerWarlordEntity entity) { return GEO; }
+        @Override public Identifier getTextureResource(TidebreakerWarlordEntity entity) { return TEXTURE; }
+        @Override public Identifier getAnimationResource(TidebreakerWarlordEntity entity) { return ANIMATION; }
     }
 }

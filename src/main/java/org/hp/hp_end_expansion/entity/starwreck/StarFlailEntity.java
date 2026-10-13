@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
@@ -33,7 +35,7 @@ public final class StarFlailEntity extends Projectile {
     }
 
     public static void launch(LivingEntity owner, Vec3 origin, Vec3 direction) {
-        StarFlailEntity flail = StarwreckEntities.STAR_FLAIL.get().create(owner.level());
+        StarFlailEntity flail = StarwreckEntities.STAR_FLAIL.get().create(owner.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (flail == null) return;
         flail.setOwner(owner);
         flail.setPos(origin);
@@ -48,20 +50,20 @@ public final class StarFlailEntity extends Projectile {
         Vec3 motion = getDeltaMovement().add(0, -GRAVITY, 0);
         setDeltaMovement(motion);
         HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-        if (!level().isClientSide && hit.getType() != HitResult.Type.MISS) {
+        if (!level().isClientSide() && hit.getType() != HitResult.Type.MISS) {
             hitTargetOrDeflectSelf(hit);
             if (isRemoved()) return;
         }
         setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
         updateRotation();
-        if (!level().isClientSide && tickCount > MAX_LIFE) discard();
+        if (!level().isClientSide() && tickCount > MAX_LIFE) discard();
     }
 
     @Override protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
         Entity target = result.getEntity();
         if (getOwner() instanceof LivingEntity owner && target instanceof LivingEntity living)
-            living.hurt(damageSources().mobProjectile(this, owner), DAMAGE);
+            living.hurtOrSimulate(damageSources().mobProjectile(this, owner), DAMAGE);
         land(result.getLocation());
     }
 
@@ -100,6 +102,6 @@ public final class StarFlailEntity extends Projectile {
 
     @Override public boolean isPickable() { return false; }
     @Override protected double getDefaultGravity() { return 0; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); }
+    @Override protected void readAdditionalSaveData(ValueInput tag) { super.readAdditionalSaveData(tag); }
+    @Override protected void addAdditionalSaveData(ValueOutput tag) { super.addAdditionalSaveData(tag); }
 }

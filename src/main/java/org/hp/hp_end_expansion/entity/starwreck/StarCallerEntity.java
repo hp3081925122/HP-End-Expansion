@@ -1,9 +1,11 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -16,7 +18,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,13 +38,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 唤星者：星骸荒原里少见的施法小怪。和玩家保持 6～14 格，举杖召星：目标脚下和周围随机几处亮起落点圈，
@@ -72,19 +74,19 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
     }
 
     // 自然刷出时身边跟着一两个殉星者
-    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
+    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
-        if (spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION) return result;
+        if (spawnType != EntitySpawnReason.NATURAL && spawnType != EntitySpawnReason.CHUNK_GENERATION) return result;
         for (int i = 1 + random.nextInt(2); i > 0; i--) {
-            StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel());
+            StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if (martyr == null) continue;
             double a = random.nextDouble() * Math.PI * 2, r = 1.5 + random.nextDouble() * 2;
             int x = Mth.floor(getX() + Math.cos(a) * r), z = Mth.floor(getZ() + Math.sin(a) * r);
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             if (Math.abs(y - getY()) > 3) continue;
-            martyr.moveTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
+            martyr.snapTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
             if (!level.noCollision(martyr)) continue;
-            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null);
+            martyr.finalizeSpawn(level, difficulty, EntitySpawnReason.MOB_SUMMONED, null);
             level.addFreshEntity(martyr);
         }
         return result;
@@ -109,11 +111,11 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide && isCasting()) castParticles();
+        if (level().isClientSide() && isCasting()) castParticles();
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (castCooldown > 0) castCooldown--;
         if (blinkCooldown > 0) blinkCooldown--;
     }
@@ -163,9 +165,9 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
         }
     }
 
-    @Override public boolean hurt(DamageSource source, float amount) {
-        boolean hurt = super.hurt(source, amount);
-        if (hurt && !level().isClientSide && isAlive() && blinkCooldown <= 0 && source.getEntity() != null && random.nextFloat() < BLINK_CHANCE)
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        boolean hurt = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (hurt && !level().isClientSide() && isAlive() && blinkCooldown <= 0 && source.getEntity() != null && random.nextFloat() < BLINK_CHANCE)
             blink();
         return hurt;
     }
@@ -206,22 +208,22 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
     @Override protected SoundEvent getDeathSound() { return SoundEvents.AMETHYST_BLOCK_BREAK; }
     @Override public float getVoicePitch() { return super.getVoicePitch() * 0.6F; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("CastCooldown", castCooldown);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        castCooldown = tag.getInt("CastCooldown");
+        castCooldown = tag.getIntOr("CastCooldown", 0);
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 4, state -> {
+        controllers.add(new AnimationController<>("base", 4, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
-        controllers.add(new AnimationController<>(this, "action", 2, state -> PlayState.STOP).triggerableAnim("cast", CAST));
+        controllers.add(new AnimationController<>("action", 2, state -> PlayState.STOP).triggerableAnim("cast", CAST));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }

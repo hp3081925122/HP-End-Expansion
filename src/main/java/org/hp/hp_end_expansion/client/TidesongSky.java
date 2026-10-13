@@ -2,11 +2,11 @@ package org.hp.hp_end_expansion.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import org.hp.hp_end_expansion.client.render.HpSkyDraw;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import org.hp.hp_end_expansion.client.render.HpSkyMesh;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,7 +17,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -42,12 +42,12 @@ import org.joml.Matrix4f;
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class TidesongSky {
     private static final float R = 90;
-    private static final ResourceLocation RING = tex("song_ring");
+    private static final Identifier RING = tex("song_ring");
     /** 没有技能同步时，每隔多少 tick 自动唱一段。 */
     private static final int SONG_EVERY = 150, RING_LIFE = 110;
 
     private static final List<Ring> RINGS = new ArrayList<>();
-    private static VertexBuffer staticSkyBuffer;
+    private static HpSkyMesh staticSkyBuffer;
     private static float presence, presenceO;
     private static boolean preview;
     private static long ticks;
@@ -55,8 +55,8 @@ public final class TidesongSky {
 
     private TidesongSky() {}
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/environment/tidesong/" + name + ".png");
+    private static Identifier tex(String name) {
+        return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/environment/tidesong/" + name + ".png");
     }
 
     private record Ring(Vec3 dir, int born, float strength) {}
@@ -65,7 +65,7 @@ public final class TidesongSky {
     public static void songPulse(Vec3 from) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameRenderer == null || mc.level == null) return;
-        Vec3 d = from.subtract(mc.gameRenderer.getMainCamera().getPosition());
+        Vec3 d = from.subtract(mc.gameRenderer.getMainCamera().position());
         if (d.lengthSqr() < 1.0E-4) d = new Vec3(0, 1, 0);
         emit(d.normalize());
     }
@@ -100,16 +100,15 @@ public final class TidesongSky {
         // 来得慢（约 6 秒铺满）、退得更慢
         presence = on ? Math.min(1, presence + 0.008F) : Math.max(0, presence - 0.004F);
         if (on && presence > 0.4F && --songTimer <= 0) {
-            Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+            Vec3 cam = mc.gameRenderer.getMainCamera().position();
             Vec3 from = sky(ticks * 0.002F, 0.9F).subtract(cam);
             emit(from.lengthSqr() < 1.0E-4 ? new Vec3(0, 1, 0) : from.normalize());
         }
         for (Iterator<Ring> it = RINGS.iterator(); it.hasNext(); ) if (ticks - it.next().born > RING_LIFE) it.remove();
     }
 
-    @SubscribeEvent public static void render(RenderLevelStageEvent e) {
-        if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+    @SubscribeEvent public static void render(RenderLevelStageEvent.AfterSky e) {
+        float pt = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float L = Mth.lerp(pt, presenceO, presence);
         if (L < 0.003F) return;
         L = L * L * (3 - 2 * L);
@@ -117,56 +116,54 @@ public final class TidesongSky {
         float t = ticks + pt;
         Tesselator tess = Tesselator.getInstance();
 
-        RenderSystem.enableBlend();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
+
 
         // 1. 深海底色：地平线近黑的深蓝，越往天顶越亮越青（和"中心一个黑洞旋涡"正好相反）
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.normal();
+        HpSkyDraw.colored();
         ensureStaticSkyBuffer(tess);
         if (staticSkyBuffer != null) {
-            RenderSystem.setShaderColor(1, 1, 1, L);
-            staticSkyBuffer.bind();
-            staticSkyBuffer.drawWithShader(m, RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
-            RenderSystem.setShaderColor(1, 1, 1, 1);
+            HpSkyDraw.color(1, 1, 1, L);
+
+            staticSkyBuffer.draw(m);
+
+            HpSkyDraw.color(1, 1, 1, 1);
         }
 
         // 2. 加法：天顶亮斑、海面上一圈圈荡开的涟漪、从海面斜射下来的光柱
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.colored();
         BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         ripples(b, m, t, L);
         rays(b, m, t, L);
         draw(b);
 
         // 3. 加法：横跨天空的几道潮光：没有贴图的柔光带，一阵阵亮波顺流推过去，中线上有几颗流光顺流滑行
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.colored();
         b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         current(b, m, t, 0.42F, 0.20F, 0.0F, 1.0F, L);
         current(b, m, t, 0.18F, 0.15F, 2.1F, 0.7F, 0.8F * L);
         current(b, m, t, 0.75F, 0.12F, 4.0F, 1.3F, 0.65F * L);
         draw(b);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        HpSkyDraw.textured();
 
         // 5. 加法：鲸歌声纹环
         if (!RINGS.isEmpty()) {
-            RenderSystem.setShaderTexture(0, RING);
+            HpSkyDraw.texture(RING);
             b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
             for (Ring r : RINGS) ring(b, m, r, t, L);
             draw(b);
         }
 
         // 6. 加法：往天顶升的气泡和浮游荧光
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.colored();
         b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         motes(b, m, t, L);
         draw(b);
 
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
+        HpSkyDraw.normal();
+
+
+
     }
 
     // ------------------------------------------------------------------ 各层
@@ -174,7 +171,7 @@ public final class TidesongSky {
     private static void ensureStaticSkyBuffer(Tesselator tess) {
         if (staticSkyBuffer != null && !staticSkyBuffer.isInvalid()) return;
         if (staticSkyBuffer != null) staticSkyBuffer.close();
-        staticSkyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        staticSkyBuffer = new HpSkyMesh();
         BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f identity = new Matrix4f();
         dome(b, identity, 1);
@@ -185,9 +182,9 @@ public final class TidesongSky {
             staticSkyBuffer = null;
             return;
         }
-        staticSkyBuffer.bind();
+
         staticSkyBuffer.upload(mesh);
-        VertexBuffer.unbind();
+
     }
 
     /** 高度角(度)对应的底色：地平线下 d0，往上 d1、d2，天顶带一点潮光青。 */
@@ -458,7 +455,7 @@ public final class TidesongSky {
 
     private static void draw(BufferBuilder b) {
         MeshData mesh = b.build();
-        if (mesh != null) BufferUploader.drawWithShader(mesh);
+        if (mesh != null) HpSkyDraw.draw(mesh);
     }
 
     /** 远处地形的雾也染成深海色，天和地接得上。 */

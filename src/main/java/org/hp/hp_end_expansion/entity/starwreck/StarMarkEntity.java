@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +20,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
  * 逐星兽召星的落点警示圈（设计文档 4.3）：地面亮起半径 2 格的圈，1.5 秒后从正上方 20 格落下一颗小陨星，
  * 陨星落地后圈再留几拍就消失。伤害由小陨星结算。
  */
-public final class StarMarkEntity extends Entity {
+public final class StarMarkEntity extends Entity implements HpCullingEntity {
     public static final int WARN_TICKS = 30;
     public static final int LIFE = WARN_TICKS + FallingStarEntity.SMALL_FALL_TICKS + 4;
     public static final float RADIUS = FallingStarEntity.SMALL_RADIUS;
@@ -34,10 +37,10 @@ public final class StarMarkEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 at, float damage) {
-        StarMarkEntity mark = StarwreckEntities.STAR_MARK.get().create(level);
+        StarMarkEntity mark = StarwreckEntities.STAR_MARK.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (mark == null) return;
         mark.damage = damage;
-        mark.moveTo(at.x, at.y, at.z, 0, 0);
+        mark.snapTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(mark);
     }
 
@@ -45,7 +48,7 @@ public final class StarMarkEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             if (tickCount < WARN_TICKS && random.nextInt(2) == 0) {
                 double a = random.nextDouble() * Math.PI * 2;
                 level().addParticle(ModParticles.STAR_EMBER.get(), getX() + Math.cos(a) * RADIUS, getY() + 0.05, getZ() + Math.sin(a) * RADIUS,
@@ -69,6 +72,7 @@ public final class StarMarkEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

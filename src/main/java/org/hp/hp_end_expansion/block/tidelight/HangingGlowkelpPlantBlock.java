@@ -33,5 +33,5 @@ public final class HangingGlowkelpPlantBlock extends GrowingPlantBodyBlock {
         BlockPos end = head(level, pos);
         if (end != null) getHeadBlock().performBonemeal(level, random, end, level.getBlockState(end));
     }
-    @Override public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) { return new ItemStack(ModTidelight.GLOWKELP_POD.get()); }
+    @Override public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) { return new ItemStack(ModTidelight.GLOWKELP_POD.get()); }
 }

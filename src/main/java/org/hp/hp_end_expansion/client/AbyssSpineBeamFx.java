@@ -22,6 +22,11 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 /** 深渊晶刺激光：命中点长出晶簇，光束从方块射向敌人，双螺旋潮光缠绕光束，两端炸开光环与晶屑。 */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class AbyssSpineBeamFx {
+    private static final net.minecraft.util.context.ContextKey<org.hp.hp_end_expansion.client.render.HpRenderBuffers> BEAM_GEOMETRY=new net.minecraft.util.context.ContextKey<>(net.minecraft.resources.Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID,"abyss_beam_geometry"));
+    @SubscribeEvent public static void submit(net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent event) {
+        var buffers=event.getLevelRenderState().getRenderData(BEAM_GEOMETRY);
+        if(buffers!=null) buffers.submit(event.getSubmitNodeCollector());
+    }
     private static final int LIFE = 14;
     private static final int CRYSTALS = 5;
     private static final List<Beam> BEAMS = new ArrayList<>();
@@ -58,8 +63,8 @@ public final class AbyssSpineBeamFx {
     public static void spawn(Vec3 from, Vec3 to, int face) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
-        RandomSource random = level.random;
-        Vec3 normal = Vec3.atLowerCornerOf(Direction.from3DDataValue(face).getNormal());
+        RandomSource random = level.getRandom();
+        Vec3 normal = Vec3.atLowerCornerOf(Direction.from3DDataValue(face).getUnitVec3i());
         BEAMS.add(new Beam(from, to, normal, random));
 
         // 沿光束撒出潮光火花
@@ -97,19 +102,19 @@ public final class AbyssSpineBeamFx {
     }
 
     @SubscribeEvent
-    public static void render(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || BEAMS.isEmpty()) return;
+    public static void extract(net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent event) {
+        if(BEAMS.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
-        Vec3 cam = event.getCamera().getPosition();
-        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        Vec3 cam = event.getCamera().position();
+        float pt = event.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         if (mc.isPaused()) pt = 0;
 
         // 模型视图已含镜头旋转，这里只需要平移到世界坐标
-        PoseStack stack = event.getPoseStack();
+        PoseStack stack = new PoseStack();
         stack.pushPose();
         stack.translate(-cam.x, -cam.y, -cam.z);
         PoseStack.Pose pose = stack.last();
-        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        org.hp.hp_end_expansion.client.render.HpRenderBuffers buffers = new org.hp.hp_end_expansion.client.render.HpRenderBuffers();
 
         // 同一贴图的面一起画，切换贴图会结束上一批
         VertexConsumer beamVc = AbyssFx.glow(buffers, AbyssFx.BEAM);
@@ -121,7 +126,7 @@ public final class AbyssSpineBeamFx {
         VertexConsumer crystalVc = AbyssFx.glow(buffers, AbyssFx.CRYSTAL);
         for (Beam beam : BEAMS) drawCrystals(pose, crystalVc, beam, beam.age + pt);
 
-        buffers.endBatch();
+        event.getRenderState().setRenderData(BEAM_GEOMETRY,buffers);
         stack.popPose();
     }
 

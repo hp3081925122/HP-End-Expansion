@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/star_martyr_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 6380144
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 16240226
+      }
+    ]
+  }
+}

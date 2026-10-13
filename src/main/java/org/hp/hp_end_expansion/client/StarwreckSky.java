@@ -1,13 +1,12 @@
 package org.hp.hp_end_expansion.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import org.hp.hp_end_expansion.client.render.HpSkyDraw;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import org.hp.hp_end_expansion.client.render.HpSkyMesh;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -46,7 +45,7 @@ public final class StarwreckSky {
     private static final Vec3 BELT_N = sky(4.05F, (float) Math.toRadians(35)).normalize();
     private static final Vec3 BELT_E1 = UP.cross(BELT_N).normalize(), BELT_E2 = BELT_N.cross(BELT_E1).normalize();
 
-    private static VertexBuffer staticSkyBuffer;
+    private static HpSkyMesh staticSkyBuffer;
     private static float presence, presenceO;
     private static boolean preview;
     private static long ticks;
@@ -86,9 +85,8 @@ public final class StarwreckSky {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void render(RenderLevelStageEvent e) {
-        if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+    public static void render(RenderLevelStageEvent.AfterSky e) {
+        float pt = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float L = Mth.lerp(pt, presenceO, presence);
         if (L < 0.003F) return;
         L = L * L * (3 - 2 * L);
@@ -96,48 +94,46 @@ public final class StarwreckSky {
         float t = ticks + pt;
         Tesselator tess = Tesselator.getInstance();
 
-        RenderSystem.enableBlend();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
+
 
         // 1. 静态天幕：底色渐变、星骸带尘光、暗淡的远星，缓存在顶点缓冲里
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.normal();
+        HpSkyDraw.colored();
         ensureStaticSkyBuffer(tess);
         if (staticSkyBuffer != null) {
-            RenderSystem.setShaderColor(1, 1, 1, L);
-            staticSkyBuffer.bind();
-            staticSkyBuffer.drawWithShader(m, RenderSystem.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
-            RenderSystem.setShaderColor(1, 1, 1, 1);
+            HpSkyDraw.color(1, 1, 1, L);
+
+            staticSkyBuffer.draw(m);
+
+            HpSkyDraw.color(1, 1, 1, 1);
         }
 
         // 2. 加法：地平线热帘、垂死的星
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        HpSkyDraw.additive();
+        HpSkyDraw.colored();
         BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         curtains(b, m, t, L);
         dyingStars(b, m, t, L);
         draw(b);
 
         // 3. 普通混合：星骸带碎块的剪影，挡住身后的光
-        RenderSystem.defaultBlendFunc();
+        HpSkyDraw.normal();
         b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, false);
         draw(b);
 
         // 4. 加法：碎块朝地平线那侧的余烬边、飘落的余烬
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        HpSkyDraw.additive();
         b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, true);
         embers(b, m, t, L);
         draw(b);
 
         // 还原渲染状态
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
+        HpSkyDraw.normal();
+
+
+
     }
 
     // ------------------------------------------------------------------ 静态天幕
@@ -145,7 +141,7 @@ public final class StarwreckSky {
     private static void ensureStaticSkyBuffer(Tesselator tess) {
         if (staticSkyBuffer != null && !staticSkyBuffer.isInvalid()) return;
         if (staticSkyBuffer != null) staticSkyBuffer.close();
-        staticSkyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        staticSkyBuffer = new HpSkyMesh();
         // 底色、尘光、远星一次性烘进顶点缓冲
         BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f identity = new Matrix4f();
@@ -158,9 +154,9 @@ public final class StarwreckSky {
             staticSkyBuffer = null;
             return;
         }
-        staticSkyBuffer.bind();
+
         staticSkyBuffer.upload(mesh);
-        VertexBuffer.unbind();
+
     }
 
     /** 高度角(度)对应的底色：地平线是余烬褐红，往上褪成暗紫，天顶近乎靛黑。 */
@@ -477,7 +473,7 @@ public final class StarwreckSky {
 
     private static void draw(BufferBuilder b) {
         MeshData mesh = b.build();
-        if (mesh != null) BufferUploader.drawWithShader(mesh);
+        if (mesh != null) HpSkyDraw.draw(mesh);
     }
 
     /** 远处地形的雾也染成余烬暗褐，天地接得上。 */

@@ -3,8 +3,8 @@ package org.hp.hp_end_expansion.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import org.hp.hp_end_expansion.client.render.HpGuiGraphics;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -23,7 +23,7 @@ import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
  */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class SkyMeteorClient {
-    private static final ResourceLocation ROCKS = SkyrenderClient.id("textures/effect/meteor_flash_rocks.png");
+    private static final Identifier ROCKS = SkyrenderClient.id("textures/effect/meteor_flash_rocks.png");
     private static final float HIT = SkyrenderEntity.METEOR_HIT;
 
     private SkyMeteorClient() {}
@@ -37,10 +37,10 @@ public final class SkyMeteorClient {
     @SubscribeEvent public static void gui(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-        GuiGraphics g = event.getGuiGraphics();
+        HpGuiGraphics g = new HpGuiGraphics(event.getGuiGraphics());
         int w = g.guiWidth(), h = g.guiHeight();
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+        Vec3 cam = mc.gameRenderer.getMainCamera().position();
         for (SkyMeteorEntity m : meteors(mc, cam)) {
             float t = m.tickCount + pt, since = t - HIT, brk = t - m.breakTick();
             // 星冲出旋涡口：天上一亮
@@ -48,12 +48,12 @@ public final class SkyMeteorClient {
             // 最后两秒：四周一圈柔边暗角压进来，整屏被星光烤得发橙
             if (since > -40 && since < 0) {
                 float k = 1 + since / 40;
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
+
+                g.setGlow(false);
                 g.setColor(1, 1, 1, clamp01(0.2F + 0.8F * k * k));
                 g.blit(SkyrenderClient.METEOR_VIGNETTE, 0, 0, w, h, 0, 0, 256, 256, 256, 256);
                 g.setColor(1, 1, 1, 1);
-                RenderSystem.disableBlend();
+
                 fill(g, w, h, k * k * k * 0.27F, 0xFF7A2C);
             }
             // 星压到镜头身上：整屏变成熔岩色
@@ -67,12 +67,12 @@ public final class SkyMeteorClient {
                 float a = 0.22F * smoothstep((since - 16) / 10) * (1 - smoothstep((since - 100) / 30));
                 if (a > 0.005F) {
                     fill(g, w, h, a, 0x7A1A08);
-                    RenderSystem.enableBlend();
-                    RenderSystem.defaultBlendFunc();
+
+                    g.setGlow(false);
                     g.setColor(1, 1, 1, clamp01(a * 3));
                     g.blit(SkyrenderClient.METEOR_VIGNETTE, 0, 0, w, h, 0, 0, 256, 256, 256, 256);
                     g.setColor(1, 1, 1, 1);
-                    RenderSystem.disableBlend();
+
                 }
             }
             flash(g, w, h, since, 1, m.getId());
@@ -81,15 +81,15 @@ public final class SkyMeteorClient {
     }
 
     /** 一次爆闪：一拍纯白，之后 11 拍褪成黄橙；同时碎岩剪影从屏幕中间转着扑面飞出去。 */
-    private static void flash(GuiGraphics g, int w, int h, float s, float amp, int seed) {
+    private static void flash(HpGuiGraphics g, int w, int h, float s, float amp, int seed) {
         if (s < 0 || s >= 12) return;
         float a = s < 1 ? 1 : (1 - (s - 1) / 11) * (1 - (s - 1) / 11);
         int col = s < 1 ? 0xFFF6E2 : lerpColor(0xFFF0C8, 0xFFB850, clamp01((s - 1) / 8));
         fill(g, w, h, a * amp, col);
         if (s >= 10) return;
         float p = s / 10;
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+
+        g.setGlow(false);
         for (int j = 0; j < 12; j++) {
             float n0 = SkyMeteorEntity.noise(seed, j, 131), n1 = SkyMeteorEntity.noise(seed, j, 132), n2 = SkyMeteorEntity.noise(seed, j, 133);
             // 每块从屏幕中间附近不同的地方冒出来，越飞越大、越快，近的几块大到占小半个屏幕
@@ -104,10 +104,10 @@ public final class SkyMeteorClient {
             g.pose().popPose();
         }
         g.setColor(1, 1, 1, 1);
-        RenderSystem.disableBlend();
+
     }
 
-    private static void fill(GuiGraphics g, int w, int h, float alpha, int rgb) {
+    private static void fill(HpGuiGraphics g, int w, int h, float alpha, int rgb) {
         int a = (int) (clamp01(alpha) * 250);
         if (a > 0) g.fill(0, 0, w, h, (a << 24) | rgb);
     }
@@ -130,7 +130,7 @@ public final class SkyMeteorClient {
         if (scale <= 0) return;
         float pt = (float) event.getPartialTick();
         double mul = 1;
-        for (SkyMeteorEntity m : meteors(mc, event.getCamera().getPosition())) {
+        for (SkyMeteorEntity m : meteors(mc, event.getCamera().position())) {
             float since = m.tickCount + pt - HIT;
             if (since > -40 && since < 0) {
                 float k = 1 + since / 40;
@@ -140,6 +140,6 @@ public final class SkyMeteorClient {
                 mul = Math.max(mul, 1 + 0.32 * q * q * Math.min(1, since));
             }
         }
-        if (mul != 1) event.setFOV(event.getFOV() * (1 + (mul - 1) * scale));
+        if (mul != 1) event.setFOV((float)(event.getFOV() * (1 + (mul - 1) * scale)));
     }
 }

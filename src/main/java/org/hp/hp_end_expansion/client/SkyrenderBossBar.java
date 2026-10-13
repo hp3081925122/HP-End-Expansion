@@ -2,11 +2,11 @@ package org.hp.hp_end_expansion.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import org.hp.hp_end_expansion.client.render.HpGuiGraphics;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class SkyrenderBossBar {
-    private static final ResourceLocation TEX = SkyrenderClient.id("textures/gui/skyrender_bossbar.png");
+    private static final Identifier TEX = SkyrenderClient.id("textures/gui/skyrender_bossbar.png");
     private static final int TW = 256, TH = 64, W = 220, H = 22;
     private static final int WIN_X = 15, WIN_Y = 9, WIN_W = 190, WIN_H = 6, TILE = 128;
     /** 残影：掉血后停 10 拍，再按每拍 1.2% 往下追。 */
@@ -45,8 +45,8 @@ public final class SkyrenderBossBar {
         event.setIncrement(H + 10);
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        GuiGraphics g = event.getGuiGraphics();
-        float time = mc.level.getGameTime() + mc.getTimer().getGameTimeDeltaPartialTick(false);
+        HpGuiGraphics g = new HpGuiGraphics(event.getGuiGraphics());
+        float time = mc.level.getGameTime() + mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float p = Mth.clamp(boss.getProgress(), 0, 1);
         int phase = p > SkyrenderEntity.PHASE2_AT ? 1 : p > SkyrenderEntity.PHASE3_AT ? 2 : 3;
 
@@ -66,8 +66,8 @@ public final class SkyrenderBossBar {
         int x = g.guiWidth() / 2 - W / 2, y = event.getY();
         int wx = x + WIN_X, wy = y + WIN_Y;
         int fw = Math.round(WIN_W * p), cw = Math.round(WIN_W * s[0]);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+
+        g.setGlow(false);
         g.blit(TEX, x, y, 0, 0, W, H, TW, TH);
         tile(g, wx, wy, 42, WIN_W, 0);
         if (cw > fw) {
@@ -87,7 +87,6 @@ public final class SkyrenderBossBar {
             g.blit(TEX, wx + fw - 2, y + 7, frame == 0 ? 130 : 135, 24, 4, 10, TW, TH);
         }
         g.blit(TEX, x + 5, y + 4, 150 + 6 * (phase - 1), 24, 5, 14, TW, TH);
-        RenderSystem.disableBlend();
 
         Component name = boss.getName();
         int color = phase == 3 ? 0xFFFFC890 : phase == 2 ? 0xFFF0D8B8 : 0xFFE4DCF0;
@@ -95,7 +94,7 @@ public final class SkyrenderBossBar {
     }
 
     /** 把 128 宽的可平铺条从 off 处开始横向铺满 width。 */
-    private static void tile(GuiGraphics g, int x, int y, int v, int width, int off) {
+    private static void tile(HpGuiGraphics g, int x, int y, int v, int width, int off) {
         int drawn = 0;
         while (drawn < width) {
             int u = (off + drawn) % TILE, w = Math.min(TILE - u, width - drawn);

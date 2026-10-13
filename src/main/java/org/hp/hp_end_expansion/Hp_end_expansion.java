@@ -89,6 +89,7 @@ public final class Hp_end_expansion {
 
     public Hp_end_expansion(IEventBus modEventBus, ModContainer container) {
         LOGGER.debug("Using default ordering for creative tab hp_end_expansion:main");
+        org.hp.hp_end_expansion.validation.MigrationSmokeTests.register(modEventBus);
         ModEntities.register(modEventBus);
         ModStarwreck.register(modEventBus);
         StarwreckEntities.register(modEventBus);

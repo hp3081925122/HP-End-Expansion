@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -10,7 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,13 +49,13 @@ import org.hp.hp_end_expansion.registry.ModEntities;
 import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.util.GeckoLibUtil;
 
 public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -89,9 +91,9 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     private static final int MAX_MINIONS = 3;
 
     // 属性修饰符标识
-    private static final ResourceLocation PARTY_HEALTH = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_party_health");
-    private static final ResourceLocation NEST_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_nest_speed");
-    private static final ResourceLocation SHATTER_ARMOR = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_shatter_armor");
+    private static final Identifier PARTY_HEALTH = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_party_health");
+    private static final Identifier NEST_SPEED = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_nest_speed");
+    private static final Identifier SHATTER_ARMOR = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_shatter_armor");
 
     // 同步字段：当前技能、技能 tick、阶段、背部核心暴露
     private static final EntityDataAccessor<Integer> SKILL = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.INT);
@@ -101,7 +103,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     // Boss 血条：20 格刻度，60% 与 25% 恰好落在刻度上
-    private final ServerBossEvent bossEvent = new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_20);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(java.util.UUID.randomUUID(), this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_20);
 
     // 各技能冷却
     private int tripleCooldown = 20;
@@ -222,10 +224,10 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         super.tick();
         if (this.level().isClientSide()) {
             // 客户端：核心暴露时背部溢出火花
-            if (this.isCoreOpen() && this.random.nextInt(2) == 0) {
+            if (this.isCoreOpen() && this.getRandom().nextInt(2) == 0) {
                 float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
                 Vec3 back = new Vec3(Mth.sin(yaw), 0.0D, -Mth.cos(yaw));
-                Vec3 p = this.position().add(back.scale(2.2D)).add((this.random.nextDouble() - 0.5D) * 1.5D, 4.2D + this.random.nextDouble(), (this.random.nextDouble() - 0.5D) * 1.5D);
+                Vec3 p = this.position().add(back.scale(2.2D)).add((this.getRandom().nextDouble() - 0.5D) * 1.5D, 4.2D + this.getRandom().nextDouble(), (this.getRandom().nextDouble() - 0.5D) * 1.5D);
                 this.level().addParticle(ModParticles.RIFT_SPARK.get(), p.x, p.y, p.z, 0.0D, 0.06D, 0.0D);
             }
             return;
@@ -315,10 +317,10 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         }
         // 三阶段：场地边缘每 2 秒生成一道向内的裂缝
         if (this.getPhase() >= 3 && this.isAlive() && this.tickCount % 40 == 0) {
-            double angle = this.random.nextDouble() * Math.PI * 2.0D;
+            double angle = this.getRandom().nextDouble() * Math.PI * 2.0D;
             Vec3 edge = this.arenaCenter.add(Math.cos(angle) * 20.0D, 0.0D, Math.sin(angle) * 20.0D);
             float yaw = (float) (Mth.atan2(this.arenaCenter.z - edge.z, this.arenaCenter.x - edge.x) * Mth.RAD_TO_DEG) - 90.0F;
-            yaw += (this.random.nextFloat() - 0.5F) * 40.0F;
+            yaw += (this.getRandom().nextFloat() - 0.5F) * 40.0F;
             Vec3 ground = this.groundAt(edge);
             if (ground != null) {
                 RiftFissureEntity.spawn(this, ground, yaw, 9.0F, 1.2F, CombatConfigs.RIFT_MATRIARCH.damage("phaseThreeFissureDamage"), 0.6D);
@@ -595,7 +597,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             this.entityData.set(CORE_OPEN, false);
             int alive = this.countMinions(serverLevel);
             int count = Math.min(3, MAX_MINIONS - alive);
-            double start = this.random.nextDouble() * Math.PI * 2.0D;
+            double start = this.getRandom().nextDouble() * Math.PI * 2.0D;
             for (int i = 0; i < count; i++) {
                 double a = start + i * Math.PI * 2.0D / 3.0D;
                 Vec3 pos = this.arenaCenter.add(Math.cos(a) * 14.0D, 0.0D, Math.sin(a) * 14.0D);
@@ -603,11 +605,11 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 if (ground == null) {
                     continue;
                 }
-                RiftMantisEntity mantis = ModEntities.RIFT_MANTIS.get().create(serverLevel);
+                RiftMantisEntity mantis = ModEntities.RIFT_MANTIS.get().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
                 if (mantis == null) {
                     continue;
                 }
-                mantis.moveTo(ground.x, ground.y, ground.z, this.random.nextFloat() * 360.0F, 0.0F);
+                mantis.snapTo(ground.x, ground.y, ground.z, this.getRandom().nextFloat() * 360.0F, 0.0F);
                 mantis.makeMinion((float) CombatConfigs.RIFT_MATRIARCH.value("summonMinionHealth"));
                 mantis.setTarget(target);
                 serverLevel.addFreshEntity(mantis);
@@ -641,10 +643,10 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         }
         if (t == 14) {
             this.fieldZones.clear();
-            double start = this.random.nextDouble() * Math.PI * 2.0D;
+            double start = this.getRandom().nextDouble() * Math.PI * 2.0D;
             for (int i = 0; i < 4; i++) {
                 double a = start + i * Math.PI / 2.0D;
-                double r = 4.0D + this.random.nextDouble() * 3.0D;
+                double r = 4.0D + this.getRandom().nextDouble() * 3.0D;
                 Vec3 ground = this.groundAt(target.position().add(Math.cos(a) * r, 0.0D, Math.sin(a) * r));
                 if (ground != null) {
                     this.fieldZones.add(ground);
@@ -665,7 +667,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     private void tickFieldZones(ServerLevel level) {
         for (Vec3 zone : this.fieldZones) {
             if (this.fieldTicks % 4 == 0) {
-                double a = this.random.nextDouble() * Math.PI * 2.0D;
+                double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
                 level.sendParticles(ModParticles.RIFT_SPARK.get(), zone.x + Math.cos(a) * 2.5D, zone.y + 0.1D, zone.z + Math.sin(a) * 2.5D, 1, 0.0D, 0.0D, 0.0D, 0.0D);
                 level.sendParticles(ModParticles.RIFT_SHARD.get(), zone.x, zone.y + 0.1D, zone.z, 2, 1.2D, 0.02D, 1.2D, 0.02D);
             }
@@ -676,7 +678,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                     continue;
                 }
                 if (this.fieldTicks % 20 == 0) {
-                    player.hurt(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("fieldDamage"));
+                    player.hurtOrSimulate(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("fieldDamage"));
                 }
                 if (this.fieldTicks % 10 == 0 && rel.lengthSqr() > 0.25D) {
                     Vec3 pull = rel.normalize().scale(0.25D);
@@ -705,13 +707,13 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         // 4 批预警，每批间隔 0.6 秒
         int perBatch = this.finaleLineCount / 4;
         if (t >= 10 && t <= 46 && (t - 10) % 12 == 0) {
-            double batchAngle = this.random.nextDouble() * 180.0D;
+            double batchAngle = this.getRandom().nextDouble() * 180.0D;
             for (int i = 0; i < perBatch; i++) {
-                double deg = batchAngle + i * (180.0D / perBatch) + (this.random.nextDouble() - 0.5D) * 20.0D;
+                double deg = batchAngle + i * (180.0D / perBatch) + (this.getRandom().nextDouble() - 0.5D) * 20.0D;
                 double rad = deg * Mth.DEG_TO_RAD;
                 Vec3 dir = new Vec3(Math.cos(rad), 0.0D, Math.sin(rad));
                 Vec3 normal = new Vec3(-dir.z, 0.0D, dir.x);
-                Vec3 mid = c.add(normal.scale((this.random.nextDouble() - 0.5D) * 16.0D));
+                Vec3 mid = c.add(normal.scale((this.getRandom().nextDouble() - 0.5D) * 16.0D));
                 Vec3 start = mid.subtract(dir.scale(ARENA_RADIUS));
                 float yaw = (float) (Mth.atan2(dir.z, dir.x) * Mth.RAD_TO_DEG) - 90.0F;
                 VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_WARN_LINE, start.add(0.0D, 0.05D, 0.0D), yaw, (float) (ARENA_RADIUS * 2.0D), 0, 20, this);
@@ -772,7 +774,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             double dx = victim.getX() - closest.x;
             double dz = victim.getZ() - closest.z;
             if (dx * dx + dz * dz <= 1.0D + victim.getBbWidth() * 0.5D) {
-                victim.hurt(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("finaleLineDamage"));
+                victim.hurtOrSimulate(this.damageSources().indirectMagic(this, this), CombatConfigs.RIFT_MATRIARCH.damage("finaleLineDamage"));
             }
         }
         // 镰刃弧光沿线排布
@@ -851,7 +853,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             if (dist > 0.5D && rel.normalize().dot(forward) < minDot) {
                 continue;
             }
-            if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), damage)) {
                 victim.knockback(knock, -forward.x, -forward.z);
                 if (wither) {
                     victim.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 1), this);
@@ -876,7 +878,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             if (along < 0.0D || along > reach || across > halfWidth + victim.getBbWidth() * 0.5D) {
                 continue;
             }
-            if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), damage)) {
                 victim.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 1), this);
             }
         }
@@ -892,7 +894,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             if (victim.position().distanceToSqr(center) > radius * radius) {
                 continue;
             }
-            if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), damage)) {
                 victim.push(0.0D, 0.8D, 0.0D);
                 victim.hurtMarked = true;
             }
@@ -921,11 +923,11 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             this.startSkill(SKILL_FIELD, "field");
             return true;
         }
-        if (this.webCooldown <= 0 && sight && dist > 5.0D && dist < 16.0D && this.random.nextInt(3) == 0) {
+        if (this.webCooldown <= 0 && sight && dist > 5.0D && dist < 16.0D && this.getRandom().nextInt(3) == 0) {
             this.startSkill(SKILL_WEB, "web");
             return true;
         }
-        if (this.stormCooldown <= 0 && dist < 14.0D && this.random.nextInt(2) == 0) {
+        if (this.stormCooldown <= 0 && dist < 14.0D && this.getRandom().nextInt(2) == 0) {
             this.startSkill(SKILL_STORM, "storm");
             return true;
         }
@@ -945,7 +947,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         if (this.fieldZones.isEmpty() || this.fieldBlinkCooldown > 0 || this.distanceTo(target) < 8.0D) {
             return false;
         }
-        Vec3 zone = this.fieldZones.get(this.random.nextInt(this.fieldZones.size()));
+        Vec3 zone = this.fieldZones.get(this.getRandom().nextInt(this.fieldZones.size()));
         Vec3 spot = this.bodySpotAt(zone);
         this.fieldBlinkCooldown = 50;
         if (spot == null) {
@@ -974,7 +976,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         // 终结技滞空期间免疫
         if (this.getSkill() == SKILL_FINALE && this.getSkillTick() > 6 && this.getSkillTick() < 90 && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
@@ -984,7 +986,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         if (this.isCoreOpen()) {
             dealt = amount * 2.0F;
         }
-        boolean result = super.hurt(source, dealt);
+        boolean result = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, dealt);
         if (result && !this.level().isClientSide() && !this.isCasting() && this.isAlive()) {
             this.triggerAnim("skill", "hurt");
         }
@@ -1004,13 +1006,13 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
     }
 
     @Override
-    public boolean canChangeDimensions(Level from, Level to) {
+    public boolean canTeleport(Level from, Level to) {
         return false;
     }
 
@@ -1027,7 +1029,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             // 首杀：场内首次击杀的玩家额外获得螳后之镰
             for (Player player : this.playersInArena(serverLevel)) {
                 CompoundTag data = player.getPersistentData();
-                if (!data.getBoolean("hp_end_expansion.matriarch_first_kill")) {
+                if (!data.getBooleanOr("hp_end_expansion.matriarch_first_kill", false)) {
                     data.putBoolean("hp_end_expansion.matriarch_first_kill", true);
                     ItemEntity scythe = new ItemEntity(serverLevel, player.getX(), player.getY() + 0.5D, player.getZ(), new ItemStack(ModItems.MATRIARCH_SCYTHE.get()));
                     scythe.setNoPickUpDelay();
@@ -1038,7 +1040,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             // 场上召唤物随之崩解
             for (RiftMantisEntity mantis : serverLevel.getEntitiesOfClass(RiftMantisEntity.class, this.getBoundingBox().inflate(ARENA_RADIUS + 8.0D))) {
                 if (mantis.isMinion()) {
-                    mantis.kill();
+                    mantis.kill(serverLevel);
                 }
             }
         }
@@ -1081,11 +1083,11 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
 
     @Override
     public float getVoicePitch() {
-        return 0.3F + this.random.nextFloat() * 0.1F;
+        return 0.3F + this.getRandom().nextFloat() * 0.1F;
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Phase", this.getPhase());
         tag.putBoolean("SummonedByEgg", this.summonedByEgg);
@@ -1099,18 +1101,18 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Phase")) {
-            this.entityData.set(PHASE, Math.max(1, tag.getInt("Phase")));
+        if (tag.read("Phase", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+            this.entityData.set(PHASE, Math.max(1, tag.getIntOr("Phase", 0)));
         }
-        this.summonedByEgg = tag.getBoolean("SummonedByEgg");
-        this.partyScaled = tag.getBoolean("PartyScaled");
-        if (tag.contains("FinaleLines")) {
-            this.finaleLineCount = tag.getInt("FinaleLines");
+        this.summonedByEgg = tag.getBooleanOr("SummonedByEgg", false);
+        this.partyScaled = tag.getBooleanOr("PartyScaled", false);
+        if (tag.read("FinaleLines", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+            this.finaleLineCount = tag.getIntOr("FinaleLines", 0);
         }
-        if (tag.contains("ArenaX")) {
-            this.arenaCenter = new Vec3(tag.getDouble("ArenaX"), tag.getDouble("ArenaY"), tag.getDouble("ArenaZ"));
+        if (tag.read("ArenaX", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+            this.arenaCenter = new Vec3(tag.getDoubleOr("ArenaX", 0D), tag.getDoubleOr("ArenaY", 0D), tag.getDoubleOr("ArenaZ", 0D));
         }
         if (this.hasCustomName()) {
             this.bossEvent.setName(this.getDisplayName());
@@ -1120,7 +1122,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 基础控制器：死亡、移动、待机
-        controllers.add(new AnimationController<>(this, "base", 5, state -> {
+        controllers.add(new AnimationController<>("base", 5, state -> {
             if (this.isDeadOrDying()) {
                 return state.setAndContinue(DEATH);
             }
@@ -1130,7 +1132,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             return state.setAndContinue(IDLE);
         }));
         // 技能控制器：只播放服务端触发的动画
-        controllers.add(new AnimationController<>(this, "skill", 2, state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("skill", 2, state -> PlayState.STOP)
             .triggerableAnim("triple_slash", TRIPLE)
             .triggerableAnim("hunt", HUNT)
             .triggerableAnim("storm", STORM)

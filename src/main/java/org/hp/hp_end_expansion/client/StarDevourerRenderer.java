@@ -9,10 +9,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.StarDevourerEntity;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import org.hp.hp_end_expansion.client.render.HpGeoEntityRenderer;
+import com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer;
 
-public final class StarDevourerRenderer extends GeoEntityRenderer<StarDevourerEntity> {
+public final class StarDevourerRenderer extends HpGeoEntityRenderer<StarDevourerEntity> {
     // 射线圆柱分段数
     private static final int BEAM_SIDES = 8;
 
@@ -65,7 +65,7 @@ public final class StarDevourerRenderer extends GeoEntityRenderer<StarDevourerEn
         // 落点光斑
         poseStack.pushPose();
         poseStack.translate(end.x, end.y, end.z);
-        poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        poseStack.mulPose(this.entityRenderDispatcher.camera.rotation());
         VertexConsumer star = buffers.getBuffer(RiftVfxDraw.additive(VoidRayDraw.TIDE_STAR));
         float s = width;
         RiftVfxDraw.quad(poseStack.last(), star, new Vec3(-s, s, 0.0D), new Vec3(s, s, 0.0D), new Vec3(s, -s, 0.0D), new Vec3(-s, -s, 0.0D),
@@ -92,7 +92,7 @@ public final class StarDevourerRenderer extends GeoEntityRenderer<StarDevourerEn
         // 射线期间裁剪范围覆盖到落点
         if (entity.isBeamFiring()) {
             Vec3 point = entity.getBeamPoint();
-            return frustum.isVisible(entity.getBoundingBoxForCulling().minmax(new AABB(point, point).inflate(StarDevourerEntity.SUB_BEAM_RANGE)));
+            return frustum.isVisible(getBoundingBoxForCulling(entity).minmax(new AABB(point, point).inflate(StarDevourerEntity.SUB_BEAM_RANGE)));
         }
         return super.shouldRender(entity, frustum, x, y, z);
     }

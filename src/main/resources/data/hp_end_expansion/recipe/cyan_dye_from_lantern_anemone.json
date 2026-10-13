@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "hp_end_expansion:lantern_anemone"
-    }
+    "hp_end_expansion:lantern_anemone"
   ],
   "result": {
     "id": "minecraft:cyan_dye",

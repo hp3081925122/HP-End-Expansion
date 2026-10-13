@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
@@ -25,15 +25,15 @@ public final class TidecrownTentacleItem extends Item implements ICurioItem {
     }
 
     @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
+    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, Identifier id, ItemStack stack) {
         return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY, new AttributeModifier(id, 1.0D, AttributeModifier.Operation.ADD_VALUE));
     }
 
     @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
-        if (!(slotContext.entity() instanceof Player player) || player.level().isClientSide
-            || !player.isAlive() || player.isSpectator() || player.getCooldowns().isOnCooldown(this)) return;
-        player.getCooldowns().addCooldown(this, RELOAD_COOLDOWN);
+        if (!(slotContext.entity() instanceof Player player) || player.level().isClientSide()
+            || !player.isAlive() || player.isSpectator() || player.getCooldowns().isOnCooldown(new ItemStack(this))) return;
+        player.getCooldowns().addCooldown(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(this), RELOAD_COOLDOWN);
         ItemStack selected = mostLoadedCrossbow(player);
         if (selected.isEmpty() || player.isUsingItem() && player.getUseItem() == selected) return;
         if (selected.getItem() instanceof TideCrossbowItem crossbow) crossbow.loadRound(selected, player);
@@ -55,7 +55,7 @@ public final class TidecrownTentacleItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.tidecrown_tentacle.reload").withStyle(ChatFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.tidecrown_tentacle.reload").withStyle(ChatFormatting.GOLD));
     }
 }

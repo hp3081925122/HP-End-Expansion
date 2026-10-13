@@ -2,7 +2,7 @@ package org.hp.hp_end_expansion.worldgen;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.StructureType;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class StarwreckWorldgen {
-    public static final ResourceKey<Biome> BIOME = ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "starwreck_wastes"));
+    public static final ResourceKey<Biome> BIOME = ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "starwreck_wastes"));
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructureType<?>> STRUCTURES = DeferredRegister.create(Registries.STRUCTURE_TYPE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, Hp_end_expansion.MODID);

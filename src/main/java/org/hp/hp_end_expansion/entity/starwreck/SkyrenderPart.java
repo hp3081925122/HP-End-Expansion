@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,8 +25,8 @@ public final class SkyrenderPart extends PartEntity<SkyrenderEntity> {
     }
 
     // 打头：交给本体按头部倍率结算
-    @Override public boolean hurt(DamageSource source, float amount) {
-        if (isInvulnerableTo(source)) return false;
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        if (isInvulnerableToBase(source)) return false;
         return getParent().hurtFromHead(source, amount);
     }
 
@@ -33,6 +36,6 @@ public final class SkyrenderPart extends PartEntity<SkyrenderEntity> {
     @Override public EntityDimensions getDimensions(Pose pose) { return size; }
     @Override public boolean shouldBeSaved() { return false; }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
 }

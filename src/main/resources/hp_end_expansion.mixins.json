@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "org.hp.hp_end_expansion.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": ["EndBiomeSourceMixin", "RandomStateMixin", "NoiseChunkMixin", "LivingEntityFallFlyingMixin", "PlayerFallFlyingMixin", "TideCrossbowMultishotMixin", "TideCrossbowEquipmentMixin", "TideCrossbowArrowDamageMixin"],
   "injectors": {"defaultRequire": 1}
 }

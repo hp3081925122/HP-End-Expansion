@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -19,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.hp.hp_end_expansion.registry.ModParticles;
 
-public final class RiftFissureEntity extends Entity {
+public final class RiftFissureEntity extends Entity implements HpCullingEntity {
     // 地裂参数：蔓延时长、晶刺爆发时刻、总寿命
     public static final int SPREAD_TICKS = 10;
     public static final int ERUPT_TICK = 16;
@@ -49,7 +51,7 @@ public final class RiftFissureEntity extends Entity {
         RiftFissureEntity fissure = new RiftFissureEntity(ModEntities.RIFT_FISSURE.get(), owner.level());
         fissure.damage = damage;
         fissure.launch = upward;
-        fissure.moveTo(origin.x, origin.y, origin.z, yaw, 0.0F);
+        fissure.snapTo(origin.x, origin.y, origin.z, yaw, 0.0F);
         fissure.entityData.set(LENGTH, length);
         fissure.entityData.set(WIDTH, width);
         fissure.ownerId = owner.getUUID();
@@ -134,9 +136,9 @@ public final class RiftFissureEntity extends Entity {
             }
             boolean hurt;
             if (owner instanceof LivingEntity livingOwner) {
-                hurt = target.hurt(this.damageSources().indirectMagic(this, livingOwner), this.damage);
+                hurt = target.hurtOrSimulate(this.damageSources().indirectMagic(this, livingOwner), this.damage);
             } else {
-                hurt = target.hurt(this.damageSources().magic(), this.damage);
+                hurt = target.hurtOrSimulate(this.damageSources().magic(), this.damage);
             }
             if (hurt) {
                 target.push(0.0D, this.launch, 0.0D);
@@ -171,10 +173,11 @@ public final class RiftFissureEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

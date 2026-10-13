@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -35,12 +37,12 @@ public final class StarImpactEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 at, Vec3 flight, boolean small) {
-        StarImpactEntity impact = StarwreckEntities.STAR_IMPACT.get().create(level);
+        StarImpactEntity impact = StarwreckEntities.STAR_IMPACT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (impact == null) return;
         impact.entityData.set(SMALL, small);
         float yaw = (float) (Mth.atan2(-flight.x, flight.z) * Mth.RAD_TO_DEG);
         float pitch = (float) (-Mth.atan2(flight.y, flight.horizontalDistance()) * Mth.RAD_TO_DEG);
-        impact.moveTo(at.x, at.y, at.z, yaw, pitch);
+        impact.snapTo(at.x, at.y, at.z, yaw, pitch);
         level.addFreshEntity(impact);
     }
 
@@ -59,7 +61,7 @@ public final class StarImpactEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             clientEffects();
             return;
         }
@@ -100,6 +102,7 @@ public final class StarImpactEntity extends Entity {
     @Override public boolean shouldRenderAtSqrDistance(double distance) { return distance < 256 * 256; }
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

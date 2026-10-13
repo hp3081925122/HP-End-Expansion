@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -12,7 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +29,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -55,13 +57,13 @@ import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.util.GeckoLibUtil;
 
 public final class StarDevourerEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -125,17 +127,17 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     // 场地
     private static final double ARENA_RADIUS = 32.0D;
     private static final int LEAVE_LIMIT = 1200;
-    private static final ResourceLocation PARTY_HEALTH = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "devourer_party_health");
+    private static final Identifier PARTY_HEALTH = Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "devourer_party_health");
 
     // 同步字段：技能、技能 tick、阶段、射线终点、已碎核心位掩码
     private static final EntityDataAccessor<Integer> SKILL = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> SKILL_TICK = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Vector3f> BEAM_POINT = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> BEAM_POINT = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.VECTOR3);
     private static final EntityDataAccessor<Integer> BROKEN_CORES = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
-    private final ServerBossEvent bossEvent = new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_20);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(java.util.UUID.randomUUID(), this.getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_20);
 
     // 技能冷却
     private int spiralCooldown = 60;
@@ -210,7 +212,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         // 索敌：受击反击，主动攻击 48 格内玩家
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this, VoidRayEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, false, false,
-            player -> player.distanceToSqr(this) < 48.0D * 48.0D));
+            (player, serverLevel) -> player.distanceToSqr(this) < 48.0D * 48.0D));
     }
 
     public int getSkill() {
@@ -234,8 +236,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     public Vec3 getBeamPoint() {
-        Vector3f v = this.entityData.get(BEAM_POINT);
-        return new Vec3(v.x, v.y, v.z);
+        org.joml.Vector3fc v = this.entityData.get(BEAM_POINT);
+        return new Vec3(v.x(), v.y(), v.z());
     }
 
     public void setSummonedByBeacon(boolean value) {
@@ -369,8 +371,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         super.tick();
         if (this.level().isClientSide()) {
             // 客户端：未碎核心闪烁星光，射线引导时左核心火花
-            if (this.random.nextInt(3) == 0) {
-                int core = this.random.nextInt(3);
+            if (this.getRandom().nextInt(3) == 0) {
+                int core = this.getRandom().nextInt(3);
                 if (!this.isCoreBroken(core)) {
                     Vec3 p = this.corePos(core);
                     this.level().addParticle(ParticleTypes.END_ROD, p.x, p.y - 0.3D, p.z, 0.0D, -0.03D, 0.0D);
@@ -379,11 +381,11 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             if (this.getSkill() == SKILL_DEVOUR) {
                 // 吞星：周围粒子被吸向头部
                 for (int i = 0; i < 3; i++) {
-                    double a = this.random.nextDouble() * Math.PI * 2.0D;
+                    double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
                     Vec3 head = this.position().add(0.0D, 2.5D, 0.0D);
-                    Vec3 from = head.add(Math.cos(a) * 12.0D, (this.random.nextDouble() - 0.5D) * 8.0D, Math.sin(a) * 12.0D);
+                    Vec3 from = head.add(Math.cos(a) * 12.0D, (this.getRandom().nextDouble() - 0.5D) * 8.0D, Math.sin(a) * 12.0D);
                     Vec3 v = head.subtract(from).scale(0.14D);
-                    this.level().addParticle(ModParticles.TIDE_SPARK.get(), from.x, from.y, from.z, v.x, v.y, v.z);
+                    this.level().addParticle(ModParticles.TIDE_SPARK.get(), from.x, from.y, from.z, v.x(), v.y(), v.z());
                 }
             }
             return;
@@ -479,8 +481,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.tickGuards(serverLevel);
             // 二阶段起：场地上空持续落下小陨石
             if (this.tickCount % 30 == 0) {
-                double a = this.random.nextDouble() * Math.PI * 2.0D;
-                double r = this.random.nextDouble() * 24.0D;
+                double a = this.getRandom().nextDouble() * Math.PI * 2.0D;
+                double r = this.getRandom().nextDouble() * 24.0D;
                 Vec3 ground = this.groundBelow(this.arenaCenter.add(Math.cos(a) * r, 16.0D, Math.sin(a) * r));
                 if (ground != null) {
                     VoidRayVfxEntity.spawn(serverLevel, VoidRayVfxEntity.KIND_STAR, ground.add(0.0D, 0.05D, 0.0D), 0.0F, 2.0F, 0, VoidRayVfxEntity.STAR_LIFE, this, CombatConfigs.STAR_DEVOURER.damage("phaseTwoStarDamage"), -1.0F);
@@ -513,13 +515,13 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
 
     private void spawnGuards(ServerLevel serverLevel, int count) {
         for (int i = 0; i < count; i++) {
-            VoidRayEntity ray = ModEntities.VOID_RAY.get().create(serverLevel);
+            VoidRayEntity ray = ModEntities.VOID_RAY.get().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if (ray == null) {
                 continue;
             }
             double a = Math.PI * 2.0D * i / count;
-            ray.moveTo(this.getX() + Math.cos(a) * 6.0D, this.getY() + 2.0D, this.getZ() + Math.sin(a) * 6.0D, this.getYRot(), 0.0F);
-            ray.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(ray.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
+            ray.snapTo(this.getX() + Math.cos(a) * 6.0D, this.getY() + 2.0D, this.getZ() + Math.sin(a) * 6.0D, this.getYRot(), 0.0F);
+            ray.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(ray.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
             ray.makeMinion((float) CombatConfigs.STAR_DEVOURER.value("summonMinionHealth"));
             ray.setTarget(this.getTarget());
             serverLevel.addFreshEntity(ray);
@@ -695,7 +697,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 continue;
             }
             this.hitOnce.add(victim.getId());
-            if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("diveDamage"))) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("diveDamage"))) {
                 victim.setDeltaMovement(victim.getDeltaMovement().multiply(0.2D, 0.0D, 0.2D).add(0.0D, 0.7D, 0.0D));
                 victim.hurtMarked = true;
                 LOGGER.debug("Star Devourer {} dive hit {}", this.getId(), victim.getName().getString());
@@ -710,7 +712,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             if (isAlly(victim) || victim.position().subtract(center).horizontalDistanceSqr() > radius * radius) {
                 continue;
             }
-            if (victim.hurt(this.damageSources().mobAttack(this), damage) && lift > 0.0D) {
+            if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), damage) && lift > 0.0D) {
                 victim.setDeltaMovement(victim.getDeltaMovement().add(0.0D, lift, 0.0D));
                 victim.hurtMarked = true;
             }
@@ -782,7 +784,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 if (victim.isBlocking()) {
                     dealt = blockedDamage;
                 }
-                victim.hurt(this.damageSources().indirectMagic(this, this), dealt);
+                victim.hurtOrSimulate(this.damageSources().indirectMagic(this, this), dealt);
             }
         }
         return end;
@@ -814,8 +816,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             for (int i = 0; i < 4; i++) {
                 Vec3 center = target.position();
                 if (i > 0) {
-                    double angle = this.random.nextDouble() * Math.PI * 2.0D;
-                    double dist = 4.0D + this.random.nextDouble() * 8.0D;
+                    double angle = this.getRandom().nextDouble() * Math.PI * 2.0D;
+                    double dist = 4.0D + this.getRandom().nextDouble() * 8.0D;
                     center = center.add(Math.cos(angle) * dist, 0.0D, Math.sin(angle) * dist);
                 }
                 Vec3 ground = this.groundBelow(center.add(0.0D, 6.0D, 0.0D));
@@ -870,8 +872,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                     continue;
                 }
                 this.hitOnce.add(victim.getId());
-                if (victim.hurt(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("spinDamage"))) {
-                    victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1));
+                if (victim.hurtOrSimulate(this.damageSources().mobAttack(this), CombatConfigs.STAR_DEVOURER.damage("spinDamage"))) {
+                    victim.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1));
                 }
             }
         } else {
@@ -903,11 +905,11 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.starCores.clear();
             for (int i = 0; i < count; i++) {
                 double angle = Math.PI * 2.0D * i / count;
-                StarCoreEntity core = ModEntities.STAR_CORE.get().create(serverLevel);
+                StarCoreEntity core = ModEntities.STAR_CORE.get().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
                 if (core == null) {
                     continue;
                 }
-                core.moveTo(center.x + Math.cos(angle) * 12.0D, center.y + 4.0D, center.z + Math.sin(angle) * 12.0D, 0.0F, 0.0F);
+                core.snapTo(center.x + Math.cos(angle) * 12.0D, center.y + 4.0D, center.z + Math.sin(angle) * 12.0D, 0.0F, 0.0F);
                 serverLevel.addFreshEntity(core);
                 this.starCores.add(core);
             }
@@ -932,7 +934,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 damage = CombatConfigs.STAR_DEVOURER.damage("devourDamage") * this.starCores.size() / this.devourTotal;
             }
             for (Player player : this.playersInArena(serverLevel)) {
-                player.hurt(this.damageSources().indirectMagic(this, this), damage);
+                player.hurtOrSimulate(this.damageSources().indirectMagic(this, this), damage);
             }
             serverLevel.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 2.0D, this.getZ(), 200, 6.0D, 4.0D, 6.0D, 0.6D);
             this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 4.0F, 0.5F);
@@ -963,9 +965,9 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         if (this.level().isClientSide()) {
-            return super.hurt(source, amount);
+            return super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         }
         Entity direct = source.getDirectEntity();
         boolean projectile = direct != null && direct != source.getEntity();
@@ -997,7 +999,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             dealt = dealt * 2.0F;
         }
         dealt = dealt * this.staggerMultiplier;
-        boolean result = super.hurt(source, dealt);
+        boolean result = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, dealt);
         if (result && core >= 0 && this.isAlive()) {
             this.coreHealth[core] -= dealt;
             LOGGER.debug("Star Devourer {} core {} hit for {}, left {}", this.getId(), core, dealt, this.coreHealth[core]);
@@ -1044,13 +1046,13 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
     }
 
     @Override
-    public boolean canChangeDimensions(Level from, Level to) {
+    public boolean canTeleport(Level from, Level to) {
         return false;
     }
 
@@ -1060,7 +1062,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
+    public boolean causeFallDamage(double fallDistance, float multiplier, DamageSource source) {
         return false;
     }
 
@@ -1073,10 +1075,10 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             for (Player player : this.playersInArena(serverLevel)) {
                 CompoundTag data = player.getPersistentData();
                 boolean give = false;
-                if (!data.getBoolean("hp_end_expansion.devourer_first_kill")) {
+                if (!data.getBooleanOr("hp_end_expansion.devourer_first_kill", false)) {
                     data.putBoolean("hp_end_expansion.devourer_first_kill", true);
                     give = true;
-                } else if (this.random.nextFloat() < 0.2F) {
+                } else if (this.getRandom().nextFloat() < 0.2F) {
                     give = true;
                 }
                 if (give) {
@@ -1121,11 +1123,11 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
 
     @Override
     public float getVoicePitch() {
-        return 0.4F + this.random.nextFloat() * 0.1F;
+        return 0.4F + this.getRandom().nextFloat() * 0.1F;
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Phase", this.getPhase());
         tag.putInt("BrokenCores", this.entityData.get(BROKEN_CORES));
@@ -1144,23 +1146,23 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Phase")) {
-            this.entityData.set(PHASE, Math.max(1, tag.getInt("Phase")));
+        if (tag.read("Phase", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+            this.entityData.set(PHASE, Math.max(1, tag.getIntOr("Phase", 0)));
         }
-        this.entityData.set(BROKEN_CORES, tag.getInt("BrokenCores"));
+        this.entityData.set(BROKEN_CORES, tag.getIntOr("BrokenCores", 0));
         for (int i = 0; i < 3; i++) {
-            if (tag.contains("CoreHealth" + i)) {
-                this.coreHealth[i] = tag.getFloat("CoreHealth" + i);
+            if (tag.read("CoreHealth" + i, com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+                this.coreHealth[i] = tag.getFloatOr("CoreHealth" + i, 0F);
             }
         }
-        this.devourCount = tag.getInt("DevourCount");
-        this.guardsSummoned = tag.getBoolean("GuardsSummoned");
-        this.summonedByBeacon = tag.getBoolean("SummonedByBeacon");
-        this.partyScaled = tag.getBoolean("PartyScaled");
-        if (tag.contains("ArenaX")) {
-            this.arenaCenter = new Vec3(tag.getDouble("ArenaX"), tag.getDouble("ArenaY"), tag.getDouble("ArenaZ"));
+        this.devourCount = tag.getIntOr("DevourCount", 0);
+        this.guardsSummoned = tag.getBooleanOr("GuardsSummoned", false);
+        this.summonedByBeacon = tag.getBooleanOr("SummonedByBeacon", false);
+        this.partyScaled = tag.getBooleanOr("PartyScaled", false);
+        if (tag.read("ArenaX", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) {
+            this.arenaCenter = new Vec3(tag.getDoubleOr("ArenaX", 0D), tag.getDoubleOr("ArenaY", 0D), tag.getDoubleOr("ArenaZ", 0D));
         }
         if (this.hasCustomName()) {
             this.bossEvent.setName(this.getDisplayName());
@@ -1170,7 +1172,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 基础控制器：死亡、滑翔、悬停
-        controllers.add(new AnimationController<>(this, "base", 6, state -> {
+        controllers.add(new AnimationController<>("base", 6, state -> {
             if (this.isDeadOrDying()) {
                 return state.setAndContinue(DEATH);
             }
@@ -1180,7 +1182,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             return state.setAndContinue(IDLE_FLY);
         }));
         // 技能控制器：只播放服务端触发的动画
-        controllers.add(new AnimationController<>(this, "skill", 3, state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("skill", 3, state -> PlayState.STOP)
             .triggerableAnim("dive", DIVE)
             .triggerableAnim("beam", BEAM)
             .triggerableAnim("black_hole", BLACK_HOLE)

@@ -1,18 +1,19 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.starwreck.SkyMeteorEntity;
@@ -30,11 +31,11 @@ import java.util.List;
  * 蘑菇云和放射光痕往外推，岩块崩飞 → 第二次爆闪 → 坑底裂开一格一格的熔岩缝，碎岩悬在半空，余烬往上飘。
  * 星、陨石、碎岩、熔岩缝和火都直接用原版方块图集里的岩浆、岩浆块、火和黑石，跟着原版动画一起动。
  */
-final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
-    static final ResourceLocation VORTEX_CLOUD = SkyrenderClient.id("textures/effect/sky_vortex_cloud.png");
-    static final ResourceLocation BLAST_WALL = SkyrenderClient.id("textures/effect/sky_blast_wall.png");
-    static final ResourceLocation BLAST_SMOKE = SkyrenderClient.id("textures/effect/sky_blast_smoke.png");
-    private static final ResourceLocation CORONA = SkyrenderClient.STAR_CORONA, FLARE = SkyrenderClient.STAR_FLARE;
+final class SkyMeteorRenderer extends HpEntityRenderer<SkyMeteorEntity> {
+    static final Identifier VORTEX_CLOUD = SkyrenderClient.id("textures/effect/sky_vortex_cloud.png");
+    static final Identifier BLAST_WALL = SkyrenderClient.id("textures/effect/sky_blast_wall.png");
+    static final Identifier BLAST_SMOKE = SkyrenderClient.id("textures/effect/sky_blast_smoke.png");
+    private static final Identifier CORONA = SkyrenderClient.STAR_CORONA, FLARE = SkyrenderClient.STAR_FLARE;
     private static final float HIT = SkyrenderEntity.METEOR_HIT, TEAR = SkyrenderEntity.METEOR_TEAR;
     /** 撞击后继续往地里压的拍数，压完才崩开。 */
     private static final float SINK = 3;
@@ -51,17 +52,17 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
         shadowRadius = 0;
     }
 
-    @Override public ResourceLocation getTextureLocation(SkyMeteorEntity e) { return TextureAtlas.LOCATION_BLOCKS; }
+    @Override public Identifier getTextureLocation(SkyMeteorEntity e) { return TextureAtlas.LOCATION_BLOCKS; }
 
     @Override public void render(SkyMeteorEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buffers, int light) {
         float t = e.tickCount + pt;
-        Vec3 camera = entityRenderDispatcher.camera.getPosition(), world = e.getPosition(pt);
+        Vec3 camera = entityRenderDispatcher.camera.position(), world = e.getPosition(pt);
         e.lockViewDirection(camera);
         eye = camera.subtract(world);
-        Quaternionf cam = entityRenderDispatcher.cameraOrientation();
+        Quaternionf cam = entityRenderDispatcher.camera.rotation();
         right = rotate(cam, 1, 0, 0);
         up = rotate(cam, 0, 1, 0);
-        far = Mth.clamp(RenderSystem.getShaderFogStart() * 0.8F, 40, 2000);
+        far = Mth.clamp(Math.min(cameraRenderState.fogData.environmentalStart,cameraRenderState.fogData.renderDistanceStart) * 0.8F, 40, 2000);
         near = far * 0.6F;
         Frame f = new Frame(e, ps.last(), buffers, t, e.skyPoint(), e.lead(), e.starRadius(), e.arenaRadius(), e.breakTick());
         renderHalo(f);
@@ -91,7 +92,7 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
     }
 
     static TextureAtlasSprite block(String name) {
-        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.withDefaultNamespace("block/" + name));
+        return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(net.minecraft.data.AtlasIds.BLOCKS).getSprite(Identifier.withDefaultNamespace("block/" + name));
     }
 
     /**
@@ -109,7 +110,7 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
     static void put(PoseStack.Pose pose, VertexConsumer vc, Vec3 p, float u, float v, float r, float g, float b, float a) {
         Vec3 q = map(p);
         vc.addVertex(pose, (float) q.x, (float) q.y, (float) q.z).setColor(clamp01(r), clamp01(g), clamp01(b), clamp01(a))
-            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，正反两面都画。 */
@@ -132,7 +133,7 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
     }
 
     /** 朝向镜头的方片（加法层），spin 是绕视线转的角度（度）。 */
-    static void sprite(Frame f, ResourceLocation tex, Vec3 at, float size, float spin, float r, float g, float b) {
+    static void sprite(Frame f, Identifier tex, Vec3 at, float size, float spin, float r, float g, float b) {
         if (size <= 0.001F || r + g + b <= 0.003F) return;
         float c = Mth.cos(spin * Mth.DEG_TO_RAD), s = Mth.sin(spin * Mth.DEG_TO_RAD);
         Vec3 x = right.scale(c).add(up.scale(s)).scale(size), y = up.scale(c).subtract(right.scale(s)).scale(size);
@@ -776,7 +777,7 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
         if (alpha <= 0.01F) return;
         int rings = 7, seg = 32;
         float arc = 95 * Mth.DEG_TO_RAD, scroll = s * 0.01F;
-        VertexConsumer vc = f.buf.getBuffer(RenderType.entityTranslucent(BLAST_SMOKE));
+        VertexConsumer vc = f.buf.getBuffer(RenderTypes.entityTranslucent(BLAST_SMOKE));
         for (int j = 0; j < rings; j++) {
             float t0 = arc * j / rings, t1 = arc * (j + 1) / rings;
             for (int i = 0; i < seg; i++) {

@@ -1,9 +1,8 @@
 package org.hp.hp_end_expansion.client;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import org.hp.hp_end_expansion.client.render.HpSkyDraw;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -207,35 +206,33 @@ public final class StarfallSky {
         return s;
     }
 
-    @SubscribeEvent public static void render(RenderLevelStageEvent e) {
-        if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
+    @SubscribeEvent public static void render(RenderLevelStageEvent.AfterSky e) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.level.dimension() != Level.END) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float amb = Mth.lerp(pt, ambientO, ambient), ev = Mth.lerp(pt, eventO, event), fl = Mth.lerp(pt, flashO, flash);
         float gz = Mth.lerp(pt, gazeO, gaze);
         if (amb + ev + fl + gz < 0.003F && STREAKS.isEmpty()) return;
         Matrix4f m = new Matrix4f(e.getModelViewMatrix());
-        Vec3 cam = e.getCamera().getPosition();
+        Vec3 cam = e.getLevelRenderState().cameraRenderState.pos;
         float time = ticks + pt;
 
-        RenderSystem.enableBlend();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+
+        HpSkyDraw.colored();
         Tesselator tess = Tesselator.getInstance();
 
         // 1. 压暗发红：普通混合
         float tint = 0.1F * amb + 0.5F * ev;
         if (tint > 0.002F) {
-            RenderSystem.defaultBlendFunc();
+            HpSkyDraw.normal();
             BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             box(b, m, 0.17F, 0.035F, 0.02F, tint);
             draw(b);
         }
 
         // 2. 加法：地平线余烬、裂隙照亮的天空、落地闪光、流星
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        HpSkyDraw.additive();
         BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         double riftAz = rift != null ? Math.atan2(rift.x - cam.x, rift.z - cam.z) : 0;
         horizon(b, m, 0.3F * amb + 0.55F * ev, rift != null ? ev : 0, riftAz);
@@ -245,15 +242,15 @@ public final class StarfallSky {
         draw(b);
 
         // 3. 注视蓄力：整片天压成近黑，只剩它的眼睛在世界里发光
-        RenderSystem.defaultBlendFunc();
+        HpSkyDraw.normal();
         if (gz > 0.002F) {
             BufferBuilder dark = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             box(dark, m, 0.01F, 0.0F, 0.01F, 0.75F * gz);
             draw(dark);
         }
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
+
+
+
     }
 
     private static void horizon(BufferBuilder b, Matrix4f m, float a, float riftBias, double riftAz) {
@@ -335,7 +332,7 @@ public final class StarfallSky {
 
     private static void draw(BufferBuilder b) {
         MeshData mesh = b.build();
-        if (mesh != null) BufferUploader.drawWithShader(mesh);
+        if (mesh != null) HpSkyDraw.draw(mesh);
     }
 
     @SubscribeEvent public static void fogColor(ViewportEvent.ComputeFogColor e) {

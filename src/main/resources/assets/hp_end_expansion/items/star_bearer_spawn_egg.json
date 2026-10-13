@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/star_bearer_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 4078152
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 15245882
+      }
+    ]
+  }
+}

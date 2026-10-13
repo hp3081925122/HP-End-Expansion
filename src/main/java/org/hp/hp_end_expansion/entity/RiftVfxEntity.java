@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -30,7 +32,7 @@ public final class RiftVfxEntity extends Entity {
     // 在指定位置生成一个特效实体
     public static RiftVfxEntity spawn(Level level, int kind, double x, double y, double z, float yaw, float roll, float scale, int life) {
         RiftVfxEntity vfx = new RiftVfxEntity(ModEntities.RIFT_VFX.get(), level);
-        vfx.moveTo(x, y, z, yaw, 0.0F);
+        vfx.snapTo(x, y, z, yaw, 0.0F);
         vfx.entityData.set(KIND, kind);
         vfx.entityData.set(ROLL, roll);
         vfx.entityData.set(SCALE, scale);
@@ -54,7 +56,7 @@ public final class RiftVfxEntity extends Entity {
         // 客户端：裂隙门张开期间向中心吸入少量火花作为辅助
         if (this.level().isClientSide()) {
             if (this.getKind() == KIND_PORTAL && this.tickCount % 2 == 0 && this.tickCount < this.getLife() - 4) {
-                RandomSource random = this.random;
+                RandomSource random = this.getRandom();
                 float scale = this.getScale();
                 double angle = random.nextDouble() * Math.PI * 2.0D;
                 double radius = 0.9D * scale;
@@ -100,10 +102,11 @@ public final class RiftVfxEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

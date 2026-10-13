@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,7 +32,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
  * </ul>
  * 光墙半径与 {@link StarBearerEntity} 里冲击环的伤害判定共用 {@link #ringRadius}。
  */
-public final class BearerVfxEntity extends Entity {
+public final class BearerVfxEntity extends Entity implements HpCullingEntity {
     public static final int SLAM = 0, FLARE = 1, SHATTER = 2, BRAND = 3, ARC = 4;
     public static final int RING_TICKS = 12;
     public static final float RING_FROM = 1, RING_TO = 6;
@@ -46,12 +49,12 @@ public final class BearerVfxEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, int kind, Vec3 at, float yaw, float scale, int warn) {
-        BearerVfxEntity vfx = StarwreckEntities.BEARER_VFX.get().create(level);
+        BearerVfxEntity vfx = StarwreckEntities.BEARER_VFX.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (vfx == null) return;
         vfx.entityData.set(KIND, kind);
         vfx.entityData.set(SCALE, scale);
         vfx.entityData.set(WARN, warn);
-        vfx.moveTo(at.x, at.y, at.z, yaw, 0);
+        vfx.snapTo(at.x, at.y, at.z, yaw, 0);
         level.addFreshEntity(vfx);
     }
 
@@ -98,7 +101,7 @@ public final class BearerVfxEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) clientParticles();
+        if (level().isClientSide()) clientParticles();
         else if (tickCount >= life()) discard();
     }
 
@@ -189,6 +192,7 @@ public final class BearerVfxEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

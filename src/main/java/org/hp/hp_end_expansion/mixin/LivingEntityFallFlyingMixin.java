@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityFallFlyingMixin {
     @Redirect(
-        method = "updateFallFlying",
+        method = {"canGlide", "updateFallFlying", "lambda$updateFallFlying$0"},
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/LivingEntity;getItemBySlot(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;"

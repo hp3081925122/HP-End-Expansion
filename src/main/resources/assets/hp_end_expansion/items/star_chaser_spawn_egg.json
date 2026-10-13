@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/star_chaser_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 2825758
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 16763742
+      }
+    ]
+  }
+}

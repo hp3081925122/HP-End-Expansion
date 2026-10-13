@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -38,10 +40,10 @@ public final class StarRiftEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, Vec3 riftPos, Vec3 impact) {
-        StarRiftEntity rift = StarwreckEntities.STAR_RIFT.get().create(level);
+        StarRiftEntity rift = StarwreckEntities.STAR_RIFT.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (rift == null) return;
         rift.target = impact;
-        rift.moveTo(riftPos.x, riftPos.y, riftPos.z, level.random.nextFloat() * 360, 0);
+        rift.snapTo(riftPos.x, riftPos.y, riftPos.z, level.getRandom().nextFloat() * 360, 0);
         level.addFreshEntity(rift);
         // 一场里会同时开好几道，音量比单道时收一点，近处仍听得见撕裂声
         level.playSound(null, rift.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.AMBIENT, 2.5F, 0.5F);
@@ -72,7 +74,7 @@ public final class StarRiftEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             clientEffects();
             return;
         }
@@ -118,13 +120,13 @@ public final class StarRiftEntity extends Entity {
     @Override public boolean shouldRenderAtSqrDistance(double distance) { return distance < 256 * 256; }
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {
-        entityData.set(AGE, tag.getInt("Age"));
-        released = tag.getBoolean("Released");
-        if (tag.contains("TargetX")) target = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
-        else if (tag.contains("AnchorX")) target = new Vec3(tag.getDouble("AnchorX"), tag.getDouble("AnchorY"), tag.getDouble("AnchorZ"));
+    @Override protected void readAdditionalSaveData(ValueInput tag) {
+        entityData.set(AGE, tag.getIntOr("Age", 0));
+        released = tag.getBooleanOr("Released", false);
+        if (tag.read("TargetX", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) target = new Vec3(tag.getDoubleOr("TargetX", 0D), tag.getDoubleOr("TargetY", 0D), tag.getDoubleOr("TargetZ", 0D));
+        else if (tag.read("AnchorX", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) target = new Vec3(tag.getDoubleOr("AnchorX", 0D), tag.getDoubleOr("AnchorY", 0D), tag.getDoubleOr("AnchorZ", 0D));
     }
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {
         tag.putInt("Age", getAge());
         tag.putBoolean("Released", released);
         tag.putDouble("TargetX", target.x);
@@ -133,4 +135,5 @@ public final class StarRiftEntity extends Entity {
     }
 
     public enum Phase { OPENING, HOLD, CLOSING }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

@@ -1,5 +1,8 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.server.level.ServerLevel;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
@@ -26,12 +29,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
 
 public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
     public static final byte NONE = 0, LASH = 1, BIND = 2, BLOOM = 3;
@@ -44,9 +47,9 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Float> AIM_YAW = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> LEFT_YAW = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> RIGHT_YAW = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.FLOAT);
-    private static final EntityDataAccessor<Vector3f> POINT = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
-    private static final EntityDataAccessor<Vector3f> LEFT_END = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
-    private static final EntityDataAccessor<Vector3f> RIGHT_END = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> POINT = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> LEFT_END = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> RIGHT_END = SynchedEntityData.defineId(TidecrownAnemoneEntity.class, EntityDataSerializers.VECTOR3);
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.tidecrown_anemone.idle");
     private static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.tidecrown_anemone.death");
     private static final RawAnimation[] ACTIONS = {IDLE, RawAnimation.begin().thenPlay("animation.tidecrown_anemone.lash"),
@@ -80,8 +83,8 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
     public byte skill() { return entityData.get(SKILL); }
     public float skillAge(float partial) { return Math.max(0, (int) level().getGameTime() - entityData.get(START) + partial); }
     public float aimYaw() { return entityData.get(AIM_YAW); }
-    public Vec3 mark() { Vector3f p = entityData.get(POINT); return new Vec3(p.x, p.y, p.z); }
-    public Vec3 lashEnd(int side) { Vector3f p = entityData.get(side == 0 ? LEFT_END : RIGHT_END); return new Vec3(p.x, p.y, p.z); }
+    public Vec3 mark() { org.joml.Vector3fc p = entityData.get(POINT); return new Vec3(p.x(), p.y(), p.z()); }
+    public Vec3 lashEnd(int side) { org.joml.Vector3fc p = entityData.get(side == 0 ? LEFT_END : RIGHT_END); return new Vec3(p.x(), p.y(), p.z()); }
     private float lashYaw(int side) { return entityData.get(side == 0 ? LEFT_YAW : RIGHT_YAW); }
     public Vec3 lashStart(int side) { return local(lashYaw(side), side == 0 ? 0.20 : -0.20, 1.27, -0.35); }
     public Vec3 lashTip(int side) { return local(lashYaw(side), side == 0 ? -0.027 : 0.027, 1.59, 3.98); }
@@ -91,8 +94,8 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
     }
     public static double waveRadius(float age) { return 0.8 + 5.2 * Mth.clamp((age - BLOOM_START) / (BLOOM_END - BLOOM_START), 0, 1); }
     public static double horizontalDistanceToBox(Vec3 p, AABB b) {
-        double x = Math.max(Math.max(b.minX - p.x, 0), p.x - b.maxX);
-        double z = Math.max(Math.max(b.minZ - p.z, 0), p.z - b.maxZ);
+        double x = Math.max(Math.max(b.minX - p.x(), 0), p.x() - b.maxX);
+        double z = Math.max(Math.max(b.minZ - p.z(), 0), p.z() - b.maxZ);
         return Math.hypot(x, z);
     }
 
@@ -110,8 +113,8 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
         }
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         getNavigation().stop();
         if (cooldown > 0) cooldown--;
         if (lashCd > 0) lashCd--;
@@ -208,7 +211,7 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
         AABB area = new AABB(c.x - BIND_RADIUS, c.y, c.z - BIND_RADIUS, c.x + BIND_RADIUS, c.y + 1.9, c.z + BIND_RADIUS);
         for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, area, this::canHit)) {
             if (horizontalDistanceToBox(c, v.getBoundingBox()) <= BIND_RADIUS && clearPath(c.add(0, 0.4, 0), v)) {
-                if (v.hurt(damageSources().mobAttack(this), 4)) v.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1));
+                if (v.hurtOrSimulate(damageSources().mobAttack(this), 4)) v.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1));
             }
         }
         playSound(SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_INSIDE, 1.6F, 0.75F);
@@ -229,33 +232,36 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
         if (age == BLOOM_START) { playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.1F, 1.65F); playSound(SoundEvents.GENERIC_SPLASH, 2F, 0.65F); }
     }
     private void hit(LivingEntity v, float damage, Vec3 dir, double push) {
-        if (!v.hurt(damageSources().mobAttack(this), damage)) return;
+        if (!v.hurtOrSimulate(damageSources().mobAttack(this), damage)) return;
         Vec3 horizontal = new Vec3(dir.x, 0, dir.z).normalize().scale(push);
         v.setDeltaMovement(v.getDeltaMovement().add(horizontal).add(0, 0.12, 0)); v.hurtMarked = true;
     }
-    @Override public boolean hurt(DamageSource source, float amount) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         if (skill() == BLOOM && skillAge(0) > BLOOM_END) amount *= 1.3F;
-        return super.hurt(source, amount);
+        return super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
     }
-    @Override public void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); tag.putInt("TidecrownBloomCooldown", bloomCd); }
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag); bloomCd = Math.max(40, tag.getInt("TidecrownBloomCooldown")); cooldown = 30;
+    @Override public void addAdditionalSaveData(ValueOutput tag) { super.addAdditionalSaveData(tag); tag.putInt("TidecrownBloomCooldown", bloomCd); }
+    @Override public void readAdditionalSaveData(ValueInput tag) {
+        super.readAdditionalSaveData(tag); bloomCd = Math.max(40, tag.getIntOr("TidecrownBloomCooldown", 0)); cooldown = 30;
     }
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new SyncedController(this, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
-            if (seenSequence != entityData.get(SEQUENCE)) { seenSequence = entityData.get(SEQUENCE); state.getController().forceAnimationReset(); }
+            if (seenSequence != entityData.get(SEQUENCE)) { seenSequence = entityData.get(SEQUENCE); state.controller().reset(); }
             return state.setAndContinue(ACTIONS[skill()]);
         }));
     }
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
     private static final class SyncedController extends AnimationController<TidecrownAnemoneEntity> {
-        SyncedController(TidecrownAnemoneEntity entity, AnimationStateHandler<TidecrownAnemoneEntity> handler) { super(entity, "action", 0, handler); }
-        @Override protected double adjustTick(double tick) {
-            if (animatable.skill() != NONE && !animatable.isDeadOrDying() && !shouldResetTick && getAnimationState() == State.RUNNING) {
-                return animatable.skillAge((float) (tick - Math.floor(tick)));
-            }
-            return super.adjustTick(tick);
+        SyncedController(TidecrownAnemoneEntity entity, AnimationStateHandler<TidecrownAnemoneEntity> handler) { super("action",0,handler); }
+        @Override public com.geckolib.animation.state.ControllerState extractControllerState(TidecrownAnemoneEntity entity, com.geckolib.renderer.base.GeoRenderState state, AnimatableManager<TidecrownAnemoneEntity> manager, com.geckolib.loading.math.MolangQueries.Actor<TidecrownAnemoneEntity> actor, com.geckolib.model.GeoModel<TidecrownAnemoneEntity> model) {
+            var captured=super.extractControllerState(entity,state,manager,actor,model);
+            var timeline=getTimeline();
+            if(captured==null || timeline==null || entity.skill()==NONE || entity.isDeadOrDying()) return captured;
+            double time=entity.skillAge(state.getPartialTick())/20D;
+            setTimelineTime(time);
+            var point=timeline.createAnimationPoint(time,captured.animationPoint(),captured.easingOverride());
+            return new com.geckolib.animation.state.ControllerState(point,captured.prevAnimationPoint(),timeline.getTransitionTime(time),timeline.getTransitionLength(),captured.additive(),captured.easingOverride(),captured.renderState(),captured.queryValues());
         }
     }
 }

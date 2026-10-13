@@ -41,11 +41,11 @@ public final class HangingGlowkelpBlock extends GrowingPlantHeadBlock {
     @Override protected BlockState getGrowIntoState(BlockState state, RandomSource random) { return super.getGrowIntoState(state, random).setValue(POD, false); }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!state.getValue(POD)) return InteractionResult.PASS;
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             popResource(level, pos, new ItemStack(ModTidelight.GLOWKELP_POD.get()));
             level.setBlockAndUpdate(pos, state.setValue(POD, false));
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.SUCCESS;
     }
     @Override public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
         return !state.getValue(POD) || lengthAbove(level, pos) < 12 && level.getBlockState(pos.below()).isAir();
@@ -56,5 +56,5 @@ public final class HangingGlowkelpBlock extends GrowingPlantHeadBlock {
             level.setBlockAndUpdate(pos.below(), defaultBlockState().setValue(POD, true));
         }
     }
-    @Override public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) { return new ItemStack(ModTidelight.GLOWKELP_POD.get()); }
+    @Override public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) { return new ItemStack(ModTidelight.GLOWKELP_POD.get()); }
 }

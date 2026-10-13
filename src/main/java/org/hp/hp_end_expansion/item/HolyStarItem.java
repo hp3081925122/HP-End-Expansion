@@ -14,8 +14,8 @@ public final class HolyStarItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.holy_star.1").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.holy_star.2").withStyle(ChatFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.holy_star.1").withStyle(ChatFormatting.GOLD));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.holy_star.2").withStyle(ChatFormatting.GOLD));
     }
 }

@@ -7,15 +7,9 @@
     "PCP"
   ],
   "key": {
-    "P": {
-      "item": "hp_end_expansion:tide_pearl"
-    },
-    "C": {
-      "item": "hp_end_expansion:lumen_coral_branch"
-    },
-    "X": {
-      "item": "minecraft:crossbow"
-    }
+    "P": "hp_end_expansion:tide_pearl",
+    "C": "hp_end_expansion:lumen_coral_branch",
+    "X": "minecraft:crossbow"
   },
   "result": {
     "id": "hp_end_expansion:tide_crossbow",

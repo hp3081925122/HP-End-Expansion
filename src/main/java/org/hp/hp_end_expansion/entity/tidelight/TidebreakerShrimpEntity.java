@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.server.level.ServerLevel;
 import com.mojang.logging.LogUtils;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,9 +19,11 @@ import net.minecraft.world.level.*;
 import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.*;
-import software.bernie.geckolib.animation.*;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.*;
+import com.geckolib.animation.*;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.object.PlayState;
 
 public final class TidebreakerShrimpEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER=LogUtils.getLogger();
@@ -31,7 +34,7 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
     private static final EntityDataAccessor<Integer> SKILL=data(EntityDataSerializers.INT), START=data(EntityDataSerializers.INT), SEQUENCE=data(EntityDataSerializers.INT), BUBBLE_STATE=data(EntityDataSerializers.INT), BURST_TIME=data(EntityDataSerializers.INT), GUARD_TIME=data(EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> YAW=data(EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<BlockPos> ORIGIN=data(EntityDataSerializers.BLOCK_POS);
-    private static final EntityDataAccessor<Vector3f> POINT=data(EntityDataSerializers.VECTOR3), PREVIOUS=data(EntityDataSerializers.VECTOR3), LEFT=data(EntityDataSerializers.VECTOR3), RIGHT=data(EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> POINT=data(EntityDataSerializers.VECTOR3), PREVIOUS=data(EntityDataSerializers.VECTOR3), LEFT=data(EntityDataSerializers.VECTOR3), RIGHT=data(EntityDataSerializers.VECTOR3);
     private static <T> EntityDataAccessor<T> data(EntityDataSerializer<T> serializer) { return SynchedEntityData.defineId(TidebreakerShrimpEntity.class,serializer); }
     private static RawAnimation play(String name) { return RawAnimation.begin().thenPlay("animation.tidebreaker_shrimp."+name); }
     private static String debugAnimationName(int skill) { return skill>=0&&skill<DEBUG_ACTION_NAMES.length?DEBUG_ACTION_NAMES[skill]:"invalid"; }
@@ -69,8 +72,8 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
     public Vec3 forward() { double a=Math.toRadians(aimYaw());return new Vec3(-Math.sin(a),0,Math.cos(a)); }
     public Vec3 fist(int side,float age) { return TidebreakerMotion.fist(skill(),side,age,aimYaw()); }
     private Vec3 origin() { return Vec3.atLowerCornerOf(entityData.get(ORIGIN)); }
-    private Vec3 read(EntityDataAccessor<Vector3f> key) { Vector3f v=entityData.get(key);return origin().add(v.x,v.y,v.z); }
-    private void write(EntityDataAccessor<Vector3f> key,Vec3 point) { Vec3 v=point.subtract(origin());entityData.set(key,new Vector3f((float)v.x,(float)v.y,(float)v.z)); }
+    private Vec3 read(EntityDataAccessor<org.joml.Vector3fc> key) { org.joml.Vector3fc v = entityData.get(key);return origin().add(v.x(),v.y(),v.z()); }
+    private void write(EntityDataAccessor<org.joml.Vector3fc> key,Vec3 point) { Vec3 v=point.subtract(origin());entityData.set(key,new Vector3f((float)v.x(),(float)v.y(),(float)v.z())); }
     public Vec3 impact(int side) { return read(side==0?LEFT:RIGHT); }
     public int bubbleState() { return entityData.get(BUBBLE_STATE); }
     public Vec3 bubblePoint(float pt) { return bubbleState()==1?read(PREVIOUS).lerp(read(POINT),pt):read(POINT); }
@@ -80,8 +83,8 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
         super.tick();
         if(skill()!=NONE&&!isDeadOrDying()) { setYRot(aimYaw());yBodyRot=aimYaw();yHeadRot=aimYaw(); }
     }
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if(isDeadOrDying())return;
         for(int i=1;i<5;i++)if(cooldowns[i]>0)cooldowns[i]--;
         if(pause>0)pause--;
@@ -130,7 +133,7 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
             if(clip(a,e.getBoundingBox().getCenter()).distanceToSqr(e.getBoundingBox().getCenter())>.01)continue;
             if(skill()==DASH&&hitIds.contains(e.getId()))continue;
             if(second&&hitIds.contains(e.getId())&&e.getLastHurtByMob()==this)e.invulnerableTime=0;
-            if(e.hurt(damageSources().mobAttack(this),damage)){hits++;hitIds.add(e.getId());e.setDeltaMovement(e.getDeltaMovement().add(forward().scale(.2)).add(0,.06,0));e.hurtMarked=true;if(DEBUG)LOGGER.debug("Tidebreaker damage applied: entity={}, skill={}, target={}, damage={}",getId(),skill(),e.getId(),damage);}
+            if(e.hurtOrSimulate(damageSources().mobAttack(this),damage)){hits++;hitIds.add(e.getId());e.setDeltaMovement(e.getDeltaMovement().add(forward().scale(.2)).add(0,.06,0));e.hurtMarked=true;if(DEBUG)LOGGER.debug("Tidebreaker damage applied: entity={}, skill={}, target={}, damage={}",getId(),skill(),e.getId(),damage);}
         }
         if(DEBUG)LOGGER.debug("Tidebreaker strike resolved: entity={}, skill={}, age={}, hits={}, start={}, end={}",getId(),skill(),(int)skillAge(0),hits,a,b);
     }
@@ -177,19 +180,19 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
             Vec3 center=b.subtract(bubbleDirection.scale(.03));
             for(LivingEntity e:level().getEntitiesOfClass(LivingEntity.class,new AABB(center,center).inflate(1.1),this::canHit)) {
                 AABB box=e.getBoundingBox();Vec3 closest=new Vec3(Mth.clamp(center.x,box.minX,box.maxX),Mth.clamp(center.y,box.minY,box.maxY),Mth.clamp(center.z,box.minZ,box.maxZ));
-                if(center.distanceToSqr(closest)<=1.21&&clip(center,e.getBoundingBox().getCenter()).distanceToSqr(e.getBoundingBox().getCenter())<.01)e.hurt(damageSources().mobAttack(this),6);
+                if(center.distanceToSqr(closest)<=1.21&&clip(center,e.getBoundingBox().getCenter()).distanceToSqr(e.getBoundingBox().getCenter())<.01)e.hurtOrSimulate(damageSources().mobAttack(this),6);
             }
             playSound(SoundEvents.GENERIC_EXPLODE.value(),.6F,1.8F);
             if(DEBUG)LOGGER.debug("Tidebreaker bubble burst: entity={}, travel={}, collision={}, center={}",getId(),bubbleTravel,collision,b);
         }
     }
-    @Override public boolean hurt(DamageSource source,float amount) {
-        if(!level().isClientSide&&skill()==GUARD&&skillAge(0)>=3&&skillAge(0)<=14&&source.getSourcePosition()!=null) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        if(!level().isClientSide()&&skill()==GUARD&&skillAge(0)>=3&&skillAge(0)<=14&&source.getSourcePosition()!=null) {
             Vec3 d=source.getSourcePosition().subtract(position());d=new Vec3(d.x,0,d.z).normalize();
             if(d.dot(forward())>Math.cos(Math.toRadians(50))){amount*=.6F;entityData.set(GUARD_TIME,(int)level().getGameTime());}
         }
-        boolean accepted=super.hurt(source,amount);
-        if(accepted&&!level().isClientSide&&!isDeadOrDying()&&source.getEntity() instanceof LivingEntity attacker&&canHit(attacker)) {
+        boolean accepted=super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source,amount);
+        if(accepted&&!level().isClientSide()&&!isDeadOrDying()&&source.getEntity() instanceof LivingEntity attacker&&canHit(attacker)) {
             setTarget(attacker);
             pause=0;
             lostSight=0;
@@ -206,14 +209,14 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
             if(seenSequence!=sequence){
                 seenSequence=sequence;
                 debugClientAge=-1;
-                state.getController().forceAnimationReset();
+                state.controller().reset();
                 if(DEBUG)LOGGER.debug("Tidebreaker animation state received: entity={}, sequence={}, skill={}, animation={}",getId(),sequence,skill(),debugAnimationName(skill()));
             }
             int clientSkill=skill(),clientAge=(int)skillAge(0);
             boolean keyFrame=clientSkill==COMBO&&(clientAge==9||clientAge==15)||clientSkill==DASH&&clientAge==12||clientSkill==BUBBLE&&clientAge==14;
             if(DEBUG&&keyFrame&&debugClientAge!=clientAge){
                 debugClientAge=clientAge;
-                LOGGER.debug("Tidebreaker client animation frame: entity={}, skill={}, animation={}, age={}, controllerState={}",getId(),clientSkill,debugAnimationName(clientSkill),clientAge,state.getController().getAnimationState());
+                LOGGER.debug("Tidebreaker client animation frame: entity={}, skill={}, animation={}, age={}, controllerState={}",getId(),clientSkill,debugAnimationName(clientSkill),clientAge,state.controller().getPlayState());
             }
             return state.setAndContinue(skill()==NONE?(hurtTime>0?HURT:state.isMoving()?WALK:IDLE):ACTIONS[skill()]);
         }));
@@ -221,13 +224,18 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache(){return cache;}
     @Override protected void tickDeath() {
         deathTime++;
-        if(deathTime>=30&&!level().isClientSide&&!isRemoved()) { level().broadcastEntityEvent(this,(byte)60);remove(RemovalReason.KILLED); }
+        if(deathTime>=30&&!level().isClientSide()&&!isRemoved()) { level().broadcastEntityEvent(this,(byte)60);remove(RemovalReason.KILLED); }
     }
     private static final class SyncedController extends AnimationController<TidebreakerShrimpEntity> {
-        SyncedController(TidebreakerShrimpEntity e,AnimationStateHandler<TidebreakerShrimpEntity> handler){super(e,"action",0,handler);}
-        @Override protected double adjustTick(double tick){
-            if(animatable.skill()!=NONE&&!animatable.isDeadOrDying()&&!shouldResetTick&&getAnimationState()==State.RUNNING)return animatable.skillAge((float)(tick-Math.floor(tick)));
-            return super.adjustTick(tick);
+        SyncedController(TidebreakerShrimpEntity entity, AnimationStateHandler<TidebreakerShrimpEntity> handler) { super("action",0,handler); }
+        @Override public com.geckolib.animation.state.ControllerState extractControllerState(TidebreakerShrimpEntity entity, com.geckolib.renderer.base.GeoRenderState state, AnimatableManager<TidebreakerShrimpEntity> manager, com.geckolib.loading.math.MolangQueries.Actor<TidebreakerShrimpEntity> actor, com.geckolib.model.GeoModel<TidebreakerShrimpEntity> model) {
+            var captured=super.extractControllerState(entity,state,manager,actor,model);
+            var timeline=getTimeline();
+            if(captured==null || timeline==null || entity.skill()==NONE || entity.isDeadOrDying()) return captured;
+            double time=entity.skillAge(state.getPartialTick())/20D;
+            setTimelineTime(time);
+            var point=timeline.createAnimationPoint(time,captured.animationPoint(),captured.easingOverride());
+            return new com.geckolib.animation.state.ControllerState(point,captured.prevAnimationPoint(),timeline.getTransitionTime(time),timeline.getTransitionLength(),captured.additive(),captured.easingOverride(),captured.renderState(),captured.queryValues());
         }
     }
 }

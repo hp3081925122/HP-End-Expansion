@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.EnumSet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,13 +29,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 殉星者：坠星教团的狂信徒。近了抡链锤砸地，远了把链锤掷出去，砸中人或方块就在周围召陨星。
@@ -87,17 +89,17 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide && isMartyring() && isAlive()) martyrParticles();
+        if (level().isClientSide() && isMartyring() && isAlive()) martyrParticles();
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         LivingEntity target = getTarget();
         if ((swingTicks >= 0 || throwTicks >= 0 || martyrTicks >= 0) && target != null)
             getLookControl().setLookAt(target, 40, 40);
         if (throwCooldown > 0) throwCooldown--;
         if (swingTicks >= 0 && ++swingTicks == SWING_HIT) {
-            if (target != null && isWithinMeleeAttackRange(target)) doHurtTarget(target);
+            if (target != null && isWithinMeleeAttackRange(target)) doHurtTarget(hpServerLevel,target);
             slam();
         }
         if (swingTicks >= SWING_TICKS) swingTicks = -1;
@@ -157,10 +159,10 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
                 (random.nextDouble() - 0.5) * 0.12, 0.02 + random.nextDouble() * 0.08, (random.nextDouble() - 0.5) * 0.12);
     }
 
-    @Override public boolean hurt(DamageSource source, float amount) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         if (source.getDirectEntity() instanceof FallingStarEntity) return false;
-        boolean hurt = super.hurt(source, amount);
-        if (hurt && !level().isClientSide && isAlive() && martyrTicks < 0 && getHealth() <= getMaxHealth() * MARTYR_HEALTH) startMartyr();
+        boolean hurt = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (hurt && !level().isClientSide() && isAlive() && martyrTicks < 0 && getHealth() <= getMaxHealth() * MARTYR_HEALTH) startMartyr();
         return hurt;
     }
 
@@ -179,35 +181,35 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
     @Override protected SoundEvent getDeathSound() { return SoundEvents.AMETHYST_BLOCK_BREAK; }
     @Override public float getVoicePitch() { return super.getVoicePitch() * 0.8F; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("MartyrTicks", martyrTicks);
         tag.putInt("ThrowCooldown", throwCooldown);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("MartyrTicks")) martyrTicks = tag.getInt("MartyrTicks");
+        if (tag.read("MartyrTicks", com.mojang.serialization.Codec.PASSTHROUGH).isPresent()) martyrTicks = tag.getIntOr("MartyrTicks", 0);
         if (martyrTicks >= 0) entityData.set(MARTYRING, true);
-        throwCooldown = tag.getInt("ThrowCooldown");
+        throwCooldown = tag.getIntOr("ThrowCooldown", 0);
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new MartyrAnimationController(this, state -> {
-            AnimationController<StarMartyrEntity> controller = state.getController();
+            AnimationController<StarMartyrEntity> controller = state.controller();
             controller.setAnimationSpeed(1);
             if (isDeadOrDying()) {
                 stopTriggeredAnim("action", null);
-                controller.transitionLength(2);
+                controller.setTransitionTicks(2);
                 return state.setAndContinue(DEATH);
             }
             if (controller.isPlayingTriggeredAnimation()) {
-                controller.transitionLength(0);
+                controller.setTransitionTicks(0);
                 return PlayState.CONTINUE;
             }
-            controller.transitionLength(3);
+            controller.setTransitionTicks(3);
             if (state.isMoving()) {
-                controller.setAnimationSpeed(Mth.clamp(state.getLimbSwingAmount() / 0.18F, 0.65F, 2.7F));
+                controller.setAnimationSpeed(Mth.clamp(walkAnimation.speed() / 0.18F, 0.65F, 2.7F));
                 return state.setAndContinue(WALK);
             }
             return state.setAndContinue(IDLE);
@@ -218,25 +220,7 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
 
     private static final class MartyrAnimationController extends AnimationController<StarMartyrEntity> {
-        private double previousTick = Double.NaN;
-        private double playbackTick;
-
-        MartyrAnimationController(StarMartyrEntity entity, AnimationStateHandler<StarMartyrEntity> handler) {
-            super(entity, "action", 0, handler);
-        }
-
-        @Override protected double adjustTick(double tick) {
-            if (shouldResetTick) {
-                previousTick = tick;
-                playbackTick = 0;
-                shouldResetTick = false;
-                return 0;
-            }
-            if (Double.isFinite(previousTick))
-                playbackTick += animationSpeedModifier.apply(animatable) * Math.max(tick - previousTick, 0);
-            previousTick = tick;
-            return playbackTick;
-        }
+        MartyrAnimationController(StarMartyrEntity entity, AnimationStateHandler<StarMartyrEntity> handler) { super("action",0,handler); }
     }
 
     /** 追上去后先抬手蓄力，动画砸下那一拍才结算伤害。 */

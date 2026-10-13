@@ -1,9 +1,11 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -38,13 +40,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 import org.slf4j.Logger;
 
 /**
@@ -196,8 +198,8 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
 
     // ---------------- 中立与受伤 ----------------
 
-    @Override public boolean hurt(DamageSource source, float amount) {
-        if (level().isClientSide) return super.hurt(source, amount);
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        if (level().isClientSide()) return super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         Entity attacker = source.getEntity();
         if (attacker instanceof TideRemnantHermitCrabEntity) return false;
         float raw = amount;
@@ -205,7 +207,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
         if (!shelled) shellDamage = 0;
         if (shelled) amount *= 0.5F;
         byte skill = getSkill();
-        boolean hit = super.hurt(source, amount);
+        boolean hit = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
         if (hit && shelled) shellDamage += raw;
         boolean shatter = shelled && shellDamage > 20.0F;
         if (!hit || !isAlive()) return hit;
@@ -219,7 +221,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
                 startSkill(STAGGER);
             }
         } else if (skill == CANNON && skillTicks >= CANNON_CHARGE && skillTicks < CANNON_SWEEP && raw >= CHARGE_INTERRUPT) {
-            playSound(SoundEvents.SHIELD_BREAK, 1.2F, 0.6F);
+            playSound(SoundEvents.SHIELD_BREAK.value(), 1.2F, 0.6F);
             startSkill(STUN);
         }
         return hit;
@@ -304,8 +306,8 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
 
     // ---------------- AI 主循环 ----------------
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (isSkullBroken()) {
             if (skullRecoveryTicks > 0 && --skullRecoveryTicks == 0) restoreSkull();
             if (isSkullBroken()) {
@@ -433,7 +435,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
         Vec3 at = local(-0.64, 0, 1.95);
         for (LivingEntity victim : victims(at, CLAW_RADIUS, 1, 2)) {
             boolean blocking = victim instanceof Player p && p.isBlocking();
-            if (victim.hurt(damageSources().mobAttack(this), CLAW_DAMAGE)) {
+            if (victim.hurtOrSimulate(damageSources().mobAttack(this), CLAW_DAMAGE)) {
                 Vec3 away = horizontalAway(victim.position(), at);
                 victim.knockback(0.5, -away.x, -away.z);
                 victim.setDeltaMovement(victim.getDeltaMovement().add(0, -0.3, 0));
@@ -449,7 +451,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
 
     // 和斧头一样：挡住的盾牌进入 3 秒冷却
     private void disableShield(Player player) {
-        player.getCooldowns().addCooldown(player.getUseItem().getItem(), 60);
+        player.getCooldowns().addCooldown(player.getUseItem(), 60);
         player.stopUsingItem();
         level().broadcastEntityEvent(player, (byte) 30);
     }
@@ -495,14 +497,14 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
             releaseGrab();
             Vec3 at = gripAt(GRAB_SLAM);
             Vec3 ground = new Vec3(at.x, getY(), at.z);
-            if (victim.hurt(damageSources().mobAttack(this), GRAB_DAMAGE)) {
+            if (victim.hurtOrSimulate(damageSources().mobAttack(this), GRAB_DAMAGE)) {
                 Vec3 away = horizontalAway(victim.position(), position());
                 victim.setDeltaMovement(away.x * 0.3, 0.55, away.z * 0.3);
                 victim.hurtMarked = true;
             }
             for (LivingEntity other : victims(ground, 1.5, 1, 2)) {
                 if (other == victim) continue;
-                if (other.hurt(damageSources().mobAttack(this), GRAB_SPLASH)) {
+                if (other.hurtOrSimulate(damageSources().mobAttack(this), GRAB_SPLASH)) {
                     Vec3 away = horizontalAway(other.position(), ground);
                     other.knockback(0.6, -away.x, -away.z);
                 }
@@ -600,7 +602,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
                     Vec3 c = e.getBoundingBox().getCenter();
                     if (distanceToSegment(c, origin, end) > 0.6 + e.getBbWidth() * 0.5) continue;
                     e.invulnerableTime = 0;
-                    if (e.hurt(damageSources().mobAttack(this), BEAM_DAMAGE)) {
+                    if (e.hurtOrSimulate(damageSources().mobAttack(this), BEAM_DAMAGE)) {
                         e.setDeltaMovement(e.getDeltaMovement().add(dir.x * 0.35, 0.05, dir.z * 0.35));
                         e.hurtMarked = true;
                     }
@@ -697,7 +699,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
     @Override protected void playStepSound(BlockPos pos, BlockState state) { playSound(SoundEvents.TURTLE_SHAMBLE, 0.3F, 0.9F); }
     @Override public int getAmbientSoundInterval() { return 400; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("UltUnlocked", ultUnlocked);
         tag.putBoolean("SkullBroken", isSkullBroken());
@@ -707,14 +709,14 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
         tag.putFloat("ShellDamage", shellDamage);
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        ultUnlocked = tag.getBoolean("UltUnlocked");
-        skullRestoreArmor = tag.contains("SkullRestoreArmor") ? tag.getDouble("SkullRestoreArmor") : BASE_ARMOR;
-        skullRestoreSpeed = tag.contains("SkullRestoreSpeed") ? tag.getDouble("SkullRestoreSpeed") : BASE_MOVEMENT_SPEED;
-        skullRecoveryTicks = Math.max(0, tag.getInt("SkullRecoveryTicks"));
-        shellDamage = tag.getFloat("ShellDamage");
-        boolean skullBroken = tag.getBoolean("SkullBroken") && skullRecoveryTicks > 0;
+        ultUnlocked = tag.getBooleanOr("UltUnlocked", false);
+        skullRestoreArmor = tag.read("SkullRestoreArmor", com.mojang.serialization.Codec.PASSTHROUGH).isPresent() ? tag.getDoubleOr("SkullRestoreArmor", 0D) : BASE_ARMOR;
+        skullRestoreSpeed = tag.read("SkullRestoreSpeed", com.mojang.serialization.Codec.PASSTHROUGH).isPresent() ? tag.getDoubleOr("SkullRestoreSpeed", 0D) : BASE_MOVEMENT_SPEED;
+        skullRecoveryTicks = Math.max(0, tag.getIntOr("SkullRecoveryTicks", 0));
+        shellDamage = tag.getFloatOr("ShellDamage", 0F);
+        boolean skullBroken = tag.getBooleanOr("SkullBroken", false) && skullRecoveryTicks > 0;
         entityData.set(SKULL_BROKEN, skullBroken);
         if (skullBroken) {
             var armor = getAttribute(Attributes.ARMOR);
@@ -727,19 +729,19 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
     // ---------------- 动画 ----------------
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 4, state -> {
+        controllers.add(new AnimationController<>("base", 4, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             if (getSkill() != NONE) return PlayState.STOP;
             if (isResting()) return state.setAndContinue(REST);
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
         // 技能动画按同步的技能状态播放，不做过渡，命中帧和服务端结算对齐
-        controllers.add(new AnimationController<>(this, "skill", 0, state -> {
+        controllers.add(new AnimationController<>("skill", 0, state -> {
             byte skill = getSkill();
             if (isDeadOrDying() || skill == NONE) return PlayState.STOP;
             if (animResetSeen != clientSkillStart) {
                 animResetSeen = clientSkillStart;
-                state.getController().forceAnimationReset();
+                state.controller().reset();
             }
             return state.setAndContinue(SKILL_ANIMS[skill]);
         }));

@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/tide_remnant_hermit_crab_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 14141597
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 2391171
+      }
+    ]
+  }
+}

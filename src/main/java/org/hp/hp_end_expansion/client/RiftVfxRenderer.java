@@ -4,14 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.RiftVfxEntity;
 
-public final class RiftVfxRenderer extends EntityRenderer<RiftVfxEntity> {
+public final class RiftVfxRenderer extends HpEntityRenderer<RiftVfxEntity> {
     // 弧光细分段数
     private static final int ARC_SEGMENTS = 16;
 
@@ -76,7 +76,7 @@ public final class RiftVfxRenderer extends EntityRenderer<RiftVfxEntity> {
         if (width <= 0.0F) {
             return;
         }
-        Vec3 cam = this.entityRenderDispatcher.camera.getPosition();
+        Vec3 cam = this.entityRenderDispatcher.camera.position();
         double dx = cam.x - entity.getX();
         double dz = cam.z - entity.getZ();
         float face = (float) (Mth.atan2(dx, dz) * Mth.RAD_TO_DEG);
@@ -109,7 +109,7 @@ public final class RiftVfxRenderer extends EntityRenderer<RiftVfxEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(RiftVfxEntity entity) {
+    public Identifier getTextureLocation(RiftVfxEntity entity) {
         return RiftVfxDraw.ARC;
     }
 }

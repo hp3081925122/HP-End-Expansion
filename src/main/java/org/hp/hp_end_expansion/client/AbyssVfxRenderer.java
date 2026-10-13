@@ -3,22 +3,22 @@ package org.hp.hp_end_expansion.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
+import org.hp.hp_end_expansion.client.render.HpEntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.tidelight.AbyssVfxEntity;
 
 /** 潮灯须鲛的独立特效：晶核弹道 + 预警法阵 + 晶刺丛、地面漩涡、冲击波、星芒爆闪。 */
-final class AbyssVfxRenderer extends EntityRenderer<AbyssVfxEntity> {
+final class AbyssVfxRenderer extends HpEntityRenderer<AbyssVfxEntity> {
     AbyssVfxRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
 
-    @Override public ResourceLocation getTextureLocation(AbyssVfxEntity e) { return AbyssFx.GLYPH; }
+    @Override public Identifier getTextureLocation(AbyssVfxEntity e) { return AbyssFx.GLYPH; }
 
     @Override public void render(AbyssVfxEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource b, int light) {
         float age = e.getAge(pt);
-        Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(e.getPosition(pt));
+        Vec3 cam = entityRenderDispatcher.camera.position().subtract(e.getPosition(pt));
         PoseStack.Pose p = ps.last();
         switch (e.getKind()) {
             case AbyssVfxEntity.SPIKE -> spike(e, age, cam, p, b);

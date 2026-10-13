@@ -2,7 +2,7 @@ package org.hp.hp_end_expansion.item;
 
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -13,7 +13,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -37,7 +37,7 @@ public final class StarBowItem extends BowItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable(getDescriptionId(stack)).withStyle(ChatFormatting.GOLD);
+        return Component.translatable(getDescriptionId()).withStyle(ChatFormatting.GOLD);
     }
 
     @Override
@@ -53,17 +53,16 @@ public final class StarBowItem extends BowItem {
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingUseDuration) {
         super.onUseTick(level, entity, stack, remainingUseDuration);
-        if (level.isClientSide) org.hp.hp_end_expansion.client.StarBowChargeFx.tick(level, entity);
+        if (level.isClientSide()) org.hp.hp_end_expansion.client.StarBowChargeFx.tick(level, entity);
         if (entity instanceof Player player && hasSkyEye(player) && getChargeTicks(entity) >= FULL_CHARGE_TICKS) {
             player.releaseUsingItem();
         }
     }
 
     @Override
-    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         if (!(entity instanceof Player player)) {
-            super.releaseUsing(stack, level, entity, timeLeft);
-            return;
+            return super.releaseUsing(stack, level, entity, timeLeft);
         }
         boolean holyStar = hasHolyStar(player);
         boolean infinity = hasInfinity(player, stack);
@@ -71,17 +70,16 @@ public final class StarBowItem extends BowItem {
         boolean skyEye = hasSkyEye(player);
         boolean skyrenderHorn = hasSkyrenderHorn(player);
         if (!holyStar && !infinity && !starcallPendant && !skyEye && !skyrenderHorn) {
-            super.releaseUsing(stack, level, entity, timeLeft);
-            return;
+            return super.releaseUsing(stack, level, entity, timeLeft);
         }
         ItemStack ammo = player.getProjectile(stack);
-        if (ammo.isEmpty()) return;
+        if (ammo.isEmpty()) return false;
         int charge = getUseDuration(stack, entity) - timeLeft;
         charge = EventHooks.onArrowLoose(stack, level, player, charge, true);
-        if (charge < 0) return;
+        if (charge < 0) return false;
         float effectiveCharge = getEffectiveChargeTicks(player, charge);
         float power = getPowerForTime((int) Math.min(effectiveCharge, FULL_CHARGE_TICKS));
-        if (power < 0.1F) return;
+        if (power < 0.1F) return false;
         if (level instanceof ServerLevel server) {
             if (starcallPendant) {
                 shootPendantArrows(server, player, player.getUsedItemHand(), stack, ammo, power * 3.0F, power == 1.0F,
@@ -97,6 +95,7 @@ public final class StarBowItem extends BowItem {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS,
             1.0F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + power * 0.5F);
         player.awardStat(Stats.ITEM_USED.get(this));
+        return true;
     }
 
     private static boolean hasHolyStar(Player player) {
@@ -182,7 +181,7 @@ public final class StarBowItem extends BowItem {
         }
         bolt.shootFromRotation(player, player.getXRot(), player.getYRot() + yawOffset, 0, velocity, 1.0F);
         level.addFreshEntity(bolt);
-        weapon.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+        weapon.hurtAndBreak(1, player, ((hand)==net.minecraft.world.InteractionHand.MAIN_HAND?net.minecraft.world.entity.EquipmentSlot.MAINHAND:net.minecraft.world.entity.EquipmentSlot.OFFHAND));
     }
 
     private static boolean hasInfinity(Player player, ItemStack stack) {

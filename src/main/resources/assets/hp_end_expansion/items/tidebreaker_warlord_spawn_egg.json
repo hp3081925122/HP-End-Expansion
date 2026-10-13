@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/tidebreaker_warlord_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 2054246
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 9433304
+      }
+    ]
+  }
+}

@@ -6,7 +6,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,11 +40,11 @@ public final class StarRain {
     /** 星雨陨星落地时调用：有一定概率从陨星里爬出一只逐星兽，每场星雨最多 {@link #MAX_CHASERS} 只。 */
     public static void onImpact(ServerLevel level, Vec3 at) {
         int count = CHASERS.getOrDefault(level.dimension(), 0);
-        if (count >= MAX_CHASERS || level.random.nextFloat() >= CHASER_CHANCE) return;
-        StarChaserEntity chaser = StarwreckEntities.STAR_CHASER.get().create(level);
+        if (count >= MAX_CHASERS || level.getRandom().nextFloat() >= CHASER_CHANCE) return;
+        StarChaserEntity chaser = StarwreckEntities.STAR_CHASER.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (chaser == null) return;
-        chaser.moveTo(at.x, at.y, at.z, level.random.nextFloat() * 360, 0);
-        chaser.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(at)), MobSpawnType.EVENT, null);
+        chaser.snapTo(at.x, at.y, at.z, level.getRandom().nextFloat() * 360, 0);
+        chaser.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(at)), EntitySpawnReason.EVENT, null);
         chaser.markFromStarRain();
         level.addFreshEntity(chaser);
         CHASERS.put(level.dimension(), count + 1);
@@ -61,7 +61,7 @@ public final class StarRain {
             if (now % 20 != 0) continue;
             long next = NEXT.getOrDefault(level.dimension(), Long.MIN_VALUE);
             if (next == Long.MIN_VALUE) {
-                NEXT.put(level.dimension(), now + INTERVAL + level.random.nextInt(INTERVAL_EXTRA));
+                NEXT.put(level.dimension(), now + INTERVAL + level.getRandom().nextInt(INTERVAL_EXTRA));
                 continue;
             }
             if (now < next) continue;
@@ -86,7 +86,7 @@ public final class StarRain {
         if (watchers.isEmpty()) return 0;
         int alive = level.getEntities(StarwreckEntities.STAR_RIFT.get(), Entity::isAlive).size();
         if (alive >= MAX_RIFTS) return 0;
-        Vec3 around = watchers.get(level.random.nextInt(watchers.size())).position();
+        Vec3 around = watchers.get(level.getRandom().nextInt(watchers.size())).position();
         int spawned = 0;
         for (int i = 0; i < WAVE_COUNT && alive < MAX_RIFTS; i++) {
             Site site = findSite(level, around, 20, 76);
@@ -103,7 +103,7 @@ public final class StarRain {
         long now = level.getGameTime();
         UNTIL.put(level.dimension(), now + DURATION);
         CHASERS.put(level.dimension(), 0);
-        NEXT.put(level.dimension(), now + DURATION + INTERVAL + level.random.nextInt(INTERVAL_EXTRA));
+        NEXT.put(level.dimension(), now + DURATION + INTERVAL + level.getRandom().nextInt(INTERVAL_EXTRA));
         return true;
     }
 
@@ -127,14 +127,14 @@ public final class StarRain {
 
     private static Site findSite(ServerLevel level, Vec3 around, double minDist, double maxDist) {
         for (int attempt = 0; attempt < 8; attempt++) {
-            double angle = level.random.nextDouble() * Math.PI * 2;
-            double distance = minDist + level.random.nextDouble() * (maxDist - minDist);
+            double angle = level.getRandom().nextDouble() * Math.PI * 2;
+            double distance = minDist + level.getRandom().nextDouble() * (maxDist - minDist);
             int x = Mth.floor(around.x) + (int) Math.round(Math.cos(angle) * distance);
             int z = Mth.floor(around.z) + (int) Math.round(Math.sin(angle) * distance);
             BlockPos column = new BlockPos(x, Mth.floor(around.y), z);
             if (!level.hasChunkAt(column)) continue;
             BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
-            if (surface.getY() <= level.getMinBuildHeight() + 4) continue;
+            if (surface.getY() <= level.getMinY() + 4) continue;
             if (!level.getBiome(surface).is(StarwreckWorldgen.BIOME)) continue;
             if (level.getBlockState(surface.below()).getCollisionShape(level, surface.below()).isEmpty()) continue;
             if (!level.getBlockState(surface).getCollisionShape(level, surface).isEmpty()) continue;

@@ -1,5 +1,7 @@
 package org.hp.hp_end_expansion.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -90,8 +92,8 @@ public final class RiftBladeEntity extends Projectile {
         Entity owner = this.getOwner();
         // 命中生物：造成魔法伤害并短暂减速
         if (owner instanceof LivingEntity livingOwner && target instanceof LivingEntity livingTarget) {
-            if (livingTarget.hurt(this.damageSources().mobProjectile(this, livingOwner), this.damage)) {
-                livingTarget.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1), livingOwner);
+            if (livingTarget.hurtOrSimulate(this.damageSources().mobProjectile(this, livingOwner), this.damage)) {
+                livingTarget.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1), livingOwner);
             }
         }
         this.burst();
@@ -133,12 +135,12 @@ public final class RiftBladeEntity extends Projectile {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
     }
 }

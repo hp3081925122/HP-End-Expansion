@@ -1,6 +1,9 @@
 package org.hp.hp_end_expansion.entity.starwreck;
 
-import javax.annotation.Nullable;
+import org.hp.hp_end_expansion.entity.HpCullingEntity;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -24,7 +27,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
  * 天陨的画面（设计文档 skyrender_meteor_ultimate.md）：站在坑中心的坑底，只负责画天裂、巨星、落点暗影、冲击波和焦痕。
  * 判定和结算全在裂天之主身上，这里的计时和本体的 {@link SkyrenderEntity#METEOR} 状态同一拍开始。
  */
-public class SkyMeteorEntity extends Entity {
+public class SkyMeteorEntity extends Entity implements HpCullingEntity {
     public static final int LIFE = SkyrenderEntity.METEOR_LEN + SkyrenderEntity.METEOR_REST + 40;
     private static final EntityDataAccessor<Float> STAR_RADIUS = SynchedEntityData.defineId(SkyMeteorEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> ARENA_RADIUS = SynchedEntityData.defineId(SkyMeteorEntity.class, EntityDataSerializers.FLOAT);
@@ -38,12 +41,12 @@ public class SkyMeteorEntity extends Entity {
 
     /** fromYaw：天裂所在的水平方向（atan2(z, x)，度），取玩家看向坑心时的身后。 */
     static void spawn(ServerLevel level, Vec3 at, float starRadius, float arenaRadius, float fromYaw) {
-        SkyMeteorEntity e = StarwreckEntities.SKY_METEOR.get().create(level);
+        SkyMeteorEntity e = StarwreckEntities.SKY_METEOR.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (e == null) return;
         e.entityData.set(STAR_RADIUS, starRadius);
         e.entityData.set(ARENA_RADIUS, arenaRadius);
         e.entityData.set(FROM_YAW, fromYaw);
-        e.moveTo(at.x, at.y, at.z, 0, 0);
+        e.snapTo(at.x, at.y, at.z, 0, 0);
         level.addFreshEntity(e);
     }
 
@@ -203,7 +206,7 @@ public class SkyMeteorEntity extends Entity {
 
     @Override public void tick() {
         super.tick();
-        if (!level().isClientSide) {
+        if (!level().isClientSide()) {
             if (tickCount >= LIFE) discard();
             return;
         }
@@ -222,7 +225,7 @@ public class SkyMeteorEntity extends Entity {
                 Vec3 p = at.add(back.scale(r * (0.6 + random.nextDouble() * 0.5)))
                     .add((random.nextDouble() - 0.5) * r * 1.2, (random.nextDouble() - 0.5) * r * 1.2, (random.nextDouble() - 0.5) * r * 1.2);
                 Vec3 v = back.scale(0.2 + random.nextDouble() * 0.3);
-                level().addParticle(ModParticles.STAR_EMBER.get(), true, p.x, p.y, p.z, v.x, v.y, v.z);
+                level().addParticle(ModParticles.STAR_EMBER.get(), true, false, p.x, p.y, p.z, v.x, v.y, v.z);
             }
         }
         // 最后一秒半：星压下来的气浪把坑底的烟尘往外推，地上的碎块被掀起来
@@ -235,14 +238,12 @@ public class SkyMeteorEntity extends Entity {
             for (int i = 0; i < smoke; i++) {
                 double a = random.nextDouble() * Math.PI * 2, r = arena * (0.15 + random.nextDouble() * 0.85);
                 double sp = 0.25 + q * 0.55 + random.nextDouble() * 0.2;
-                level().addParticle(ParticleTypes.LARGE_SMOKE, true, getX() + Math.cos(a) * r, getY() + 0.3, getZ() + Math.sin(a) * r,
-                    Math.cos(a) * sp, 0.02 + random.nextDouble() * 0.05, Math.sin(a) * sp);
+                level().addParticle(ParticleTypes.LARGE_SMOKE, true, false, getX() + Math.cos(a) * r, getY() + 0.3, getZ() + Math.sin(a) * r, Math.cos(a) * sp, 0.02 + random.nextDouble() * 0.05, Math.sin(a) * sp);
             }
             int bits = 2 + (int) (q * 8);
             for (int i = 0; i < bits; i++) {
                 double a = random.nextDouble() * Math.PI * 2, r = arena * Math.sqrt(random.nextDouble());
-                level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), true, getX() + Math.cos(a) * r, getY() + 0.2,
-                    getZ() + Math.sin(a) * r, Math.cos(a) * 0.1, 0.35 + q * 0.5 + random.nextDouble() * 0.3, Math.sin(a) * 0.1);
+                level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), true, false, getX() + Math.cos(a) * r, getY() + 0.2, getZ() + Math.sin(a) * r, Math.cos(a) * 0.1, 0.35 + q * 0.5 + random.nextDouble() * 0.3, Math.sin(a) * 0.1);
             }
         }
     }
@@ -254,16 +255,14 @@ public class SkyMeteorEntity extends Entity {
             if (tickCount != (int) Math.ceil(rainStart(i) + rainTime(i))) continue;
             Vec3 p = position().add(rainTo(i));
             float size = rainSize(i);
-            level().addParticle(ParticleTypes.EXPLOSION, true, p.x, p.y + 1, p.z, 0, 0, 0);
+            level().addParticle(ParticleTypes.EXPLOSION, true, false, p.x, p.y + 1, p.z, 0, 0, 0);
             for (int j = 0; j < 10; j++) {
                 double a = random.nextDouble() * Math.PI * 2, sp = 0.15 + random.nextDouble() * 0.3;
-                level().addParticle(ParticleTypes.FLAME, true, p.x, p.y + 0.5, p.z, Math.cos(a) * sp, 0.2 + random.nextDouble() * 0.4, Math.sin(a) * sp);
-                level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), true, p.x, p.y + 0.3, p.z,
-                    Math.cos(a) * sp, 0.4 + random.nextDouble() * 0.5, Math.sin(a) * sp);
+                level().addParticle(ParticleTypes.FLAME, true, false, p.x, p.y + 0.5, p.z, Math.cos(a) * sp, 0.2 + random.nextDouble() * 0.4, Math.sin(a) * sp);
+                level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), true, false, p.x, p.y + 0.3, p.z, Math.cos(a) * sp, 0.4 + random.nextDouble() * 0.5, Math.sin(a) * sp);
             }
-            for (int j = 0; j < 3; j++) level().addParticle(ParticleTypes.LAVA, true, p.x, p.y + 0.5, p.z, 0, 0, 0);
-            for (int j = 0; j < 4; j++) level().addParticle(ParticleTypes.LARGE_SMOKE, true, p.x + (random.nextDouble() - 0.5) * size * 2, p.y + 1,
-                p.z + (random.nextDouble() - 0.5) * size * 2, 0, 0.08, 0);
+            for (int j = 0; j < 3; j++) level().addParticle(ParticleTypes.LAVA, true, false, p.x, p.y + 0.5, p.z, 0, 0, 0);
+            for (int j = 0; j < 4; j++) level().addParticle(ParticleTypes.LARGE_SMOKE, true, false, p.x + (random.nextDouble() - 0.5) * size * 2, p.y + 1, p.z + (random.nextDouble() - 0.5) * size * 2, 0, 0.08, 0);
             if ((i & 1) == 0) level().playLocalSound(p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 3, 0.7F + 0.3F * noise(getId(), i, 9), false);
         }
     }
@@ -274,17 +273,15 @@ public class SkyMeteorEntity extends Entity {
         if (since < 0) return;
         float arena = arenaRadius();
         if (since == 0 || since == 14) {
-            for (int j = 0; j < 3; j++) level().addParticle(ParticleTypes.EXPLOSION_EMITTER, true, getX() + (random.nextDouble() - 0.5) * 8, getY() + 2,
-                getZ() + (random.nextDouble() - 0.5) * 8, 0, 0, 0);
+            for (int j = 0; j < 3; j++) level().addParticle(ParticleTypes.EXPLOSION_EMITTER, true, false, getX() + (random.nextDouble() - 0.5) * 8, getY() + 2, getZ() + (random.nextDouble() - 0.5) * 8, 0, 0, 0);
         }
         if (since < 20) {
             float q = 1 - since / 20F;
             for (int j = 0; j < (int) (30 * q); j++) {
                 double a = random.nextDouble() * Math.PI * 2, sp = (0.6 + random.nextDouble() * 1.2) * q;
-                level().addParticle(j % 3 == 0 ? ParticleTypes.LARGE_SMOKE : ParticleTypes.FLAME, true, getX() + Math.cos(a) * 3, getY() + 0.5 + random.nextDouble() * 3,
-                    getZ() + Math.sin(a) * 3, Math.cos(a) * sp, 0.05 + random.nextDouble() * 0.25, Math.sin(a) * sp);
+                level().addParticle(j % 3 == 0 ? ParticleTypes.LARGE_SMOKE : ParticleTypes.FLAME, true, false, getX() + Math.cos(a) * 3, getY() + 0.5 + random.nextDouble() * 3, getZ() + Math.sin(a) * 3, Math.cos(a) * sp, 0.05 + random.nextDouble() * 0.25, Math.sin(a) * sp);
             }
-            for (int j = 0; j < (int) (6 * q); j++) level().addParticle(ParticleTypes.LAVA, true, getX(), getY() + 1, getZ(), 0, 0, 0);
+            for (int j = 0; j < (int) (6 * q); j++) level().addParticle(ParticleTypes.LAVA, true, false, getX(), getY() + 1, getZ(), 0, 0, 0);
         }
         if (since >= 8 && since < LIFE - SkyrenderEntity.METEOR_HIT - 30) {
             int[][] cells = crackCells();
@@ -293,8 +290,7 @@ public class SkyMeteorEntity extends Entity {
                 int[] c = cells[random.nextInt(cells.length)];
                 if (c[2] > reach * 10) continue;
                 double x = getX() + c[0] + random.nextDouble(), z = getZ() + c[1] + random.nextDouble();
-                level().addParticle(j == 0 && random.nextInt(3) == 0 ? ParticleTypes.LAVA : j == 1 ? ParticleTypes.SMOKE : ParticleTypes.SMALL_FLAME,
-                    true, x, getY() + 0.1, z, 0, 0.03 + random.nextDouble() * 0.05, 0);
+                level().addParticle(j == 0 && random.nextInt(3) == 0 ? ParticleTypes.LAVA : j == 1 ? ParticleTypes.SMOKE : ParticleTypes.SMALL_FLAME, true, false, x, getY() + 0.1, z, 0, 0.03 + random.nextDouble() * 0.05, 0);
             }
         }
     }
@@ -307,8 +303,8 @@ public class SkyMeteorEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
     @Override public boolean shouldRenderAtSqrDistance(double d) { return d < 256 * 256; }
 
     /** 星从坑外的天裂里斜着落进坑心，天裂更高，地上的暗影铺满整个坑。 */
@@ -319,4 +315,5 @@ public class SkyMeteorEntity extends Entity {
         return new AABB(getX() - r, getY() - 2, getZ() - r, getX() + r, getY() + r, getZ() + r)
             .minmax(new AABB(sky.x - s, sky.y - s, sky.z - s, sky.x + s, sky.y + s, sky.z + s));
     }
+    @Override public boolean hurtServer(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float amount) { return false; }
 }

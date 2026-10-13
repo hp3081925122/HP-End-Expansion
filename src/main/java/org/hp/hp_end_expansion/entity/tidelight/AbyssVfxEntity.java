@@ -1,6 +1,8 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
-import javax.annotation.Nullable;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -35,7 +37,7 @@ public final class AbyssVfxEntity extends Entity {
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> START_TICK = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Vector3f> START = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<org.joml.Vector3fc> START = SynchedEntityData.defineId(AbyssVfxEntity.class, EntityDataSerializers.VECTOR3);
     @Nullable private LivingEntity owner;
 
     public AbyssVfxEntity(EntityType<? extends AbyssVfxEntity> type, Level level) {
@@ -44,21 +46,21 @@ public final class AbyssVfxEntity extends Entity {
     }
 
     public static void spawn(ServerLevel level, @Nullable LivingEntity owner, byte kind, Vec3 at, float size, Vec3 start) {
-        AbyssVfxEntity e = ModEntities.ABYSS_VFX.get().create(level);
+        AbyssVfxEntity e = ModEntities.ABYSS_VFX.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (e == null) return;
         e.owner = owner;
         e.entityData.set(KIND, kind);
         e.entityData.set(SIZE, size);
         e.entityData.set(START_TICK, (int) level.getGameTime());
         e.entityData.set(START, new Vector3f((float) start.x, (float) start.y, (float) start.z));
-        e.moveTo(at.x, at.y, at.z, level.random.nextFloat() * 360, 0);
+        e.snapTo(at.x, at.y, at.z, level.getRandom().nextFloat() * 360, 0);
         level.addFreshEntity(e);
     }
 
     public byte getKind() { return entityData.get(KIND); }
     public float getSize() { return entityData.get(SIZE); }
     public float getAge(float partialTick) { return Math.max(0, (int) level().getGameTime() - entityData.get(START_TICK) + partialTick); }
-    public Vec3 getStart() { Vector3f v = entityData.get(START); return new Vec3(v.x, v.y, v.z); }
+    public Vec3 getStart() { org.joml.Vector3fc v = entityData.get(START); return new Vec3(v.x(), v.y(), v.z()); }
 
     public int life() {
         return switch (getKind()) { case SPIKE -> SPIKE_LIFE; case VORTEX -> VORTEX_LIFE; case SHOCKWAVE -> SHOCK_LIFE; default -> BURST_LIFE; };
@@ -89,7 +91,7 @@ public final class AbyssVfxEntity extends Entity {
         for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, TidelampWyrmEntity::canHit)) {
             if (v.position().subtract(position()).horizontalDistance() > SPIKE_RADIUS + v.getBbWidth() * 0.5) continue;
             v.invulnerableTime = 0;
-            if (v.hurt(source(), SPIKE_DAMAGE)) {
+            if (v.hurtOrSimulate(source(), SPIKE_DAMAGE)) {
                 v.setDeltaMovement(v.getDeltaMovement().multiply(0.4, 0, 0.4).add(0, 0.75, 0));
                 v.hurtMarked = true;
             }
@@ -105,8 +107,8 @@ public final class AbyssVfxEntity extends Entity {
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override public boolean hurt(DamageSource source, float amount) { return false; }
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) { return false; }
     @Override public void push(Entity entity) {}
-    @Override protected void readAdditionalSaveData(CompoundTag tag) {}
-    @Override protected void addAdditionalSaveData(CompoundTag tag) {}
+    @Override protected void readAdditionalSaveData(ValueInput tag) {}
+    @Override protected void addAdditionalSaveData(ValueOutput tag) {}
 }

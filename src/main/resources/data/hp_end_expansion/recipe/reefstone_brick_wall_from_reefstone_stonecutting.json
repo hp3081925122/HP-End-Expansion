@@ -1,8 +1,6 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "hp_end_expansion:reefstone"
-  },
+  "ingredient": "hp_end_expansion:reefstone",
   "result": {
     "id": "hp_end_expansion:reefstone_brick_wall",
     "count": 1

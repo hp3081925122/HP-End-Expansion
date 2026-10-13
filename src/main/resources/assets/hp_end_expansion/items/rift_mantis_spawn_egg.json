@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hp_end_expansion:item/rift_mantis_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 3156030
+      },
+      {
+        "type": "minecraft:constant",
+        "value": 11693539
+      }
+    ]
+  }
+}

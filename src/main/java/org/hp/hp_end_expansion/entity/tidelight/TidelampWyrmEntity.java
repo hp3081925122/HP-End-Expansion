@@ -1,7 +1,9 @@
 package org.hp.hp_end_expansion.entity.tidelight;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -35,13 +37,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 潮灯须鲛：潮光礁海的漂浮精英怪。按 Boss 的结构设计（读招、阶段、破绽、终结技），数值保持精英级。
@@ -155,17 +157,17 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
 
     // ---------------- 受伤与阶段 ----------------
 
-    @Override public boolean hurt(DamageSource source, float amount) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
         if (source.getEntity() instanceof TidelampWyrmEntity) return false;
         byte skill = getSkill();
         if (skill == MAELSTROM && skillTicks < MAEL_DIVE) amount *= 0.6F;   // 升空盘旋时减伤
         if (skill == STUN) amount *= 1.3F;                                     // 破绽：被打断后受到的伤害提高
-        boolean hit = super.hurt(source, amount);
-        if (!hit || level().isClientSide || !isAlive()) return hit;
+        boolean hit = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (!hit || level().isClientSide() || !isAlive()) return hit;
         if (skill == MAELSTROM && skillTicks >= MAEL_RISE && skillTicks < MAEL_DIVE) {
             maelDamage += amount;
             if (maelDamage >= MAEL_INTERRUPT) {
-                playSound(SoundEvents.SHIELD_BREAK, 2F, 0.5F);
+                playSound(SoundEvents.SHIELD_BREAK.value(), 2F, 0.5F);
                 startSkill(STUN);
             }
         }
@@ -174,8 +176,8 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
 
     // ---------------- 主循环 ----------------
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         if (biteCd > 0) biteCd--;
         if (sweepCd > 0) sweepCd--;
         if (volleyCd > 0) volleyCd--;
@@ -314,7 +316,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
             if (!biteHit) {
                 Vec3 m = mouth();
                 for (LivingEntity v : near(m, 2.4, 2.4)) {
-                    if (v.hurt(damageSources().mobAttack(this), BITE_DAMAGE)) {
+                    if (v.hurtOrSimulate(damageSources().mobAttack(this), BITE_DAMAGE)) {
                         Vec3 f = forward();
                         v.knockback(1.0, -f.x, -f.z);
                         biteHit = true;
@@ -343,7 +345,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
         if (skillTicks == SWEEP_START) playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 2F, 0.5F);
         for (LivingEntity v : near(position().add(0, 1.5, 0), SWEEP_RADIUS, 3.5)) {
             if (!sweepHit.add(v.getId())) continue;
-            if (v.hurt(damageSources().mobAttack(this), SWEEP_DAMAGE)) {
+            if (v.hurtOrSimulate(damageSources().mobAttack(this), SWEEP_DAMAGE)) {
                 Vec3 out = horizontalAway(v.position(), position());
                 v.knockback(1.5, -out.x, -out.z);
                 v.setDeltaMovement(v.getDeltaMovement().add(0, 0.35, 0));
@@ -391,8 +393,8 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
         for (LivingEntity v : level().getEntitiesOfClass(LivingEntity.class, box, TidelampWyrmEntity::canHit)) {
             if (distanceToSegment(v.getBoundingBox().getCenter(), from, end) > BEAM_RADIUS + v.getBbWidth() * 0.5) continue;
             v.invulnerableTime = 0;
-            if (v.hurt(damageSources().indirectMagic(this, this), GAZE_DAMAGE))
-                v.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1), this);
+            if (v.hurtOrSimulate(damageSources().indirectMagic(this, this), GAZE_DAMAGE))
+                v.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1), this);
         }
     }
 
@@ -437,7 +439,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
         }
         if (skillTicks == MAEL_SLAM) {
             for (LivingEntity v : near(maelCenter, MAEL_SLAM_RADIUS, 3)) {
-                if (v.hurt(damageSources().mobAttack(this), MAEL_SLAM_DAMAGE)) {
+                if (v.hurtOrSimulate(damageSources().mobAttack(this), MAEL_SLAM_DAMAGE)) {
                     Vec3 out = horizontalAway(v.position(), maelCenter);
                     v.knockback(1.6, -out.x, -out.z);
                     v.setDeltaMovement(v.getDeltaMovement().add(0, 0.5, 0));
@@ -447,7 +449,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
             // 外圈冲击波：7 格内 5 伤害（内圈已吃到砸地的不重复结算）
             for (LivingEntity v : near(maelCenter, 7, 3)) {
                 if (v.position().subtract(maelCenter).horizontalDistance() <= MAEL_SLAM_RADIUS) continue;
-                if (v.hurt(damageSources().mobAttack(this), 5)) {
+                if (v.hurtOrSimulate(damageSources().mobAttack(this), 5)) {
                     Vec3 out = horizontalAway(v.position(), maelCenter);
                     v.knockback(1.2, -out.x, -out.z);
                     v.hurtMarked = true;
@@ -476,11 +478,11 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     // ---------------- 移动 ----------------
 
     @Override public void travel(Vec3 input) {
-        if (!isControlledByLocalInstance()) {
+        if (!isLocalInstanceAuthoritative()) {
             calculateEntityAnimation(false);
             return;
         }
-        if (!level().isClientSide && isAlive()) {
+        if (!level().isClientSide() && isAlive()) {
             double floor = findGroundY(position());
             if (Double.isNaN(safeHoverY)) safeHoverY = getY();
             if (Double.isNaN(floor)) {
@@ -578,7 +580,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     private double findGroundY(Vec3 at) {
         BlockPos top = level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(at));
         int y = top.getY();
-        if (y <= level().getMinBuildHeight()) return Double.NaN;
+        if (y <= level().getMinY()) return Double.NaN;
         // 在洞穴/礁柱下时以脚下向下第一格实心方块为准
         if (y > at.y + 1) {
             HitResult hit = level().clip(new ClipContext(at.add(0, 1, 0), at.add(0, -24, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
@@ -662,7 +664,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
         return p.distanceTo(a.add(ab.scale(t)));
     }
 
-    private static DustParticleOptions crystalDust() { return new DustParticleOptions(new Vector3f(0.45F, 0.95F, 0.95F), 1.4F); }
+    private static DustParticleOptions crystalDust() { return new DustParticleOptions(net.minecraft.util.ARGB.colorFromFloat(1F,0.45F,0.95F,0.95F),1.4F); }
 
     private static void ring(ServerLevel s, Vec3 c, double r, int n, net.minecraft.core.particles.ParticleOptions p) {
         for (int i = 0; i < n; i++) {
@@ -673,7 +675,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
 
     // ---------------- 其他 ----------------
 
-    @Override public boolean causeFallDamage(float distance, float multiplier, DamageSource source) { return false; }
+    @Override public boolean causeFallDamage(double distance, float multiplier, DamageSource source) { return false; }
     @Override protected void checkFallDamage(double y, boolean onGround, net.minecraft.world.level.block.state.BlockState state, BlockPos pos) {}
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.ELDER_GUARDIAN_AMBIENT; }
@@ -682,30 +684,30 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     @Override public int getAmbientSoundInterval() { return 240; }
     @Override protected float getSoundVolume() { return 1.6F; }
 
-    @Override public void addAdditionalSaveData(CompoundTag tag) {
+    @Override public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Enraged", isEnraged());
     }
 
-    @Override public void readAdditionalSaveData(CompoundTag tag) {
+    @Override public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        entityData.set(ENRAGED, tag.getBoolean("Enraged"));
+        entityData.set(ENRAGED, tag.getBooleanOr("Enraged", false));
     }
 
     // ---------------- 动画 ----------------
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 6, state -> {
+        controllers.add(new AnimationController<>("base", 6, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             if (getSkill() != NONE) return PlayState.STOP;
             return state.setAndContinue(getDeltaMovement().horizontalDistanceSqr() > 0.003 ? MOVE : IDLE);
         }));
-        controllers.add(new AnimationController<>(this, "skill", 0, state -> {
+        controllers.add(new AnimationController<>("skill", 0, state -> {
             byte skill = getSkill();
             if (isDeadOrDying() || skill == NONE) return PlayState.STOP;
             if (animResetSeen != clientSkillStart) {
                 animResetSeen = clientSkillStart;
-                state.getController().forceAnimationReset();
+                state.controller().reset();
             }
             return state.setAndContinue(SKILL_ANIMS[skill]);
         }));

@@ -22,13 +22,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 余烬甲虫。中立：平时不主动攻击，被打后反击，并让附近同类一起仇恨。
@@ -59,8 +59,8 @@ public final class EmberBeetleEntity extends Monster implements GeoEntity {
     }
 
     // 近战在命中的同一 tick 触发攻击动画；动画 0.18 s 处是颚合拢的命中帧，与伤害只差控制器过渡的一两帧
-    @Override public boolean doHurtTarget(Entity target) {
-        boolean hit = super.doHurtTarget(target);
+    @Override public boolean doHurtTarget(ServerLevel hpServerLevel, Entity target) {
+        boolean hit = super.doHurtTarget(hpServerLevel,target);
         if (hit) triggerAnim("action", "attack");
         return hit;
     }
@@ -89,12 +89,12 @@ public final class EmberBeetleEntity extends Monster implements GeoEntity {
     @Override public float getVoicePitch() { return super.getVoicePitch() * 0.7F; }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 3, state -> {
+        controllers.add(new AnimationController<>("base", 3, state -> {
             if (isDeadOrDying()) return state.setAndContinue(DEATH);
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
         // 攻击层放在后面，播放时覆盖身体、头和颚
-        controllers.add(new AnimationController<>(this, "action", 1, state -> PlayState.STOP).triggerableAnim("attack", ATTACK));
+        controllers.add(new AnimationController<>("action", 1, state -> PlayState.STOP).triggerableAnim("attack", ATTACK));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }

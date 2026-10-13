@@ -26,12 +26,12 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.FlightAvoidance;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
 
 /**
  * 余烬蛾（设计文档 9.1）。
@@ -77,9 +77,9 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
 
     @Override protected void registerGoals() { goalSelector.addGoal(0, new FloatGoal(this)); }
 
-    @Override public boolean hurt(DamageSource source, float amount) {
-        boolean hit = super.hurt(source, amount);
-        if (hit && !level().isClientSide) {
+    @Override public boolean hurtServer(ServerLevel hpServerLevel, DamageSource source, float amount) {
+        boolean hit = super.hurtServer((net.minecraft.server.level.ServerLevel)level(), source, amount);
+        if (hit && !level().isClientSide()) {
             fleeTicks = FLEE_TICKS;
             double angle = random.nextDouble() * Math.PI * 2;
             destination = position().add(Math.cos(angle) * 4, 7 + random.nextInt(4), Math.sin(angle) * 4);
@@ -87,8 +87,8 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
         return hit;
     }
 
-    @Override protected void customServerAiStep() {
-        super.customServerAiStep();
+    @Override protected void customServerAiStep(ServerLevel hpServerLevel) {
+        super.customServerAiStep(hpServerLevel);
         setNoGravity(true);
         if (fleeTicks > 0) fleeTicks--;
         entityData.set(FLEEING, fleeTicks > 0);
@@ -136,7 +136,7 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
         if (!level().hasChunkAt(column)) return null;
         int surface = level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.getX(), column.getZ());
         // 下方是虚空（岛屿边缘外）时不往外飞，只在当前高度附近平移
-        if (surface <= level().getMinBuildHeight()) return position().add(random.nextDouble() * 4 - 2, random.nextDouble() - 0.5, random.nextDouble() * 4 - 2);
+        if (surface <= level().getMinY()) return position().add(random.nextDouble() * 4 - 2, random.nextDouble() - 0.5, random.nextDouble() * 4 - 2);
         return new Vec3(column.getX() + 0.5, surface + 1 + random.nextInt(6), column.getZ() + 0.5);
     }
 
@@ -146,7 +146,7 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
         return stack.getItem() instanceof BlockItem item && item.getBlock().defaultBlockState().getLightEmission() > 0;
     }
 
-    @Override public boolean causeFallDamage(float distance, float multiplier, DamageSource source) { return false; }
+    @Override public boolean causeFallDamage(double distance, float multiplier, DamageSource source) { return false; }
     @Override protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {}
     @Override public boolean isPushable() { return false; }
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.BAT_HURT; }
@@ -155,7 +155,7 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
     @Override protected float getSoundVolume() { return 0.4F; }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "base", 3, state -> state.setAndContinue(isFleeing() ? FLEE : FLY)));
+        controllers.add(new AnimationController<>("base", 3, state -> state.setAndContinue(isFleeing() ? FLEE : FLY)));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
@@ -163,6 +163,6 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
     // 落到地面时轻推向上，避免停在地上不起飞
     @Override public void aiStep() {
         super.aiStep();
-        if (!level().isClientSide && onGround()) setDeltaMovement(getDeltaMovement().add(0, 0.06, 0));
+        if (!level().isClientSide() && onGround()) setDeltaMovement(getDeltaMovement().add(0, 0.06, 0));
     }
 }

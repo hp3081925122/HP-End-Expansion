@@ -1,12 +1,13 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -17,7 +18,7 @@ import net.minecraft.util.Mth;
  *   <li>碎晶：金色玻璃碎片，受重力、落地弹一下再滑开，翻滚时一闪一闪。</li>
  * </ul>
  */
-public final class BearerParticle extends TextureSheetParticle {
+public final class BearerParticle extends SingleQuadParticle {
     public enum Kind { FLAME, RAGE, SHARD, VOID, GLINT }
 
     private final Kind kind;
@@ -26,7 +27,7 @@ public final class BearerParticle extends TextureSheetParticle {
     private boolean bounced;
 
     private BearerParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites, Kind kind) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.first());
         this.kind = kind;
         this.sprites = sprites;
         this.xd = xd;
@@ -35,7 +36,7 @@ public final class BearerParticle extends TextureSheetParticle {
         sway = random.nextFloat() * Mth.TWO_PI;
         if (kind == Kind.VOID || kind == Kind.GLINT) {
             // 负光：不受重力，速度按 0.88 衰减，生成时给的初速正好把它带到目标点（吸入用）
-            pickSprite(sprites);
+            setSprite(sprites.get(random));
             gravity = 0;
             friction = kind == Kind.VOID ? 0.88F : 0.82F;
             hasPhysics = false;
@@ -43,7 +44,7 @@ public final class BearerParticle extends TextureSheetParticle {
             quadSize = kind == Kind.VOID ? 0.08F + random.nextFloat() * 0.08F : 0.1F + random.nextFloat() * 0.1F;
             spin = (random.nextFloat() - 0.5F) * 0.5F;
         } else if (kind == Kind.SHARD) {
-            pickSprite(sprites);
+            setSprite(sprites.get(random));
             gravity = 0.85F;
             friction = 0.97F;
             lifetime = 30 + random.nextInt(20);
@@ -101,12 +102,12 @@ public final class BearerParticle extends TextureSheetParticle {
         return quadSize * (t < 0.15F ? t / 0.15F : 1 - (t - 0.15F) * 0.6F);
     }
 
-    @Override protected int getLightColor(float partialTick) { return LightTexture.FULL_BRIGHT; }
+    @Override public int getLightCoords(float partialTick) { return LightCoordsUtil.FULL_BRIGHT; }
 
-    @Override public ParticleRenderType getRenderType() { return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT; }
+    @Override public SingleQuadParticle.Layer getLayer() { return SingleQuadParticle.Layer.TRANSLUCENT; }
 
     public record Provider(SpriteSet sprites, Kind kind) implements ParticleProvider<SimpleParticleType> {
-        @Override public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+        @Override public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
             return new BearerParticle(level, x, y, z, xd, yd, zd, sprites, kind);
         }
     }

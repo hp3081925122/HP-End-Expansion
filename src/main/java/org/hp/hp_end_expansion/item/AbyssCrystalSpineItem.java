@@ -11,7 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -52,12 +52,12 @@ public final class AbyssCrystalSpineItem extends Item implements ICurioItem {
     public static void onArrowImpact(ProjectileImpactEvent event) {
         // 只处理服务端、潮光之弩射出、命中方块的箭矢
         if (!(event.getProjectile() instanceof AbstractArrow arrow) || !(arrow.level() instanceof ServerLevel level)) return;
-        if (!arrow.getPersistentData().getBoolean(TIDE_ARROW_KEY)) return;
+        if (!arrow.getPersistentData().getBooleanOr(TIDE_ARROW_KEY, false)) return;
         if (event.getRayTraceResult().getType() != HitResult.Type.BLOCK || !(event.getRayTraceResult() instanceof BlockHitResult hit)) return;
         if (!(arrow.getOwner() instanceof LivingEntity owner) || !isEquipped(owner)) return;
 
         // 激光起点：命中点沿受击面稍微外移，避免视线检测被自己打中的方块挡住
-        Vec3 normal = Vec3.atLowerCornerOf(hit.getDirection().getNormal());
+        Vec3 normal = Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i());
         Vec3 origin = hit.getLocation().add(normal.scale(0.15D));
 
         LivingEntity target = null;
@@ -82,7 +82,7 @@ public final class AbyssCrystalSpineItem extends Item implements ICurioItem {
         Vec3 aim = target.getBoundingBox().getCenter();
         int oldInvulnerable = target.invulnerableTime;
         target.invulnerableTime = 0;
-        boolean hurt = target.hurt(level.damageSources().indirectMagic(arrow, owner), DAMAGE);
+        boolean hurt = target.hurtOrSimulate(level.damageSources().indirectMagic(arrow, owner), DAMAGE);
         target.invulnerableTime = oldInvulnerable;
         LOGGER.debug("Abyss crystal spine laser: owner={}, arrow={}, target={}, hurt={}, oldInvulnerable={}",
             owner.getId(), arrow.getId(), target.getId(), hurt, oldInvulnerable);
@@ -104,8 +104,8 @@ public final class AbyssCrystalSpineItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.laser").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.damage").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.laser").withStyle(ChatFormatting.AQUA));
+        tooltip.accept(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.damage").withStyle(ChatFormatting.GRAY));
     }
 }

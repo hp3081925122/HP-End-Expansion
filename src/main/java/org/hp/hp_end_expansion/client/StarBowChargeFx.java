@@ -120,7 +120,7 @@ public final class StarBowChargeFx {
         double upOffset;
         if (firstPerson(entity)) {
             Minecraft minecraft = Minecraft.getInstance();
-            double fov = minecraft.options.fov().get() * (entity instanceof AbstractClientPlayer player ? player.getFieldOfViewModifier() : 1);
+            double fov = minecraft.options.fov().get() * (entity instanceof AbstractClientPlayer player ? player.getFieldOfViewModifier(minecraft.options.getCameraType().isFirstPerson(),minecraft.options.fovEffectScale().get().floatValue()) : 1);
             double tanY = Math.tan(Math.toRadians(fov / 2));
             double aspect = (double) minecraft.getWindow().getWidth() / Math.max(1, minecraft.getWindow().getHeight());
             forward = 0.6;
