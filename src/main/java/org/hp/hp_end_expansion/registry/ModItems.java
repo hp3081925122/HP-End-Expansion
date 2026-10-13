@@ -64,6 +64,10 @@ public final class ModItems {
         "tidebreaker_shrimp_test_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP_TEST, 0x2C525C, 0xB0B897, new Item.Properties())
     );
+    public static final DeferredItem<SpawnEggItem> LOBSTER_ELITE_SPAWN_EGG = ITEMS.register(
+        "lobster_elite_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.LOBSTER_ELITE, 0x1F5866, 0x8FF0D8, new Item.Properties())
+    );
     public static final DeferredItem<Item> TIDEBREAKER_GAUNTLET = ITEMS.register(
         "tidebreaker_gauntlet",
         () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))

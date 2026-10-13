@@ -39,8 +39,9 @@ public final class Hp_end_expansion {
                 output.accept(ModItems.GLIMMERFIN_SPAWN_EGG.get());
                 output.accept(ModItems.TIDECROWN_ANEMONE_SPAWN_EGG.get());
                 output.accept(ModItems.TIDECROWN_TENTACLE.get());
-                        output.accept(ModItems.TIDEBREAKER_SHRIMP_SPAWN_EGG.get());
-                        output.accept(ModItems.TIDEBREAKER_SHRIMP_TEST_SPAWN_EGG.get());
+                output.accept(ModItems.TIDEBREAKER_SHRIMP_SPAWN_EGG.get());
+                output.accept(ModItems.TIDEBREAKER_SHRIMP_TEST_SPAWN_EGG.get());
+                output.accept(ModItems.LOBSTER_ELITE_SPAWN_EGG.get());
                 output.accept(ModItems.ABYSS_WATCHER_SPAWN_EGG.get());
                 output.accept(ModItems.ABYSS_CRYSTAL_SPINE.get());
                 output.accept(ModItems.TIDE_REMNANT_CLAW.get());
