@@ -196,6 +196,25 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         }
     }
 
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport) {
+        boolean blinkPosition = this.level().isClientSide() && this.getSkill() == SKILL_BLINK
+            && this.distanceToSqr(x, y, z) > 1.0E-8D;
+        Vec3 previous = this.position();
+        super.lerpTo(x, y, z, yaw, pitch, steps, teleport);
+        if (blinkPosition) {
+            this.moveTo(x, y, z, yaw, pitch);
+            this.lerpSteps = 0;
+            this.lerpHeadSteps = 0;
+            this.yBodyRot = yaw;
+            this.yBodyRotO = yaw;
+            this.yHeadRot = yaw;
+            this.yHeadRotO = yaw;
+            this.setDeltaMovement(Vec3.ZERO);
+            LOGGER.debug("Client Rift Mantis {} snaps blink from {} to {}; packet teleport {}, interpolation steps cleared {}", this.getId(), previous, this.position(), teleport, steps);
+        }
+    }
+
     // 蓄力火花：只在各技能的前摇窗口内少量产生
     private void spawnChargeSparks() {
         int skill = this.getSkill();
