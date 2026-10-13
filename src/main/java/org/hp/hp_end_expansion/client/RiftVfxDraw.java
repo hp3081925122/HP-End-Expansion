@@ -27,7 +27,7 @@ public final class RiftVfxDraw {
 
     // 加法混合、全亮，用于弧光、辉光与地裂
     public static RenderType additive(Identifier texture) {
-        return RenderTypes.eyes(texture);
+        return org.hp.hp_end_expansion.client.render.HpVfxRenderTypes.additive(texture);
     }
 
     // 透明全亮、双面，用于裂隙本体与晶刺

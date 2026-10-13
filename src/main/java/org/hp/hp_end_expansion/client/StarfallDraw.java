@@ -27,7 +27,7 @@ public final class StarfallDraw {
         return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID, "textures/effect/" + name + ".png");
     }
 
-    public static RenderType additive(Identifier texture) { return RenderTypes.eyes(texture); }
+    public static RenderType additive(Identifier texture) { return org.hp.hp_end_expansion.client.render.HpVfxRenderTypes.additive(texture); }
     public static RenderType solid(Identifier texture) { return RenderTypes.entityCutout(texture); }
 
     public static void vertex(PoseStack.Pose pose, VertexConsumer buffer, Vec3 p, float u, float v, float r, float g, float b, float a) {
