@@ -12,6 +12,8 @@
 
 在工作树根目录运行 `./gradlew.bat build`。构建结果为 `build/libs/hp_end_expansion-26.1.2-neoforge-2.0.jar`。运行时还需要安装对应版本的 GeckoLib 和 Curios。
 
+本机插件仓库解析曾因远程连接超时及 Java TLS 握手中断失败，报 `net.neoforged.moddev:2.0.147` 找不到。该插件版本实际存在；项目现在支持根目录中的 `gradle-local.properties`，用 `hpLocalMaven=<本机完整 Maven 缓存目录>` 同时配置插件与依赖仓库，并优先读取它。此配置文件已加入 Git 忽略，不提交机器路径；其他电脑不提供该文件时继续使用原有公开仓库。本机已配置迁移期间的外置缓存，普通 `./gradlew.bat build` 已通过，无需额外 init 脚本或离线参数。IDE 重新同步 Gradle 即可读取。清理或移动该缓存目录时需同步更新或移除本机配置。
+
 ## 迁移内容
 
 实体、物品、遗物、战斗行为、网络通信、保存数据、群系、配方、模型、动画、粒子、天空与界面渲染均有对应的目标版本实现。GeckoLib 模型与动画迁至 `assets/hp_end_expansion/geckolib`，物品增加新版 `items` 定义，配方和群系按目标版本格式转换。实现等价性仍需结合下面的迁移审查和验证边界判断。

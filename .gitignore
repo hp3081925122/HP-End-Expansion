@@ -3,6 +3,7 @@
 
 # Gradle cache folder
 .gradle
+gradle-local.properties
 
 # Gradle build folder
 build
