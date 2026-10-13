@@ -20,11 +20,20 @@ import org.hp.hp_end_expansion.entity.HpCullingEntity;
 import org.joml.Matrix4f;
 
 public class HpGeoEntityRenderer<T extends Entity & GeoAnimatable> extends GeoEntityRenderer<T,HpGeoRenderState> {
+    private static final org.slf4j.Logger LOGGER=com.mojang.logging.LogUtils.getLogger();
+    private boolean loggedRenderState;
     protected Matrix4f entityRenderTranslations=new Matrix4f();
     private SubmitNodeCollector activeCollector;
     private CameraRenderState activeCamera;
     private HpGeoRenderState activeState;
     public HpGeoEntityRenderer(EntityRendererProvider.Context context,HpGeoModel<T> model) { super(context,model); }
+    @Override public void addRenderData(T entity,Void context,HpGeoRenderState state,float partialTick) {
+        super.addRenderData(entity,context,state,partialTick);
+        if (!loggedRenderState) {
+            loggedRenderState=true;
+            LOGGER.debug("Gecko render state initialized: entity={}, animationManagerPresent={}",entity.getType().builtInRegistryHolder().getRegisteredName(),state.getGeckolibData(DataTickets.ANIMATABLE_MANAGER)!=null);
+        }
+    }
     @Override public HpGeoRenderState createRenderState(T entity,Void context) { HpGeoRenderState state=new HpGeoRenderState(); state.entity=entity; return state; }
     @Override protected AABB getBoundingBoxForCulling(T entity) { return entity instanceof HpCullingEntity custom ? custom.getBoundingBoxForCulling() : super.getBoundingBoxForCulling(entity); }
     public void addRenderLayer(GeoRenderLayer<T,Void,HpGeoRenderState> layer) { withRenderLayer(layer); }

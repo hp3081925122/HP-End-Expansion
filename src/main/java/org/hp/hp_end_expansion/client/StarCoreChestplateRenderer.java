@@ -13,6 +13,8 @@ public final class StarCoreChestplateRenderer extends GeoArmorRenderer<StarCoreC
     }
     public static final class State extends net.minecraft.client.renderer.entity.state.HumanoidRenderState implements com.geckolib.renderer.base.GeoRenderState {
         private final java.util.Map<com.geckolib.constant.dataticket.DataTicket<?>,Object> data=new java.util.HashMap<>();
+        @Override public <D> void addGeckolibData(com.geckolib.constant.dataticket.DataTicket<D> ticket,D value) { data.put(ticket,value); }
+        @Override public boolean hasGeckolibData(com.geckolib.constant.dataticket.DataTicket<?> ticket) { return data.containsKey(ticket); }
         @Override public java.util.Map<com.geckolib.constant.dataticket.DataTicket<?>,Object> getDataMap() { return data; }
     }
     @Override public State createRenderState(StarCoreChestplateItem item, com.geckolib.renderer.GeoArmorRenderer.RenderData related) { return new State(); }

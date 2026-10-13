@@ -11,5 +11,7 @@ public final class HpGeoRenderState extends LivingEntityRenderState implements G
     public Entity entity;
     public HpBakedModel model;
     private final Map<DataTicket<?>, Object> data=new HashMap<>();
+    @Override public <D> void addGeckolibData(DataTicket<D> ticket,D value) { data.put(ticket,value); }
+    @Override public boolean hasGeckolibData(DataTicket<?> ticket) { return data.containsKey(ticket); }
     @Override public Map<DataTicket<?>, Object> getDataMap() { return data; }
 }
