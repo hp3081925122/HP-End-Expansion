@@ -11,12 +11,12 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.StarBoltEntity;
 import org.hp.hp_end_expansion.item.StarBowItem;
@@ -30,7 +30,7 @@ import org.joml.Vector3f;
  * 本体用全亮的镂空层，同形状再叠一层加法发光；矢尖一颗闪烁的四芒星，身后一条朝镜头的拖尾。
  * 贴图由 art/star_bow_fx.py 生成。另外给群星之弓注册拉弓的 pull/pulling 属性，原版只给自己的弓注册了。
  */
-@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class StarBoltRenderer extends EntityRenderer<StarBoltEntity> {
     private static final ResourceLocation BODY = tex("entity/star_bolt");
     private static final ResourceLocation GLOW = tex("entity/star_bolt_glow");

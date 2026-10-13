@@ -41,7 +41,7 @@ public final class StarMarkEntity extends Entity {
         level.addFreshEntity(mark);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
 
     @Override public void tick() {
         super.tick();

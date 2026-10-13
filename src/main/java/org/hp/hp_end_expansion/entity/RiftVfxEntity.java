@@ -40,12 +40,12 @@ public final class RiftVfxEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData() {
         // 默认值为短寿命弧光
-        builder.define(KIND, KIND_SLASH);
-        builder.define(LIFE, 8);
-        builder.define(ROLL, 0.0F);
-        builder.define(SCALE, 1.0F);
+        this.entityData.define(KIND, KIND_SLASH);
+        this.entityData.define(LIFE, 8);
+        this.entityData.define(ROLL, 0.0F);
+        this.entityData.define(SCALE, 1.0F);
     }
 
     @Override

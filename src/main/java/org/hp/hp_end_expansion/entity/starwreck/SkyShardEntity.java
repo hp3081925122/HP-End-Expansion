@@ -62,8 +62,10 @@ public class SkyShardEntity extends Entity {
         return new AABB(getX() - 0.75, getY(), getZ() - 0.75, getX() + 0.75, getY() + 3, getZ() + 0.75);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(WARN, 24).define(STAND, 160).define(RADIUS, 1.5F);
+    @Override protected void defineSynchedData() {
+        this.entityData.define(WARN, 24);
+        this.entityData.define(STAND, 160);
+        this.entityData.define(RADIUS, 1.5F);
     }
 
     @Override public void tick() {

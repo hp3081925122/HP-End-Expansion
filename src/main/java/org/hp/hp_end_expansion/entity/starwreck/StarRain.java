@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 
@@ -44,13 +44,14 @@ public final class StarRain {
         StarChaserEntity chaser = StarwreckEntities.STAR_CHASER.get().create(level);
         if (chaser == null) return;
         chaser.moveTo(at.x, at.y, at.z, level.random.nextFloat() * 360, 0);
-        chaser.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(at)), MobSpawnType.EVENT, null);
+        chaser.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(at)), MobSpawnType.EVENT, null, null);
         chaser.markFromStarRain();
         level.addFreshEntity(chaser);
         CHASERS.put(level.dimension(), count + 1);
     }
 
-    public static void tick(ServerTickEvent.Post event) {
+    public static void tick(ServerTickEvent event) {
+        if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
         for (ServerLevel level : event.getServer().getAllLevels()) {
             long now = level.getGameTime();
             if (active(level)) {

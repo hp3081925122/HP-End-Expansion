@@ -29,5 +29,20 @@
       "hp_end_expansion:ambient/tidelight_reef/additions2",
       "hp_end_expansion:ambient/tidelight_reef/additions3"
     ]
+  },
+  "item.mace.smash_ground": {
+    "sounds": [
+      "hp_end_expansion:item/mace/smash_ground1",
+      "hp_end_expansion:item/mace/smash_ground2",
+      "hp_end_expansion:item/mace/smash_ground3",
+      "hp_end_expansion:item/mace/smash_ground4"
+    ],
+    "subtitle": "subtitles.hp_end_expansion.mace_smash_ground"
+  },
+  "item.mace.smash_ground_heavy": {
+    "sounds": [
+      "hp_end_expansion:item/mace/smash_ground_heavy"
+    ],
+    "subtitle": "subtitles.hp_end_expansion.mace_smash_ground"
   }
 }

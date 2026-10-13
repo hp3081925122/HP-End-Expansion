@@ -66,7 +66,7 @@ public final class FallingStarEntity extends Entity {
         return (float) (Mth.atan2(to.z - from.z, to.x - from.x) * Mth.RAD_TO_DEG) - 90;
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(SMALL, false); }
+    @Override protected void defineSynchedData() { this.entityData.define(SMALL, false); }
 
     public boolean isSmall() { return entityData.get(SMALL); }
 
@@ -109,7 +109,7 @@ public final class FallingStarEntity extends Entity {
                     living.knockback(small ? 0.5 : 0.7, getX() - living.getX(), getZ() - living.getZ());
             }
             StarImpactEntity.spawn(server, target, target.subtract(start), small);
-            server.playSound(null, BlockPos.containing(target), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, small ? 2.5F : 5.0F, small ? 0.85F : 0.55F);
+            server.playSound(null, BlockPos.containing(target), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, small ? 2.5F : 5.0F, small ? 0.85F : 0.55F);
             if (!small) StarRain.onImpact(server, target);
         }
         discard();

@@ -35,11 +35,11 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public final class RiftMantisEntity extends Monster implements GeoEntity {
@@ -92,7 +92,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             .add(Attributes.ARMOR, 10.0D)
             .add(Attributes.FOLLOW_RANGE, 40.0D)
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D)
-            .add(Attributes.STEP_HEIGHT, 1.25D);
+            .add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.25D - 0.6D);
     }
 
     // 转为螳后召唤物，设置生命上限
@@ -114,10 +114,10 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, SKILL_NONE);
-        builder.define(SKILL_TICK, 0);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, SKILL_NONE);
+        this.entityData.define(SKILL_TICK, 0);
     }
 
     @Override
@@ -356,7 +356,7 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             if (this.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), start.x, start.y + 0.2D, start.z, 13, 0.75D, 0.15D, 0.75D, 0.22D);
             }
-            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.1F);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.1F);
         }
         if (t >= 30) {
             this.tearCooldown = 160;

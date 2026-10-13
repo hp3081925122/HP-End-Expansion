@@ -41,7 +41,7 @@ public final class StarFlailEntity extends Projectile {
         owner.level().addFreshEntity(flail);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
 
     @Override public void tick() {
         super.tick();
@@ -49,7 +49,7 @@ public final class StarFlailEntity extends Projectile {
         setDeltaMovement(motion);
         HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
         if (!level().isClientSide && hit.getType() != HitResult.Type.MISS) {
-            hitTargetOrDeflectSelf(hit);
+            onHit(hit);
             if (isRemoved()) return;
         }
         setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
@@ -99,7 +99,6 @@ public final class StarFlailEntity extends Projectile {
     }
 
     @Override public boolean isPickable() { return false; }
-    @Override protected double getDefaultGravity() { return 0; }
     @Override protected void readAdditionalSaveData(CompoundTag tag) { super.readAdditionalSaveData(tag); }
     @Override protected void addAdditionalSaveData(CompoundTag tag) { super.addAdditionalSaveData(tag); }
 }

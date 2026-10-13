@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -20,13 +20,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 import org.joml.Matrix4f;
@@ -84,7 +84,8 @@ public final class TidesongSky {
         }));
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
@@ -109,11 +110,11 @@ public final class TidesongSky {
 
     @SubscribeEvent public static void render(RenderLevelStageEvent e) {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = e.getPartialTick();
         float L = Mth.lerp(pt, presenceO, presence);
         if (L < 0.003F) return;
         L = L * L * (3 - 2 * L);
-        Matrix4f m = new Matrix4f(e.getModelViewMatrix());
+        Matrix4f m = new Matrix4f(e.getPoseStack().last().pose());
         float t = ticks + pt;
         Tesselator tess = Tesselator.getInstance();
 
@@ -135,14 +136,16 @@ public final class TidesongSky {
 
         // 2. 加法：天顶亮斑、海面上一圈圈荡开的涟漪、从海面斜射下来的光柱
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         ripples(b, m, t, L);
         rays(b, m, t, L);
         draw(b);
 
         // 3. 加法：横跨天空的几道潮光：没有贴图的柔光带，一阵阵亮波顺流推过去，中线上有几颗流光顺流滑行
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         current(b, m, t, 0.42F, 0.20F, 0.0F, 1.0F, L);
         current(b, m, t, 0.18F, 0.15F, 2.1F, 0.7F, 0.8F * L);
         current(b, m, t, 0.75F, 0.12F, 4.0F, 1.3F, 0.65F * L);
@@ -152,14 +155,16 @@ public final class TidesongSky {
         // 5. 加法：鲸歌声纹环
         if (!RINGS.isEmpty()) {
             RenderSystem.setShaderTexture(0, RING);
-            b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+            b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
             for (Ring r : RINGS) ring(b, m, r, t, L);
             draw(b);
         }
 
         // 6. 加法：往天顶升的气泡和浮游荧光
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         motes(b, m, t, L);
         draw(b);
 
@@ -175,11 +180,12 @@ public final class TidesongSky {
         if (staticSkyBuffer != null && !staticSkyBuffer.isInvalid()) return;
         if (staticSkyBuffer != null) staticSkyBuffer.close();
         staticSkyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f identity = new Matrix4f();
         dome(b, identity, 1);
         glare(b, identity, 1);
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         if (mesh == null) {
             staticSkyBuffer.close();
             staticSkyBuffer = null;
@@ -446,18 +452,18 @@ public final class TidesongSky {
     }
 
     private static void vt(BufferBuilder b, Matrix4f m, Vec3 p, float u, float v, float a) {
-        b.addVertex(m, (float) p.x, (float) p.y, (float) p.z).setUv(u, v).setColor(1, 1, 1, a);
+        b.vertex(m, (float) p.x, (float) p.y, (float) p.z).uv(u, v).color(1, 1, 1, a).endVertex();
     }
 
     private static void tri(BufferBuilder b, Matrix4f m, Vec3 p0, float r0, float g0, float b0, float a0,
                             Vec3 p1, float r1, float g1, float b1, float a1, Vec3 p2, float r2, float g2, float b2, float a2) {
-        b.addVertex(m, (float) p0.x, (float) p0.y, (float) p0.z).setColor(r0, g0, b0, a0);
-        b.addVertex(m, (float) p1.x, (float) p1.y, (float) p1.z).setColor(r1, g1, b1, a1);
-        b.addVertex(m, (float) p2.x, (float) p2.y, (float) p2.z).setColor(r2, g2, b2, a2);
+        b.vertex(m, (float) p0.x, (float) p0.y, (float) p0.z).color(r0, g0, b0, a0).endVertex();
+        b.vertex(m, (float) p1.x, (float) p1.y, (float) p1.z).color(r1, g1, b1, a1).endVertex();
+        b.vertex(m, (float) p2.x, (float) p2.y, (float) p2.z).color(r2, g2, b2, a2).endVertex();
     }
 
     private static void draw(BufferBuilder b) {
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         if (mesh != null) BufferUploader.drawWithShader(mesh);
     }
 

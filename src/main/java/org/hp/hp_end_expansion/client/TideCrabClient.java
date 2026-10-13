@@ -13,12 +13,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
@@ -27,7 +27,7 @@ import org.hp.hp_end_expansion.registry.ModEntities;
 import org.joml.Vector3f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
@@ -55,7 +55,7 @@ public final class TideCrabClient {
         return buffers.getBuffer(RenderType.beaconBeam(texture, true));
     }
 
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
+    public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TIDE_REMNANT_HERMIT_CRAB.get(), CrabRenderer::new);
         event.registerEntityRenderer(ModEntities.TIDE_WATER_BOLT.get(), BoltRenderer::new);
         event.registerEntityRenderer(ModEntities.TIDE_VFX.get(), VfxRenderer::new);
@@ -64,11 +64,11 @@ public final class TideCrabClient {
     // ---------------- 绘制工具 ----------------
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer buffer, Vec3 p, float u, float v, float alpha) {
-        buffer.addVertex(pose, (float) p.x, (float) p.y, (float) p.z)
-            .setColor(1, 1, 1, Mth.clamp(alpha, 0, 1))
-            .setUv(u, v)
-            .setLight(LightTexture.FULL_BRIGHT)
-            .setNormal(pose, 0, 1, 0);
+        buffer.vertex(pose.pose(), (float) p.x, (float) p.y, (float) p.z)
+            .color(1, 1, 1, Mth.clamp(alpha, 0, 1))
+            .uv(u, v)
+            .uv2(LightTexture.FULL_BRIGHT)
+            .normal(pose.normal(), 0, 1, 0).endVertex();
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，两面都画。 */
@@ -108,9 +108,9 @@ public final class TideCrabClient {
         @Override public void setCustomAnimations(TideRemnantHermitCrabEntity animatable, long instanceId, AnimationState<TideRemnantHermitCrabEntity> animationState) {
             super.setCustomAnimations(animatable, instanceId, animationState);
             boolean broken = animatable.isSkullBroken();
-            GeoBone skull = getAnimationProcessor().getBone("skull");
+            var skull = getAnimationProcessor().getBone("skull");
             if (skull != null) skull.setHidden(broken);
-            GeoBone shell = getAnimationProcessor().getBone("shell");
+            var shell = getAnimationProcessor().getBone("shell");
             if (shell != null) {
                 shell.setHidden(broken);
                 shell.setChildrenHidden(broken);
@@ -129,14 +129,14 @@ public final class TideCrabClient {
         @Override protected float getDeathMaxRotation(TideRemnantHermitCrabEntity animatable) { return 0; }
 
         @Override public void preRender(PoseStack poseStack, TideRemnantHermitCrabEntity animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
-                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
-            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             if (!isReRender) model.getBone("vfx_snout").ifPresent(bone -> bone.setTrackingMatrices(true));
         }
 
         @Override public void renderFinal(PoseStack poseStack, TideRemnantHermitCrabEntity crab, BakedGeoModel model, MultiBufferSource bufferSource,
-                                          @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
-            super.renderFinal(poseStack, crab, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
+                                          @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+            super.renderFinal(poseStack, crab, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             if (crab.getSkill() != TideRemnantHermitCrabEntity.CANNON || crab.isDeadOrDying()) return;
             float age = crab.getSkillAge(partialTick);
             if (age < TideRemnantHermitCrabEntity.CANNON_SWEEP || age > TideRemnantHermitCrabEntity.CANNON_SWEEP_END + 1) return;
@@ -363,7 +363,8 @@ public final class TideCrabClient {
 
     // ---------------- 震屏 ----------------
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ticks++;
         shakeO = shake;
@@ -398,5 +399,9 @@ public final class TideCrabClient {
         e.setPitch(e.getPitch() + Mth.sin(t * 2.7F) * s);
         e.setYaw(e.getYaw() + Mth.sin(t * 2.1F + 1.3F) * s * 0.7F);
         e.setRoll(e.getRoll() + Mth.sin(t * 3.3F + 0.5F) * s * 0.6F);
+    }
+    @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static final class Registration {
+        @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) { renderers(event); }
     }
 }

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.entity.PartEntity;
+import net.minecraftforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 
 /** 裂天之主的头部判定。头伸出本体碰撞箱两格多，单独一块判定让近战和箭都打得到；受到的伤害转给本体。 */
@@ -32,7 +32,7 @@ public final class SkyrenderPart extends PartEntity<SkyrenderEntity> {
     @Override public @Nullable ItemStack getPickResult() { return getParent().getPickResult(); }
     @Override public EntityDimensions getDimensions(Pose pose) { return size; }
     @Override public boolean shouldBeSaved() { return false; }
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
     @Override protected void readAdditionalSaveData(CompoundTag tag) {}
     @Override protected void addAdditionalSaveData(CompoundTag tag) {}
 }

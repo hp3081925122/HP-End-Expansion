@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
@@ -22,12 +22,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.FallingStarEntity;
 import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
@@ -62,7 +62,8 @@ public final class StarfallSky {
         float speed, length, width, bright, age, life;
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
@@ -211,11 +212,11 @@ public final class StarfallSky {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.level.dimension() != Level.END) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = e.getPartialTick();
         float amb = Mth.lerp(pt, ambientO, ambient), ev = Mth.lerp(pt, eventO, event), fl = Mth.lerp(pt, flashO, flash);
         float gz = Mth.lerp(pt, gazeO, gaze);
         if (amb + ev + fl + gz < 0.003F && STREAKS.isEmpty()) return;
-        Matrix4f m = new Matrix4f(e.getModelViewMatrix());
+        Matrix4f m = new Matrix4f(e.getPoseStack().last().pose());
         Vec3 cam = e.getCamera().getPosition();
         float time = ticks + pt;
 
@@ -229,14 +230,16 @@ public final class StarfallSky {
         float tint = 0.1F * amb + 0.5F * ev;
         if (tint > 0.002F) {
             RenderSystem.defaultBlendFunc();
-            BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             box(b, m, 0.17F, 0.035F, 0.02F, tint);
             draw(b);
         }
 
         // 2. 加法：地平线余烬、裂隙照亮的天空、落地闪光、流星
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         double riftAz = rift != null ? Math.atan2(rift.x - cam.x, rift.z - cam.z) : 0;
         horizon(b, m, 0.3F * amb + 0.55F * ev, rift != null ? ev : 0, riftAz);
         if (rift != null && ev > 0.01F) riftGlow(b, m, rift.subtract(cam).normalize(), ev * (0.85F + 0.15F * Mth.sin(time * 0.5F)));
@@ -247,7 +250,8 @@ public final class StarfallSky {
         // 3. 注视蓄力：整片天压成近黑，只剩它的眼睛在世界里发光
         RenderSystem.defaultBlendFunc();
         if (gz > 0.002F) {
-            BufferBuilder dark = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder dark = tess.getBuilder();
+        dark.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             box(dark, m, 0.01F, 0.0F, 0.01F, 0.75F * gz);
             draw(dark);
         }
@@ -328,13 +332,13 @@ public final class StarfallSky {
 
     private static void tri(BufferBuilder b, Matrix4f m, Vec3 p0, float r0, float g0, float b0, float a0,
                             Vec3 p1, float r1, float g1, float b1, float a1, Vec3 p2, float r2, float g2, float b2, float a2) {
-        b.addVertex(m, (float) p0.x, (float) p0.y, (float) p0.z).setColor(r0, g0, b0, a0);
-        b.addVertex(m, (float) p1.x, (float) p1.y, (float) p1.z).setColor(r1, g1, b1, a1);
-        b.addVertex(m, (float) p2.x, (float) p2.y, (float) p2.z).setColor(r2, g2, b2, a2);
+        b.vertex(m, (float) p0.x, (float) p0.y, (float) p0.z).color(r0, g0, b0, a0).endVertex();
+        b.vertex(m, (float) p1.x, (float) p1.y, (float) p1.z).color(r1, g1, b1, a1).endVertex();
+        b.vertex(m, (float) p2.x, (float) p2.y, (float) p2.z).color(r2, g2, b2, a2).endVertex();
     }
 
     private static void draw(BufferBuilder b) {
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         if (mesh != null) BufferUploader.drawWithShader(mesh);
     }
 

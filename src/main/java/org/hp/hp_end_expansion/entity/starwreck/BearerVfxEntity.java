@@ -90,10 +90,10 @@ public final class BearerVfxEntity extends Entity {
         };
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(KIND, SLAM);
-        builder.define(SCALE, 1F);
-        builder.define(WARN, 0);
+    @Override protected void defineSynchedData() {
+        this.entityData.define(KIND, SLAM);
+        this.entityData.define(SCALE, 1F);
+        this.entityData.define(WARN, 0);
     }
 
     @Override public void tick() {

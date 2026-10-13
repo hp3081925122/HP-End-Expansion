@@ -52,12 +52,12 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 逐星兽（设计文档第 4 节）：出场 → 咬合 / 践踏震荡波 / 彗星冲锋 / 甩尾 → 半血嚎叫进入召星阶段 → 1/4 血过载。
@@ -78,7 +78,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     public static final double CHARGE_SPEED = 0.85, CHARGE_RANGE = 12;
     private static final int BITE_CD = 24, CHARGE_CD = 160, SWEEP_CD = 80, SUMMON_CD = 240, STOMP_CD = 100;
     private static final float BITE_DAMAGE = 8;
-    private static final ResourceLocation OVERLOAD_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "star_chaser_overload");
+    private static final java.util.UUID OVERLOAD_SPEED = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":star_chaser_overload").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(StarChaserEntity.class, EntityDataSerializers.INT);
@@ -133,15 +133,15 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
             .add(Attributes.MOVEMENT_SPEED, 0.32)
             .add(Attributes.FOLLOW_RANGE, 32)
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.6)
-            .add(Attributes.STEP_HEIGHT, 1.0);
+            .add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.0 - 0.6D);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(STATE, NONE);
-        builder.define(ACTION, 0);
-        builder.define(PHASE, (byte) 0);
-        builder.define(AIM, new Vector3f(0, 0, 1));
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(STATE, NONE);
+        this.entityData.define(ACTION, 0);
+        this.entityData.define(PHASE, (byte) 0);
+        this.entityData.define(AIM, new Vector3f(0, 0, 1));
     }
 
     @Override
@@ -156,8 +156,8 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data, @Nullable CompoundTag spawnData) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data, spawnData);
         Difficulty d = level.getDifficulty();
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(d == Difficulty.EASY ? 140 : d == Difficulty.HARD ? 220 : 180);
         setHealth(getMaxHealth());
@@ -209,7 +209,7 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
             }
             case STAGGER -> {
                 playSound(SoundEvents.ANVIL_LAND, 1.4F, 0.5F);
-                playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.8F, 1.6F);
+                playSound(SoundEvents.GENERIC_EXPLODE, 0.8F, 1.6F);
             }
             case SWEEP -> playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.8F, 0.55F);
             case STOMP -> {
@@ -335,9 +335,9 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
         if (howled && !isOverloaded() && hp <= 0.25F && level().getDifficulty() != Difficulty.EASY) {
             entityData.set(PHASE, (byte) 2);
             AttributeInstance speed = getAttribute(Attributes.MOVEMENT_SPEED);
-            if (speed != null && !speed.hasModifier(OVERLOAD_SPEED))
-                speed.addPermanentModifier(new AttributeModifier(OVERLOAD_SPEED, 0.25, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 1.4F);
+            if (speed != null && !speed.getModifiers().stream().anyMatch(modifier -> modifier.getName().equals("overload_speed")))
+                org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(speed, new AttributeModifier(OVERLOAD_SPEED, "overload_speed", 0.25, AttributeModifier.Operation.MULTIPLY_BASE));
+            playSound(SoundEvents.GENERIC_EXPLODE, 2.0F, 1.4F);
             playSound(SoundEvents.BEACON_POWER_SELECT, 2.0F, 0.6F);
         }
         return false;
@@ -461,8 +461,8 @@ public final class StarChaserEntity extends Monster implements GeoEntity {
                 server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground),
                     stompCenter.x, getY() + 0.1, stompCenter.z, 40, 1.2, 0.1, 1.2, 0.2);
         }
-        playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 2.2F, 0.6F);
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.9F, 1.5F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 2.2F, 0.6F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 0.9F, 1.5F);
     }
 
     public double waveRadius(float waveAge) {

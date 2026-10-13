@@ -8,10 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
 
@@ -46,7 +46,7 @@ public final class SkyrenderBossBar {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         GuiGraphics g = event.getGuiGraphics();
-        float time = mc.level.getGameTime() + mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float time = mc.level.getGameTime() + mc.getFrameTime();
         float p = Mth.clamp(boss.getProgress(), 0, 1);
         int phase = p > SkyrenderEntity.PHASE2_AT ? 1 : p > SkyrenderEntity.PHASE3_AT ? 2 : 3;
 

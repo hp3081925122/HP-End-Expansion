@@ -3,8 +3,8 @@ package org.hp.hp_end_expansion.compat;
 import java.lang.reflect.Method;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.worldgen.StarwreckConfig;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
@@ -39,7 +39,7 @@ public final class TerrablenderCompat {
 
     public static void registerListener() {
         if (isLoaded()) {
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, TerrablenderCompat::registerBiomes);
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, TerrablenderCompat::registerBiomes);
         }
     }
 

@@ -1,6 +1,5 @@
 package org.hp.hp_end_expansion.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -12,15 +11,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 
 public final class StarwreckStoneBlock extends Block implements BonemealableBlock {
-    public static final MapCodec<StarwreckStoneBlock> CODEC = simpleCodec(StarwreckStoneBlock::new);
 
     public StarwreckStoneBlock(Properties properties) { super(properties); }
 
     @Override
-    protected MapCodec<? extends Block> codec() { return CODEC; }
-
-    @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean clientSide) {
         if (!level.getBlockState(pos.above()).isAir()) return false;
         if (state.is(ModStarwreck.STAR_MOSS.get())) return true;
         for (BlockPos adjacent : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {

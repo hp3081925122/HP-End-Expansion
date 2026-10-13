@@ -42,11 +42,11 @@ import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public final class VoidRayEntity extends Monster implements GeoEntity {
@@ -131,12 +131,12 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, SKILL_NONE);
-        builder.define(SKILL_TICK, 0);
-        builder.define(BEAM_POINT, new Vector3f());
-        builder.define(ENRAGED, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, SKILL_NONE);
+        this.entityData.define(SKILL_TICK, 0);
+        this.entityData.define(BEAM_POINT, new Vector3f());
+        this.entityData.define(ENRAGED, false);
     }
 
     @Override
@@ -611,7 +611,7 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             LOGGER.debug("Void Ray {} aborts skill {}", this.getId(), this.getSkill());
             this.entityData.set(SKILL, SKILL_NONE);
             this.entityData.set(SKILL_TICK, 0);
-            this.stopTriggeredAnim("skill", null);
+            this.stopTriggeredAnimation("skill", null);
         }
     }
 
@@ -880,4 +880,5 @@ public final class VoidRayEntity extends Monster implements GeoEntity {
             this.ray.getMoveControl().setWantedPosition(x, y, z, 0.6D);
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 0.9F; }
 }

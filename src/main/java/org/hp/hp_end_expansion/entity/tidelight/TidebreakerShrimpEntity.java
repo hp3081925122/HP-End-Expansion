@@ -19,8 +19,8 @@ import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.*;
-import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.core.animatable.instance.*;
+import software.bernie.geckolib.core.animation.*;
 
 public final class TidebreakerShrimpEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER=LogUtils.getLogger();
@@ -49,10 +49,10 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.ARMOR,4).add(Attributes.MOVEMENT_SPEED,.26).add(Attributes.ATTACK_DAMAGE,5).add(Attributes.FOLLOW_RANGE,12).add(Attributes.KNOCKBACK_RESISTANCE,.35);
     }
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b) {
-        super.defineSynchedData(b); b.define(SKILL,0);b.define(START,0);b.define(SEQUENCE,0);b.define(YAW,0F);b.define(ORIGIN,BlockPos.ZERO);
-        b.define(BUBBLE_STATE,0);b.define(BURST_TIME,0);b.define(GUARD_TIME,-1000);
-        b.define(POINT,new Vector3f());b.define(PREVIOUS,new Vector3f());b.define(LEFT,new Vector3f());b.define(RIGHT,new Vector3f());
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData(); entityData.define(SKILL,0);entityData.define(START,0);entityData.define(SEQUENCE,0);entityData.define(YAW,0F);entityData.define(ORIGIN,BlockPos.ZERO);
+        entityData.define(BUBBLE_STATE,0);entityData.define(BURST_TIME,0);entityData.define(GUARD_TIME,-1000);
+        entityData.define(POINT,new Vector3f());entityData.define(PREVIOUS,new Vector3f());entityData.define(LEFT,new Vector3f());entityData.define(RIGHT,new Vector3f());
     }
     @Override protected void registerGoals() {
         goalSelector.addGoal(0,new FloatGoal(this));
@@ -179,7 +179,7 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
                 AABB box=e.getBoundingBox();Vec3 closest=new Vec3(Mth.clamp(center.x,box.minX,box.maxX),Mth.clamp(center.y,box.minY,box.maxY),Mth.clamp(center.z,box.minZ,box.maxZ));
                 if(center.distanceToSqr(closest)<=1.21&&clip(center,e.getBoundingBox().getCenter()).distanceToSqr(e.getBoundingBox().getCenter())<.01)e.hurt(damageSources().mobAttack(this),6);
             }
-            playSound(SoundEvents.GENERIC_EXPLODE.value(),.6F,1.8F);
+            playSound(SoundEvents.GENERIC_EXPLODE,.6F,1.8F);
             if(DEBUG)LOGGER.debug("Tidebreaker bubble burst: entity={}, travel={}, collision={}, center={}",getId(),bubbleTravel,collision,b);
         }
     }
@@ -230,4 +230,5 @@ public final class TidebreakerShrimpEntity extends Monster implements GeoEntity 
             return super.adjustTick(tick);
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 0.75F; }
 }

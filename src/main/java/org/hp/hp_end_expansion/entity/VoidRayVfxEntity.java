@@ -88,12 +88,12 @@ public final class VoidRayVfxEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(KIND, KIND_SHOCK);
-        builder.define(LIFE, 10);
-        builder.define(SIZE, 1.0F);
-        builder.define(DELAY, 0);
-        builder.define(TIDE, false);
+    protected void defineSynchedData() {
+        this.entityData.define(KIND, KIND_SHOCK);
+        this.entityData.define(LIFE, 10);
+        this.entityData.define(SIZE, 1.0F);
+        this.entityData.define(DELAY, 0);
+        this.entityData.define(TIDE, false);
     }
 
     public boolean isTide() {
@@ -299,7 +299,7 @@ public final class VoidRayVfxEntity extends Entity {
         }
         if (last) {
             serverLevel.sendParticles(this.shardParticle(), c.x, c.y, c.z, 40, 2.0D, 2.0D, 2.0D, 0.4D);
-            serverLevel.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 2.0F, 0.6F);
+            serverLevel.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0F, 0.6F);
         }
     }
 

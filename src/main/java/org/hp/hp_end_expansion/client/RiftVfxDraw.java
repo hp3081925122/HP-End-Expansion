@@ -50,12 +50,13 @@ public final class RiftVfxDraw {
     }
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer buffer, Vec3 p, float u, float v, int color) {
-        buffer.addVertex(pose, (float) p.x, (float) p.y, (float) p.z)
-            .setColor(color)
-            .setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(LightTexture.FULL_BRIGHT)
-            .setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.vertex(pose.pose(), (float) p.x, (float) p.y, (float) p.z)
+            .color(color)
+            .uv(u, v)
+            .overlayCoords(OverlayTexture.NO_OVERLAY)
+            .uv2(LightTexture.FULL_BRIGHT)
+            .normal(pose.normal(), 0.0F, 1.0F, 0.0F)
+            .endVertex();
     }
 
     // 按亮度缩放颜色，加法混合下用于淡出

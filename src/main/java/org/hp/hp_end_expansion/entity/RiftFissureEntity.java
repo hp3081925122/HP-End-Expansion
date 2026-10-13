@@ -65,9 +65,9 @@ public final class RiftFissureEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(LENGTH, 8.0F);
-        builder.define(WIDTH, 1.0F);
+    protected void defineSynchedData() {
+        this.entityData.define(LENGTH, 8.0F);
+        this.entityData.define(WIDTH, 1.0F);
     }
 
     public float getLength() {

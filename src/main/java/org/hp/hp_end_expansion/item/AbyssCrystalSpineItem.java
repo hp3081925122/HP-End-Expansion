@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.item;
 
+import net.minecraft.world.level.Level;
 import java.util.List;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -20,10 +21,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.network.AbyssSpineBeamPayload;
 import org.hp.hp_end_expansion.registry.ModItems;
@@ -90,7 +91,7 @@ public final class AbyssCrystalSpineItem extends Item implements ICurioItem {
         // 音效与客户端特效
         level.playSound(null, origin.x, origin.y, origin.z, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.7F);
         level.playSound(null, aim.x, aim.y, aim.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 0.8F, 1.5F);
-        PacketDistributor.sendToPlayersNear(level, null, origin.x, origin.y, origin.z, 64.0D,
+        org.hp.hp_end_expansion.network.ModNetwork.sendBeam(level,
             new AbyssSpineBeamPayload(origin, aim, hit.getDirection().get3DDataValue()));
 
         // 发射激光后移除箭矢，并取消这次命中
@@ -104,7 +105,7 @@ public final class AbyssCrystalSpineItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.laser").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.abyss_crystal_spine.damage").withStyle(ChatFormatting.GRAY));
     }

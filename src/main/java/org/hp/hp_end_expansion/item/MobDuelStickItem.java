@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -13,14 +12,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.MeteorTortoiseEntity;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public final class MobDuelStickItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.mob_duel_stick.cancel").withStyle(ChatFormatting.GRAY));
     }
@@ -58,7 +57,8 @@ public final class MobDuelStickItem extends Item {
             event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.canceled"), true);
             return;
         }
-        CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag data = stack.getTag();
+        if (data == null) data = new CompoundTag();
         if (data.hasUUID(SELECTED) && data.getString(DIMENSION).equals(level.dimension().location().toString())
             && level.getEntity(data.getUUID(SELECTED)) instanceof Mob first && first.isAlive() && !first.isNoAi()) {
             clearSelection(stack);
@@ -78,22 +78,22 @@ public final class MobDuelStickItem extends Item {
                 first.getDisplayName(), mob.getDisplayName()), true);
             return;
         }
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            tag.putUUID(SELECTED, mob.getUUID());
-            tag.putString(DIMENSION, level.dimension().location().toString());
-        });
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putUUID(SELECTED, mob.getUUID());
+        tag.putString(DIMENSION, level.dimension().location().toString());
         event.getEntity().displayClientMessage(Component.translatable("message.hp_end_expansion.mob_duel_stick.selected", mob.getDisplayName()), true);
     }
 
     private static void clearSelection(ItemStack stack) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            tag.remove(SELECTED);
-            tag.remove(DIMENSION);
-        });
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return;
+        tag.remove(SELECTED);
+        tag.remove(DIMENSION);
+        if (tag.isEmpty()) stack.setTag(null);
     }
 
     @SubscribeEvent
-    public static void maintain(EntityTickEvent.Pre event) {
+    public static void maintain(LivingEvent.LivingTickEvent event) {
         if (!(event.getEntity() instanceof Mob mob) || mob.level().isClientSide()) return;
         Duel duel = DUELS.get(mob);
         if (duel == null) return;
@@ -109,7 +109,7 @@ public final class MobDuelStickItem extends Item {
         if (!(event.getEntity() instanceof Mob mob) || mob.level().isClientSide()) return;
         Duel duel = DUELS.get(mob);
         if (duel != null && duel.valid() && !sheltered(mob)) {
-            event.setNewAboutToBeSetTarget(duel.opponent);
+            event.setNewTarget(duel.opponent);
         }
     }
 

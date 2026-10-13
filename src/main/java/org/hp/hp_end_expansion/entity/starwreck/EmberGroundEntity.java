@@ -26,7 +26,7 @@ public final class EmberGroundEntity extends Entity {
         noPhysics = true;
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
 
     @Override public void tick() {
         super.tick();

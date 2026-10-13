@@ -12,14 +12,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.RiftMantisEntity;
 import org.hp.hp_end_expansion.entity.RiftMatriarchEntity;
@@ -120,12 +120,12 @@ public final class CombatConfigs {
 
     private CombatConfigs() {}
 
-    public static void register(IEventBus bus, ModContainer container) {
+    public static void register(IEventBus bus) {
         for (Settings settings : ALL) {
-            container.registerConfig(ModConfig.Type.COMMON, settings.spec, settings.fileName());
+            net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, settings.spec, settings.fileName());
         }
         bus.addListener(CombatConfigs::reload);
-        NeoForge.EVENT_BUS.addListener(CombatConfigs::join);
+        MinecraftForge.EVENT_BUS.addListener(CombatConfigs::join);
     }
 
     private static void join(EntityJoinLevelEvent event) {
@@ -196,16 +196,16 @@ public final class CombatConfigs {
         mob.setHealth(mob.getMaxHealth() * ratio);
     }
 
-    private static void set(Mob mob, Holder<Attribute> attribute, double value) {
+    private static void set(Mob mob, Attribute attribute, double value) {
         AttributeInstance instance = mob.getAttribute(attribute);
         if (instance != null) instance.setBaseValue(value);
     }
 
     public static final class Settings {
         private final String id;
-        private final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        private final Map<String, ModConfigSpec.DoubleValue> values = new LinkedHashMap<>();
-        private ModConfigSpec spec;
+        private final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        private final Map<String, ForgeConfigSpec.DoubleValue> values = new LinkedHashMap<>();
+        private ForgeConfigSpec spec;
 
         private Settings(String id, String name, double health, double attack, double armor, double speed, double range, double resistance, double flyingSpeed) {
             this.id = id;
@@ -250,7 +250,7 @@ public final class CombatConfigs {
         }
 
         public double value(String key) {
-            ModConfigSpec.DoubleValue value = values.get(key);
+            ForgeConfigSpec.DoubleValue value = values.get(key);
             if (value == null) throw new IllegalArgumentException("Unknown combat setting: " + id + "." + key);
             return spec.isLoaded() ? value.get() : value.getDefault();
         }

@@ -9,12 +9,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidelampWyrmEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
@@ -33,7 +33,6 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
         addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 
-    @SubscribeEvent
     public static void registerRenderer(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TIDELAMP_WYRM.get(), TidelampWyrmRenderer::new);
         event.registerEntityRenderer(ModEntities.ABYSS_VFX.get(), AbyssVfxRenderer::new);
@@ -209,7 +208,8 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
 
     // ---------------- 震屏 ----------------
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ticks++;
         shakeO = shake;
@@ -246,5 +246,9 @@ public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEn
         e.setPitch(e.getPitch() + Mth.sin(t * 2.5F) * s);
         e.setYaw(e.getYaw() + Mth.sin(t * 1.9F + 1.3F) * s * 0.7F);
         e.setRoll(e.getRoll() + Mth.sin(t * 3.1F + 0.5F) * s * 0.6F);
+    }
+    @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static final class Registration {
+        @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) { registerRenderer(event); }
     }
 }

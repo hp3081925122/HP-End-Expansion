@@ -8,11 +8,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.SkyMeteorEntity;
 import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
@@ -39,7 +39,7 @@ public final class SkyMeteorClient {
         if (mc.player == null || mc.level == null) return;
         GuiGraphics g = event.getGuiGraphics();
         int w = g.guiWidth(), h = g.guiHeight();
-        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = event.getPartialTick();
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         for (SkyMeteorEntity m : meteors(mc, cam)) {
             float t = m.tickCount + pt, since = t - HIT, brk = t - m.breakTick();

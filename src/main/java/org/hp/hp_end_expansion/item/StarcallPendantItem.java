@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.item;
 
+import net.minecraft.world.level.Level;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,7 +15,7 @@ public final class StarcallPendantItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.starcall_pendant.1").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.starcall_pendant.2").withStyle(ChatFormatting.GOLD));
     }

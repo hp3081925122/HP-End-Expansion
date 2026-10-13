@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import javax.annotation.Nullable;
-import net.minecraft.client.DeltaTracker;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -28,15 +28,15 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.SkyShardEntity;
 import org.hp.hp_end_expansion.entity.starwreck.SkyMeteorEntity;
@@ -46,8 +46,7 @@ import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector3f;
-import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
@@ -81,27 +80,34 @@ public final class SkyrenderClient {
     private static final int TEAR_SEGMENTS = 14, REND_SEGMENTS = 18;
     @Nullable private static ItemStack omen;
 
+    @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static final class Registration {
+        @SubscribeEvent public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) { renderers(event); }
+        @SubscribeEvent public static void registerParticles(RegisterParticleProvidersEvent event) { particles(event); }
+        @SubscribeEvent public static void registerOverlays(RegisterGuiOverlaysEvent event) { guiLayers(event); }
+    }
+
     private SkyrenderClient() {}
 
     static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, path); }
 
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
+    public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(StarwreckEntities.SKYRENDER.get(), BossRenderer::new);
         event.registerEntityRenderer(StarwreckEntities.SKY_SHARD.get(), ShardRenderer::new);
         event.registerEntityRenderer(StarwreckEntities.SKY_METEOR.get(), SkyMeteorRenderer::new);
     }
 
-    @SubscribeEvent public static void particles(RegisterParticleProvidersEvent event) {
+    public static void particles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticles.SKY_MOTE.get(), MoteProvider::new);
     }
 
     // ---------- 注视：被看见时屏幕四边像天幕一样被撕开，裂口一下下跳亮，释放时白闪 ----------
     // 画在快捷栏和血条下面（和原版南瓜头、细雪是同一层），不挡玩家看血
-    @SubscribeEvent public static void guiLayers(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, id("skyrender_gaze"), SkyrenderClient::gazeLayer);
+    public static void guiLayers(RegisterGuiOverlaysEvent event) {
+        event.registerAbove(VanillaGuiOverlay.SPYGLASS.id(), "skyrender_gaze", (gui, graphics, partialTick, width, height) -> gazeLayer(graphics, partialTick));
     }
 
-    static void gazeLayer(GuiGraphics g, DeltaTracker delta) {
+    static void gazeLayer(GuiGraphics g, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         // 注视只罩生存玩家
@@ -112,7 +118,7 @@ public final class SkyrenderClient {
         }
         if (boss == null) return;
         int charge = boss.gazeCharge();
-        float age = boss.getClientAge() + delta.getGameTimeDeltaPartialTick(false);
+        float age = boss.getClientAge() + partialTick;
         if (age > charge + 6 || !boss.sees(player)) return;
         int w = g.guiWidth(), h = g.guiHeight();
         float k = Mth.clamp(age / charge, 0, 1);
@@ -139,8 +145,8 @@ public final class SkyrenderClient {
 
     // ---------- 共用：画四边形 ----------
     static void vertex(PoseStack.Pose pose, VertexConsumer vc, Vec3 p, float u, float v, float r, float g, float b, float a) {
-        vc.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(Mth.clamp(r, 0, 1), Mth.clamp(g, 0, 1), Mth.clamp(b, 0, 1), Mth.clamp(a, 0, 1))
-            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+        vc.vertex(pose.pose(), (float) p.x, (float) p.y, (float) p.z).color(Mth.clamp(r, 0, 1), Mth.clamp(g, 0, 1), Mth.clamp(b, 0, 1), Mth.clamp(a, 0, 1))
+            .uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(pose.normal(), 0, 1, 0).endVertex();
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，正反两面都画。 */
@@ -204,17 +210,17 @@ public final class SkyrenderClient {
         @Override protected float getDeathMaxRotation(SkyrenderEntity animatable) { return 0; }
 
         @Override public void preRender(PoseStack poseStack, SkyrenderEntity animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
-                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
             // 发光层重画时 GeckoLib 会覆盖本体的变换，先存下来再还原，眼睛的位置才对得上
             Matrix4f base = entityRenderTranslations;
-            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             if (isReRender) entityRenderTranslations = base;
             else model.getBone("eye").ifPresent(bone -> bone.setTrackingMatrices(true));
         }
 
         @Override public void renderFinal(PoseStack poseStack, SkyrenderEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource,
-                                          @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
-            super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
+                                          @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+            super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             // 眼睛骨骼的轴心就是竖瞳中心，记下来给注视的眼光用
             model.getBone("eye").ifPresent(bone -> {
                 Vector3f local = bone.getLocalSpaceMatrix().transformPosition(new Vector3f());
@@ -405,8 +411,8 @@ public final class SkyrenderClient {
             super.setCustomAnimations(e, instanceId, state);
             // 眼睑左右滑开，开合程度按阶段和招式算
             float open = lidOpen(e, e.getClientAge() + state.getPartialTick());
-            GeoBone left = getAnimationProcessor().getBone("lid_left");
-            GeoBone right = getAnimationProcessor().getBone("lid_right");
+            var left = getAnimationProcessor().getBone("lid_left");
+            var right = getAnimationProcessor().getBone("lid_right");
             if (left != null) left.setPosX(2.6F * open);
             if (right != null) right.setPosX(-2.6F * open);
         }

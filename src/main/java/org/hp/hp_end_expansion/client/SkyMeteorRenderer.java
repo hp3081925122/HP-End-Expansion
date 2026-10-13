@@ -91,7 +91,7 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
     }
 
     static TextureAtlasSprite block(String name) {
-        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.withDefaultNamespace("block/" + name));
+        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("block/" + name));
     }
 
     /**
@@ -108,8 +108,8 @@ final class SkyMeteorRenderer extends EntityRenderer<SkyMeteorEntity> {
 
     static void put(PoseStack.Pose pose, VertexConsumer vc, Vec3 p, float u, float v, float r, float g, float b, float a) {
         Vec3 q = map(p);
-        vc.addVertex(pose, (float) q.x, (float) q.y, (float) q.z).setColor(clamp01(r), clamp01(g), clamp01(b), clamp01(a))
-            .setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+        vc.vertex(pose.pose(), (float) q.x, (float) q.y, (float) q.z).color(clamp01(r), clamp01(g), clamp01(b), clamp01(a))
+            .uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(pose.normal(), 0, 1, 0).endVertex();
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，正反两面都画。 */

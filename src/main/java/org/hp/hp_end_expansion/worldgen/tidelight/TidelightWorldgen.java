@@ -7,8 +7,10 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.*;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
 public final class TidelightWorldgen {
@@ -17,9 +19,9 @@ public final class TidelightWorldgen {
     public static final DeferredRegister<StructureType<?>> STRUCTURES = DeferredRegister.create(Registries.STRUCTURE_TYPE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, Hp_end_expansion.MODID);
     public static final DeferredRegister<StructureProcessorType<?>> PROCESSORS = DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Hp_end_expansion.MODID);
-    public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<TidelightRibProcessor>> RIB_PROCESSOR = PROCESSORS.register("tidelight_ribs", () -> () -> TidelightRibProcessor.CODEC);
-    public static final DeferredHolder<Feature<?>, TidelightFeature> FEATURE = FEATURES.register("tidelight", TidelightFeature::new);
-    public static final DeferredHolder<StructureType<?>, StructureType<TidelightStructure>> STRUCTURE = STRUCTURES.register("tidelight", () -> () -> TidelightStructure.CODEC);
-    public static final DeferredHolder<StructurePieceType, StructurePieceType> PIECE = PIECES.register("tidelight", () -> (context, tag) -> new TidelightPiece(context.structureTemplateManager(), tag));
+    public static final RegistryObject<StructureProcessorType<TidelightRibProcessor>> RIB_PROCESSOR = PROCESSORS.register("tidelight_ribs", () -> () -> TidelightRibProcessor.CODEC.codec());
+    public static final RegistryObject<TidelightFeature> FEATURE = FEATURES.register("tidelight", TidelightFeature::new);
+    public static final RegistryObject<StructureType<TidelightStructure>> STRUCTURE = STRUCTURES.register("tidelight", () -> () -> TidelightStructure.CODEC.codec());
+    public static final RegistryObject<StructurePieceType> PIECE = PIECES.register("tidelight", () -> (context, tag) -> new TidelightPiece(context.structureTemplateManager(), tag));
     public static void register(IEventBus bus) { FEATURES.register(bus); STRUCTURES.register(bus); PIECES.register(bus); PROCESSORS.register(bus); }
 }

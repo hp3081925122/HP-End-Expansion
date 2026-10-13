@@ -53,12 +53,12 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 负星者：坠星教团的朝圣者。走得慢、正面硬，背后的圣星是弱点。
@@ -119,17 +119,17 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return createMonsterAttributes().add(Attributes.MAX_HEALTH, 180).add(Attributes.ARMOR, 10).add(Attributes.ARMOR_TOUGHNESS, 4)
             .add(Attributes.KNOCKBACK_RESISTANCE, 1).add(Attributes.MOVEMENT_SPEED, 0.2).add(Attributes.FOLLOW_RANGE, 24)
-            .add(Attributes.ATTACK_DAMAGE, 10).add(Attributes.STEP_HEIGHT, 1.0);
+            .add(Attributes.ATTACK_DAMAGE, 10).add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.0 - 0.6D);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(STAR_BROKEN, false);
-        builder.define(STAR_HEALTH, STAR_MAX);
-        builder.define(ACTION, NONE);
-        builder.define(ENRAGED, false);
-        builder.define(BEAM_YAW, 0F);
-        builder.define(BEAM_PITCH, 0F);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(STAR_BROKEN, false);
+        this.entityData.define(STAR_HEALTH, STAR_MAX);
+        this.entityData.define(ACTION, NONE);
+        this.entityData.define(ENRAGED, false);
+        this.entityData.define(BEAM_YAW, 0F);
+        this.entityData.define(BEAM_PITCH, 0F);
     }
 
     public boolean isStarBroken() { return entityData.get(STAR_BROKEN); }
@@ -169,8 +169,8 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
     }
 
     // 自然刷出时身边带两只殉星者；刷怪蛋和指令不带
-    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
+    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data, @Nullable CompoundTag spawnTag) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data, spawnTag);
         if (spawnType != MobSpawnType.NATURAL) return result;
         for (int i = 0; i < 2; i++) {
             StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel());
@@ -181,7 +181,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
             if (Math.abs(y - getY()) > 3) continue;
             martyr.moveTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
             if (!level.noCollision(martyr)) continue;
-            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null);
+            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null, null);
             level.addFreshEntity(martyr);
         }
         return result;
@@ -479,7 +479,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         }
         if (level() instanceof ServerLevel server) BearerVfxEntity.spawn(server, BearerVfxEntity.SLAM, ground, yBodyRot, 1, 0);
         rings.add(new ShockRing(ground));
-        playSound(fast ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND, 1.1F, fast ? 1.1F : 0.7F);
+        playSound(fast ? org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND_HEAVY.get() : org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND.get(), 1.1F, fast ? 1.1F : 0.7F);
         playSound(SoundEvents.BELL_RESONATE, 0.8F, fast ? 1.3F : 0.9F);
     }
 
@@ -509,7 +509,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
             if (!inCone(living, back, 4, 30)) continue;
             if (living.hurt(damageSources().mobAttack(this), 6)) {
                 living.knockback(0.7, getX() - living.getX(), getZ() - living.getZ());
-                if (!living.fireImmune()) living.igniteForSeconds(2);
+                if (!living.fireImmune()) living.setSecondsOnFire(2);
             }
         }
         playSound(SoundEvents.FIRECHARGE_USE, 1.2F, 0.6F);
@@ -538,7 +538,7 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
             StarShardEntity.throwAt(server, this, hand, groundAt(aim.x + Math.cos(a) * 2.6, aim.z + Math.sin(a) * 2.6, aim.y));
         }
         playSound(SoundEvents.AMETHYST_CLUSTER_BREAK, 1.2F, 1.2F);
-        playSound(SoundEvents.TRIDENT_THROW.value(), 1.2F, 0.6F);
+        playSound(SoundEvents.TRIDENT_THROW, 1.2F, 0.6F);
     }
 
     private Vec3 groundAt(double x, double z, double refY) {
@@ -627,15 +627,16 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
         }
     }
 
-    @Override protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
-        super.dropCustomDeathLoot(level, source, recentlyHit);
+    @Override protected void dropCustomDeathLoot(DamageSource source, int lootingLevel, boolean recentlyHit) {
+        super.dropCustomDeathLoot(source, lootingLevel, recentlyHit);
+        ServerLevel level = (ServerLevel) level();
         if (!isStarBroken()) {
             if (level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) dropHolyStar(level, position());
             return;
         }
         if (!(source.getEntity() instanceof Player player)) return;
-        var looting = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING);
-        int levelBonus = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getWeaponItem());
+        var looting = Enchantments.MOB_LOOTING;
+        int levelBonus = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getMainHandItem());
         if (random.nextFloat() < 0.15F + 0.05F * levelBonus)
             spawnAtLocation(new ItemStack(StarwreckEntities.STAR_CORE_EMBER.get()));
     }
@@ -789,4 +790,5 @@ public final class StarBearerEntity extends Monster implements GeoEntity {
 
         ShockRing(Vec3 at) { this.at = at; }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 2.2F; }
 }

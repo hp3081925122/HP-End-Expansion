@@ -21,7 +21,7 @@ import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 public final class SkyEyeOmenItem extends Item {
     public SkyEyeOmenItem(Properties properties) { super(properties); }
 
-    @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    @Override public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.sky_eye_omen").withStyle(ChatFormatting.GRAY));
     }
 

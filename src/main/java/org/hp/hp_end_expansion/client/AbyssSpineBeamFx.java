@@ -11,11 +11,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.registry.ModParticles;
 
@@ -83,7 +83,8 @@ public final class AbyssSpineBeamFx {
     }
 
     @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         // 离开世界时清空
         if (mc.level == null) {
@@ -101,7 +102,7 @@ public final class AbyssSpineBeamFx {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || BEAMS.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
         Vec3 cam = event.getCamera().getPosition();
-        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = event.getPartialTick();
         if (mc.isPaused()) pt = 0;
 
         // 模型视图已含镜头旋转，这里只需要平移到世界坐标

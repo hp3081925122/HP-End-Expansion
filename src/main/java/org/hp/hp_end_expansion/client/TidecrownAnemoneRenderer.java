@@ -8,10 +8,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.tidelight.TidecrownAnemoneEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
@@ -19,7 +19,7 @@ import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
-@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class TidecrownAnemoneRenderer extends GeoEntityRenderer<TidecrownAnemoneEntity> {
     private static final ResourceLocation RIBBON = tex("ribbon"), FOAM = tex("foam"), FLARE = tex("flare"), PETAL = tex("petal"), SEAL = tex("seal");
     public TidecrownAnemoneRenderer(EntityRendererProvider.Context context) {

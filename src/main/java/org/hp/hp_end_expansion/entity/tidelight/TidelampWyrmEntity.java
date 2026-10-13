@@ -36,12 +36,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 潮灯须鲛：潮光礁海的漂浮精英怪。按 Boss 的结构设计（读招、阶段、破绽、终结技），数值保持精英级。
@@ -124,14 +124,14 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
             .add(Attributes.ATTACK_DAMAGE, BITE_DAMAGE);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, NONE);
-        builder.define(SKILL_SEQ, 0);
-        builder.define(SKILL_START, 0);
-        builder.define(ENRAGED, false);
-        builder.define(BEAM_YAW, 0F);
-        builder.define(BEAM_PITCH, 0F);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, NONE);
+        this.entityData.define(SKILL_SEQ, 0);
+        this.entityData.define(SKILL_START, 0);
+        this.entityData.define(ENRAGED, false);
+        this.entityData.define(BEAM_YAW, 0F);
+        this.entityData.define(BEAM_PITCH, 0F);
     }
 
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
@@ -456,7 +456,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
             AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, 7F, maelCenter);
             AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.SHOCKWAVE, maelCenter, (float) MAEL_SLAM_RADIUS, maelCenter);
             AbyssVfxEntity.spawn(s, this, AbyssVfxEntity.BURST, maelCenter.add(0, 1.2, 0), 3.2F, maelCenter);
-            playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.5F, 0.6F);
+            playSound(SoundEvents.GENERIC_EXPLODE, 2.5F, 0.6F);
         }
         setDeltaMovement(getDeltaMovement().scale(0.6).add(0, holdHeight() * 0.06, 0));
     }
@@ -533,8 +533,8 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
         if (clearFlightPath(direction.scale(ahead).add(0, Math.max(0, desired.y) * 4, 0))) return desired;
         Vec3 side = rotateY(direction, (getId() % 2 == 0 ? 1 : -1) * Math.PI / 2);
         Vec3 rise = new Vec3(0, 1, 0);
-        boolean climb = clearFlightPath(rise.scale(1.5)) && level().noBlockCollision(this,
-            getBoundingBox().deflate(0.05).move(0, 1.5, 0).expandTowards(direction.scale(ahead)));
+        boolean climb = clearFlightPath(rise.scale(1.5)) && !level().getBlockCollisions(this,
+            getBoundingBox().deflate(0.05).move(0, 1.5, 0).expandTowards(direction.scale(ahead))).iterator().hasNext();
         Vec3[] alternatives = climb
             ? new Vec3[]{rise, side, side.scale(-1), direction.scale(-1)}
             : new Vec3[]{side, side.scale(-1), direction.scale(-1), rise};
@@ -552,7 +552,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     }
 
     private boolean clearFlightPath(Vec3 offset) {
-        return level().noBlockCollision(this, getBoundingBox().deflate(0.05).expandTowards(offset));
+        return !level().getBlockCollisions(this, getBoundingBox().deflate(0.05).expandTowards(offset)).iterator().hasNext();
     }
 
     /** 当前高度距悬浮高度的差（正 = 需要上升），限制在 ±1。 */
@@ -605,7 +605,7 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     }
 
     public static double beamLength(Level level, Vec3 from, Vec3 dir) {
-        HitResult hit = level.clip(new ClipContext(from, from.add(dir.scale(GAZE_LENGTH)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
+        HitResult hit = level.clip(new ClipContext(from, from.add(dir.scale(GAZE_LENGTH)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
         return hit.getType() == HitResult.Type.MISS ? GAZE_LENGTH : hit.getLocation().distanceTo(from);
     }
 
@@ -712,4 +712,5 @@ public final class TidelampWyrmEntity extends Monster implements GeoEntity {
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 3.8F; }
 }

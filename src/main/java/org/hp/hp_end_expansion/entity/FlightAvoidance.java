@@ -118,6 +118,6 @@ public final class FlightAvoidance {
         AABB swept = mob.getBoundingBox().deflate(0.05).expandTowards(offset);
         return mob.level().hasChunksAt(BlockPos.containing(swept.minX, swept.minY, swept.minZ),
             BlockPos.containing(swept.maxX, swept.maxY, swept.maxZ))
-            && mob.level().noBlockCollision(mob, swept);
+            && !mob.level().getBlockCollisions(mob, swept).iterator().hasNext();
     }
 }

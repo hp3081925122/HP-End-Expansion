@@ -37,12 +37,12 @@ import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 唤星者：星骸荒原里少见的施法小怪。和玩家保持 6～14 格，举杖召星：目标脚下和周围随机几处亮起落点圈，
@@ -72,8 +72,8 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
     }
 
     // 自然刷出时身边跟着一两个殉星者
-    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
+    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data, @Nullable CompoundTag spawnData) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data, spawnData);
         if (spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION) return result;
         for (int i = 1 + random.nextInt(2); i > 0; i--) {
             StarMartyrEntity martyr = StarwreckEntities.STAR_MARTYR.get().create(level.getLevel());
@@ -84,15 +84,15 @@ public final class StarCallerEntity extends Monster implements GeoEntity {
             if (Math.abs(y - getY()) > 3) continue;
             martyr.moveTo(x + 0.5, y, z + 0.5, random.nextFloat() * 360, 0);
             if (!level.noCollision(martyr)) continue;
-            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null);
+            martyr.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null, null);
             level.addFreshEntity(martyr);
         }
         return result;
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(CASTING, false);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(CASTING, false);
     }
 
     public boolean isCasting() { return entityData.get(CASTING); }

@@ -1,20 +1,19 @@
 package org.hp.hp_end_expansion.client;
 
+import net.minecraftforge.event.TickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.*;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.*;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.network.PacketDistributor;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.item.TideCrossbowItem;
 import org.hp.hp_end_expansion.network.TideCrossbowShootPayload;
@@ -33,40 +32,39 @@ public final class TidelightClient {
         event.setSwingHand(false);
         if (!attackHandled) {
             attackHandled = true;
-            PacketDistributor.sendToServer(TideCrossbowShootPayload.INSTANCE);
+            org.hp.hp_end_expansion.network.ModNetwork.CHANNEL.sendToServer(TideCrossbowShootPayload.INSTANCE);
         }
     }
 
-    @SubscribeEvent public static void attackRelease(ClientTickEvent.Post event) {
+    @SubscribeEvent public static void attackRelease(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.screen != null || !minecraft.options.keyAttack.isDown()) attackHandled = false;
     }
-    @SubscribeEvent public static void crossbow(FMLClientSetupEvent event) {
+    public static void crossbow(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             var bow = ModTidelight.TIDE_CROSSBOW.get();
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), (stack, level, entity, seed) -> {
                 if (entity == null || !entity.isUsingItem() || entity.getUseItem() != stack) return 0.0F;
-                return (float) (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / CrossbowItem.getChargeDuration(stack, entity);
+                return (float) (stack.getUseDuration() - entity.getUseItemRemainingTicks()) / CrossbowItem.getChargeDuration(stack);
             });
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), (stack, level, entity, seed) ->
                 entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("charged"), (stack, level, entity, seed) ->
                 CrossbowItem.isCharged(stack) && (entity == null || !entity.isUsingItem() || entity.getUseItem() != stack) ? 1.0F : 0.0F);
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("firework"), (stack, level, entity, seed) -> {
-                ChargedProjectiles charged = stack.get(DataComponents.CHARGED_PROJECTILES);
-                return charged != null && charged.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
+                return CrossbowItem.containsChargedProjectile(stack, Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
             });
         });
     }
 
-    @SubscribeEvent public static void particles(RegisterParticleProvidersEvent event) {
+    public static void particles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModTidelight.TIDE_MOTE.get(), sprites -> new TidelightParticle.Provider(sprites, false));
         event.registerSpriteSet(ModTidelight.TIDE_BUBBLE.get(), sprites -> new TidelightParticle.Provider(sprites, true));
     }
-    @SubscribeEvent public static void music(SelectMusicEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.player == null || minecraft.level.dimension() != Level.END) return;
-        if (event.getOriginalMusic().equals(Musics.END_BOSS) || event.getMusic() == null || !event.getMusic().equals(event.getOriginalMusic())) return;
-        if (minecraft.level.getBiome(minecraft.player.blockPosition()).is(TidelightWorldgen.BIOME)) event.setMusic(new Music(ModTidelight.MUSIC, 600, 2400, true));
+    @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static final class Registration {
+        @SubscribeEvent public static void setup(FMLClientSetupEvent event) { crossbow(event); }
+        @SubscribeEvent public static void registerParticles(RegisterParticleProvidersEvent event) { particles(event); }
     }
 }

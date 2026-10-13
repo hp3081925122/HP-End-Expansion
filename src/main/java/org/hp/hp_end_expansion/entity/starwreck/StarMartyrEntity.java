@@ -28,12 +28,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 殉星者：坠星教团的狂信徒。近了抡链锤砸地，远了把链锤掷出去，砸中人或方块就在周围召陨星。
@@ -66,9 +66,9 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
             .add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FOLLOW_RANGE, 24);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(MARTYRING, false);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(MARTYRING, false);
     }
 
     public boolean isMartyring() { return entityData.get(MARTYRING); }
@@ -125,7 +125,7 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
         double y = StarChaserEntity.groundY(level(), at.x, at.z, at.y);
         if (Double.isNaN(y)) y = at.y;
         StarImpactEntity.spawn(server, new Vec3(at.x, y, at.z), forward, true);
-        playSound(SoundEvents.MACE_SMASH_GROUND, 0.8F, 0.7F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 0.8F, 0.7F);
     }
 
     private void launch(LivingEntity target) {
@@ -197,7 +197,7 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
             AnimationController<StarMartyrEntity> controller = state.getController();
             controller.setAnimationSpeed(1);
             if (isDeadOrDying()) {
-                stopTriggeredAnim("action", null);
+                stopTriggeredAnimation("action", null);
                 controller.transitionLength(2);
                 return state.setAndContinue(DEATH);
             }
@@ -243,8 +243,8 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
     private final class SwingGoal extends MeleeAttackGoal {
         SwingGoal() { super(StarMartyrEntity.this, 1.2, false); }
 
-        @Override protected void checkAndPerformAttack(LivingEntity target) {
-            if (swingTicks >= 0 || throwTicks >= 0 || !canPerformAttack(target)) return;
+        @Override protected void checkAndPerformAttack(LivingEntity target, double reachSqr) {
+            if (swingTicks >= 0 || throwTicks >= 0 || !isTimeToAttack()) return;
             resetAttackCooldown();
             swingTicks = 0;
             triggerAnim("action", "attack");
@@ -288,7 +288,7 @@ public final class StarMartyrEntity extends Monster implements GeoEntity {
         @Override public void start() {
             throwTicks = 0;
             triggerAnim("action", "throw");
-            playSound(SoundEvents.TRIDENT_THROW.value(), 1.0F, 0.65F);
+            playSound(SoundEvents.TRIDENT_THROW, 1.0F, 0.65F);
             getNavigation().stop();
         }
 

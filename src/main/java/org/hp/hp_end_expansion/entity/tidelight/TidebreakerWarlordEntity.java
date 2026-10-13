@@ -40,11 +40,11 @@ import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 public final class TidebreakerWarlordEntity extends Monster implements GeoEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -70,7 +70,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     public static final int SURGE_LINES = 3, SURGE_COUNT = 6;
     public static final double SURGE_SPREAD = 24, SURGE_START = 3.5, SURGE_STEP = 1.8, GEYSER_RADIUS = 1.0;
 
-    private static final ResourceLocation PHASE_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "tidebreaker_warlord_phase_speed");
+    private static final java.util.UUID PHASE_SPEED = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":tidebreaker_warlord_phase_speed").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     // 同步字段
     private static final EntityDataAccessor<Integer> SKILL = data(EntityDataSerializers.INT), START = data(EntityDataSerializers.INT),
@@ -117,14 +117,14 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder b) {
-        super.defineSynchedData(b);
-        b.define(SKILL, NONE);
-        b.define(START, 0);
-        b.define(SEQUENCE, 0);
-        b.define(GUARD_TIME, -1000);
-        b.define(YAW, 0F);
-        b.define(ENRAGED, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(SKILL, NONE);
+        entityData.define(START, 0);
+        entityData.define(SEQUENCE, 0);
+        entityData.define(GUARD_TIME, -1000);
+        entityData.define(YAW, 0F);
+        entityData.define(ENRAGED, false);
     }
 
     // 技能期间不游荡，索敌只针对玩家
@@ -332,7 +332,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
             playSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.1F, 0.7F);
         } else if (age == COMBO_SMASH) {
             hitCircle(hammerPoint(position()), SMASH_RADIUS, damage("comboSmashDamage"), 0.3, 0.35, false);
-            playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.7F, 1.4F);
+            playSound(SoundEvents.GENERIC_EXPLODE, 0.7F, 1.4F);
         }
     }
 
@@ -342,7 +342,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
         if (age == SLAM_IMPACT) {
             hitCircle(center, SLAM_RADIUS, damage("slamDamage"), 0.5, 0.45, false);
             hitIds.clear();
-            playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.2F, 0.8F);
+            playSound(SoundEvents.GENERIC_EXPLODE, 1.2F, 0.8F);
         }
         if (age >= WAVE_START && age <= WAVE_END) {
             double radius = waveRadius(age);
@@ -419,7 +419,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
 
     // 潮涌：锤击地面后三条喷泉线依次爆发
     private void tickSurge(int age) {
-        if (age == SURGE_SMASH) playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.1F);
+        if (age == SURGE_SMASH) playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.1F);
         for (int i = 0; i < SURGE_COUNT; i++) {
             if (age != geyserErupt(i)) continue;
             for (int line = 0; line < SURGE_LINES; line++) {
@@ -494,7 +494,7 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
     // 第二阶段移速加成
     private void applyPhaseSpeed() {
         AttributeInstance speed = getAttribute(Attributes.MOVEMENT_SPEED);
-        if (speed != null) speed.addOrUpdateTransientModifier(new AttributeModifier(PHASE_SPEED, 0.15, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        if (speed != null) org.hp.hp_end_expansion.compat.AttributeCompat.transientModifier(speed, new AttributeModifier(PHASE_SPEED, "hp_end_expansion.phase_speed", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
     }
 
     @Override
@@ -623,4 +623,5 @@ public final class TidebreakerWarlordEntity extends Monster implements GeoEntity
             return super.adjustTick(tick);
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 2.7F; }
 }

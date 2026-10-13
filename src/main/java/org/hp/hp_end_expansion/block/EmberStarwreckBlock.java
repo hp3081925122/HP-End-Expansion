@@ -1,6 +1,5 @@
 package org.hp.hp_end_expansion.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -10,10 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.hp.hp_end_expansion.registry.ModParticles;
 
 public final class EmberStarwreckBlock extends DropExperienceBlock {
-    public static final MapCodec<EmberStarwreckBlock> CODEC = simpleCodec(EmberStarwreckBlock::new);
-    public EmberStarwreckBlock(Properties properties) { super(UniformInt.of(1, 2), properties); }
-    @Override
-    public MapCodec<? extends DropExperienceBlock> codec() { return CODEC; }
+    public EmberStarwreckBlock(Properties properties) { super(properties, UniformInt.of(1, 2)); }
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(18) == 0 && level.isEmptyBlock(pos.above())) {

@@ -64,11 +64,11 @@ public final class AbyssVfxEntity extends Entity {
         return switch (getKind()) { case SPIKE -> SPIKE_LIFE; case VORTEX -> VORTEX_LIFE; case SHOCKWAVE -> SHOCK_LIFE; default -> BURST_LIFE; };
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(KIND, SPIKE);
-        builder.define(SIZE, 1F);
-        builder.define(START_TICK, 0);
-        builder.define(START, new Vector3f());
+    @Override protected void defineSynchedData() {
+        this.entityData.define(KIND, SPIKE);
+        this.entityData.define(SIZE, 1F);
+        this.entityData.define(START_TICK, 0);
+        this.entityData.define(START, new Vector3f());
     }
 
     @Override public void tick() {

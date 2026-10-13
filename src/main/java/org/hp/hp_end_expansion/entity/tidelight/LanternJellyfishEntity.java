@@ -16,11 +16,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.entity.FlightAvoidance;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 public final class LanternJellyfishEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Boolean> FLEEING = SynchedEntityData.defineId(LanternJellyfishEntity.class, EntityDataSerializers.BOOLEAN);
@@ -47,9 +47,9 @@ public final class LanternJellyfishEntity extends PathfinderMob implements GeoEn
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(FLEEING, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(FLEEING, false);
     }
 
     public boolean isFleeing() {
