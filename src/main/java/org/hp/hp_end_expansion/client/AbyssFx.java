@@ -23,7 +23,7 @@ final class AbyssFx {
     }
 
     /** 叠加发光：亮度即不透明度，k 是 0-1 的强度。 */
-    static VertexConsumer glow(MultiBufferSource b, ResourceLocation t) { return b.getBuffer(RenderType.eyes(t)); }
+    static VertexConsumer glow(MultiBufferSource b, ResourceLocation t) { return b.getBuffer(StarfallRenderTypes.additive(t)); }
     static VertexConsumer solid(MultiBufferSource b, ResourceLocation t) { return b.getBuffer(RenderType.entityTranslucentEmissive(t)); }
 
     static void v(PoseStack.Pose p, VertexConsumer vc, Vec3 pos, float u, float v, float k) {

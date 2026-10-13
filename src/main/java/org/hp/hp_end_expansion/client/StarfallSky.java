@@ -238,6 +238,7 @@ public final class StarfallSky {
 
         // 2. 加法：地平线余烬、裂隙照亮的天空、落地闪光、流星
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.setShader(StarfallRenderTypes::skyAdditiveShader);
         BufferBuilder b = tess.getBuilder();
         b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         double riftAz = rift != null ? Math.atan2(rift.x - cam.x, rift.z - cam.z) : 0;
@@ -250,6 +251,7 @@ public final class StarfallSky {
         // 3. 注视蓄力：整片天压成近黑，只剩它的眼睛在世界里发光
         RenderSystem.defaultBlendFunc();
         if (gz > 0.002F) {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
             BufferBuilder dark = tess.getBuilder();
         dark.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
             box(dark, m, 0.01F, 0.0F, 0.01F, 0.75F * gz);

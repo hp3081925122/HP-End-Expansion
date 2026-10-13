@@ -26,7 +26,7 @@ public final class RiftVfxDraw {
 
     // 加法混合、全亮，用于弧光、辉光与地裂
     public static RenderType additive(ResourceLocation texture) {
-        return RenderType.eyes(texture);
+        return StarfallRenderTypes.additive(texture);
     }
 
     // 透明全亮、双面，用于裂隙本体与晶刺
