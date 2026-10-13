@@ -4,13 +4,15 @@
 
 验证环境为 Minecraft 26.1.2、NeoForge 26.1.2.95、Java 25、GeckoLib 5.5.2、Curios 15.0.0+26.1.2。通过普通 `DedicatedServer` 启动本工作树，在隔离测试存档中执行 `test run hp_end_expansion:*`。依赖解析使用本机外置缓存源。
 
-测试目录：`D:/AI临时文件/HP-End-2612-migration/dedicated-run`。最终服务端日志单独保存至 `D:/AI临时文件/HP-End-2612-migration/server-validation-final.log`。
+测试目录：`D:/AI临时文件/HP-End-2612-migration/dedicated-run`。初次完成验证的服务端日志保存至 `D:/AI临时文件/HP-End-2612-migration/server-validation-final.log`；迁移审查修复后的复测日志保存至 `D:/AI临时文件/HP-End-2612-migration/server-validation-audit.log`。
 
 ## 最终结果
 
 2026-10-13 的最终专用服务器复测执行 17 项测试，结果为 `All required tests passed`。该次日志没有 ERROR 级别记录。服务器正常保存三维度存档并通过 `stop` 退出。
 
 关闭测试服后，`clean build` 成功；独立基础 GameTestServer 的 2 项必需测试也全部通过。构建日志与基础测试日志分别保存在同一临时目录的 `server-build-final-02.log` 和 `baseline-gametest-final.log`。
+
+同日迁移源码审查发现胸甲槽吞星之翼冲刺回调缺失，以及三处客户端行为偏差。补齐后重新构建，并在 17:17 的普通专用服务器中重跑全部 17 项测试，结果全部通过、ERROR 记录为 0。吞星之翼测试新增胸甲槽滑翔、潜行冲刺、冷却期间禁止再次冲刺及卸下检查；原 Curios 背部槽测试仍保留。复测结束通过 `stop` 正常退出。构建日志为 `audit-build.log`。客户端的隐身渲染、名称距离、弩拉弦模型阈值修复已编译及源码核对，未做画面验收。
 
 ## 已覆盖功能
 
@@ -23,7 +25,7 @@
 | abyss_spine | 12 格范围、普通被动生物、方块视线、无标记箭不触发、范围外不触发、激光消耗箭、伤害及无敌帧恢复 |
 | star_bow_relics | 星弓、圣星、唤星坠饰、天眸、裂天角、无限附魔和余烬冠的弹药、射弹数量、蓄力倍率及修复消耗 |
 | star_bolt_effects | 天眸四分之一伤害和无敌帧、破碎残星召陨星、星核胸甲弹跳及次数保存 |
-| wings_scythe_duels | 背部配饰滑翔、潜行冲刺及冷却、卸下飞行装备、螳后之镰位移/伤害/耐久、对决目标锁和取消 |
+| wings_scythe_duels | 背部配饰与胸甲槽滑翔、潜行冲刺及冷却、卸下飞行装备、螳后之镰位移/伤害/耐久、对决目标锁和取消 |
 | summoning | 裂隙卵和星辰信标的末地召唤、物品消耗、错误维度和错误群系拒绝 |
 | data_resources | 配方加载、潮光凝胶缓降酿造、两个自定义网络消息的编码/解码 |
 | structure_templates | 5 个结构模板的读取和实际方块放置 |

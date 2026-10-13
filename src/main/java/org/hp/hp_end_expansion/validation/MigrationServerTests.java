@@ -282,6 +282,20 @@ public final class MigrationServerTests {
         player.stopFallFlying(); player.setShiftKeyDown(false); player.setDeltaMovement(Vec3.ZERO);
         curios(player).setEquippedCurio("back",0,ItemStack.EMPTY); tick(player);
         helper.assertTrue(DevourerWingsItem.getFlightStack(player,EquipmentSlot.CHEST).isEmpty(),"Wings removed from flight slot");
+        player.getCooldowns().removeCooldown(BuiltInRegistries.ITEM.getKey(ModItems.DEVOURER_WINGS.get()));
+        var chestWings=new ItemStack(ModItems.DEVOURER_WINGS.get());
+        player.setItemSlot(EquipmentSlot.CHEST,chestWings);
+        helper.assertTrue(DevourerWingsItem.getFlightStack(player,EquipmentSlot.CHEST)==chestWings,"Chest wings selected for flight");
+        player.setOnGround(false); player.setDeltaMovement(0,-0.1,0);
+        helper.assertTrue(player.tryToStartFallFlying(),"Chest wings must enable fall flying");
+        player.setShiftKeyDown(true); before=player.getDeltaMovement(); tick(player);
+        helper.assertTrue(player.getDeltaMovement().distanceTo(before)>1,"Chest wings dash velocity");
+        helper.assertTrue(player.getCooldowns().isOnCooldown(chestWings),"Chest wings dash cooldown");
+        player.setDeltaMovement(Vec3.ZERO); tick(player);
+        helper.assertTrue(player.getDeltaMovement().length()<1,"Chest wings cannot dash again during cooldown");
+        player.stopFallFlying(); player.setShiftKeyDown(false); player.setDeltaMovement(Vec3.ZERO);
+        player.setItemSlot(EquipmentSlot.CHEST,ItemStack.EMPTY); tick(player);
+        helper.assertTrue(DevourerWingsItem.getFlightStack(player,EquipmentSlot.CHEST).isEmpty(),"Chest wings removed from flight slot");
         var scythe=new ItemStack(ModItems.MATRIARCH_SCYTHE.get()); player.setItemInHand(InteractionHand.MAIN_HAND,scythe);
         Vec3 start=player.position(); player.setYRot(0); player.setXRot(0);
         for(int dx=-2;dx<=2;dx++) for(int dz=-2;dz<=8;dz++) for(int dy=0;dy<=3;dy++) level.setBlock(BlockPos.containing(start).offset(dx,dy,dz),Blocks.AIR.defaultBlockState(),2);
@@ -310,7 +324,7 @@ public final class MigrationServerTests {
             player.setShiftKeyDown(true); NeoForge.EVENT_BUS.post(new AttackEntityEvent(player,first));
             helper.assertTrue(first.getTarget()==null&&second.getTarget()==null,"Duel cancellation");
         } finally { first.discard(); second.discard(); nearby(level,player.position()).stream().filter(e->e.getType().builtInRegistryHolder().getRegisteredName().equals("hp_end_expansion:rift_vfx")).forEach(Entity::discard); }
-        passed(helper,"Curios flight, dash, scythe teleport damage and duel lock/cancel");
+        passed(helper,"Curios and chest flight/dash/cooldown, scythe teleport damage and duel lock/cancel");
     }
     private static void starBoltEffects(GameTestHelper helper) {
         Player player=player(helper); ServerLevel level=helper.getLevel();

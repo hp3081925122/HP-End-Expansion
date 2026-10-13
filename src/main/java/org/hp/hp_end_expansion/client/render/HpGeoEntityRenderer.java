@@ -30,10 +30,13 @@ public class HpGeoEntityRenderer<T extends Entity & GeoAnimatable> extends GeoEn
     public void addRenderLayer(GeoRenderLayer<T,Void,HpGeoRenderState> layer) { withRenderLayer(layer); }
     protected float getDeathMaxRotation(T entity) { return 90; }
     @SuppressWarnings("unchecked") @Override protected float getDeathMaxRotation(GeoRenderState state) { return getDeathMaxRotation((T)((HpGeoRenderState)state).entity); }
-    public boolean shouldShowName(T entity) { return super.shouldShowName(entity,0); }
-    @Override public boolean shouldShowName(T entity,double distance) { return shouldShowName(entity); }
+    public boolean shouldShowName(T entity) { return super.shouldShowName(entity,entityRenderDispatcher.distanceToSqr(entity)); }
+    @Override public boolean shouldShowName(T entity,double distance) { return shouldShowName(entity) && super.shouldShowName(entity,distance); }
     public net.minecraft.client.renderer.rendertype.RenderType getRenderType(T entity,net.minecraft.resources.Identifier texture,MultiBufferSource buffers,float partialTick) { return net.minecraft.client.renderer.rendertype.RenderTypes.entityCutout(texture); }
-    @SuppressWarnings("unchecked") @Override public net.minecraft.client.renderer.rendertype.RenderType getRenderType(HpGeoRenderState state,net.minecraft.resources.Identifier texture) { return getRenderType((T)state.entity,texture,null,state.partialTick); }
+    @SuppressWarnings("unchecked") @Override public net.minecraft.client.renderer.rendertype.RenderType getRenderType(HpGeoRenderState state,net.minecraft.resources.Identifier texture) {
+        if (state.isInvisible) return super.getRenderType(state,texture);
+        return getRenderType((T)state.entity,texture,null,state.partialTick);
+    }
     protected void submitItem(T entity,net.minecraft.world.item.ItemStack stack,net.minecraft.world.item.ItemDisplayContext context,PoseStack pose,int light,int overlay) {
         var state=new net.minecraft.client.renderer.item.ItemStackRenderState();
         net.minecraft.client.Minecraft.getInstance().getItemModelResolver().updateForNonLiving(state,stack,context,entity);
