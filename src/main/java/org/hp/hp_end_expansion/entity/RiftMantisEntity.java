@@ -3,6 +3,7 @@ package org.hp.hp_end_expansion.entity;
 import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -27,9 +28,12 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.config.CombatConfigs;
@@ -149,6 +153,9 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         this.entityData.set(SKILL, skill);
         this.entityData.set(SKILL_TICK, 0);
         this.getNavigation().stop();
+        if (skill == SKILL_BLINK) {
+            this.stopBlinkMovement();
+        }
         this.triggerAnim("skill", anim);
         LOGGER.debug("Rift Mantis {} starts skill {} ({})", this.getId(), skill, anim);
     }
@@ -156,11 +163,18 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     private void endSkill() {
         this.entityData.set(SKILL, SKILL_NONE);
         this.entityData.set(SKILL_TICK, 0);
+        this.blinkTarget = null;
     }
 
     @Override
     public void tick() {
+        if (!this.level().isClientSide() && this.getSkill() == SKILL_BLINK) {
+            this.stopBlinkMovement();
+        }
         super.tick();
+        if (!this.level().isClientSide() && this.getSkill() == SKILL_BLINK) {
+            this.stopBlinkMovement();
+        }
         // 冷却计时
         if (!this.level().isClientSide()) {
             if (this.slashCooldown > 0) {
@@ -266,20 +280,40 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
 
     // 裂隙闪现：第 7 tick 收缩后瞬移到目标侧后方，第 12 tick 出现并斩击
     private void tickBlink(LivingEntity target, int t) {
+        this.stopBlinkMovement();
         if (t == 2) {
-            this.blinkTarget = this.findBlinkSpot(target);
+            if (!this.isValidBlinkSpot(this.blinkTarget)) {
+                this.blinkTarget = this.findBlinkSpot(target);
+            }
+            if (this.blinkTarget == null) {
+                this.cancelBlink("no safe landing during preparation");
+                return;
+            }
+            LOGGER.debug("Rift Mantis {} plans blink from {} to {} for target {}", this.getId(), this.position(), this.blinkTarget, target.getId());
             Vec3 here = this.position();
             RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_PORTAL, here.x, here.y, here.z, this.getYRot(), 0.0F, 1.5F, 14);
             this.playSound(SoundEvents.EVOKER_PREPARE_ATTACK, 1.0F, 1.6F);
         }
         if (t == 8) {
-            if (this.blinkTarget != null) {
-                Vec3 dest = this.blinkTarget;
-                RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_PORTAL, dest.x, dest.y, dest.z, this.getYRot(), 0.0F, 1.5F, 12);
-                this.teleportTo(dest.x, dest.y, dest.z);
-                this.level().playSound(null, dest.x, dest.y, dest.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 1.2F);
-                LOGGER.debug("Rift Mantis {} blinked to {}", this.getId(), dest);
+            if (!this.isValidBlinkSpot(this.blinkTarget)) {
+                Vec3 previous = this.blinkTarget;
+                this.blinkTarget = this.findBlinkSpot(target);
+                LOGGER.debug("Rift Mantis {} rechecks blocked blink landing {}: replacement {}", this.getId(), previous, this.blinkTarget);
             }
+            if (this.blinkTarget == null) {
+                this.cancelBlink("no safe landing before teleport");
+                return;
+            }
+            Vec3 dest = this.blinkTarget;
+            Vec3 origin = this.position();
+            this.teleportTo(dest.x, dest.y, dest.z);
+            this.stopBlinkMovement();
+            this.setDeltaMovement(Vec3.ZERO);
+            this.fallDistance = 0.0F;
+            this.hurtMarked = true;
+            RiftVfxEntity.spawn(this.level(), RiftVfxEntity.KIND_PORTAL, dest.x, dest.y, dest.z, this.getYRot(), 0.0F, 1.5F, 12);
+            this.level().playSound(null, dest.x, dest.y, dest.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 1.2F);
+            LOGGER.debug("Rift Mantis {} blinked from {} to {}; actual position {}, velocity {}", this.getId(), origin, dest, this.position(), this.getDeltaMovement());
             this.faceTarget(target);
         }
         if (t == 13) {
@@ -296,6 +330,39 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         }
     }
 
+    private void stopBlinkMovement() {
+        this.getNavigation().stop();
+        this.getMoveControl().setWantedPosition(this.getX(), this.getY(), this.getZ(), 0.0D);
+        this.getJumpControl().tick();
+        this.setJumping(false);
+        this.setSpeed(0.0F);
+        this.setXxa(0.0F);
+        this.setYya(0.0F);
+        this.setZza(0.0F);
+        Vec3 movement = this.getDeltaMovement();
+        this.setDeltaMovement(0.0D, movement.y, 0.0D);
+    }
+
+    private void cancelBlink(String reason) {
+        LOGGER.debug("Rift Mantis {} cancels blink at {}: {}", this.getId(), this.position(), reason);
+        this.blinkCooldown = 40;
+        this.stopTriggeredAnimation("skill", "blink");
+        this.endSkill();
+    }
+
+    private boolean isValidBlinkSpot(Vec3 feet) {
+        if (feet == null || feet.subtract(this.position()).horizontalDistanceSqr() < 4.0D) {
+            return false;
+        }
+        AABB box = this.getDimensions(this.getPose()).makeBoundingBox(feet);
+        if (!this.level().noCollision(this, box) || this.level().containsAnyLiquid(box)) {
+            return false;
+        }
+        BlockHitResult support = this.level().clip(new ClipContext(feet.add(0.0D, 0.1D, 0.0D), feet.add(0.0D, -0.1D, 0.0D), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+        return support.getType() == HitResult.Type.BLOCK && support.getDirection() == Direction.UP
+            && Math.abs(support.getLocation().y - feet.y) < 1.0E-4D;
+    }
+
     // 寻找目标背后可站立的位置，失败则退回目标侧面
     private Vec3 findBlinkSpot(LivingEntity target) {
         Vec3 look = target.getLookAngle();
@@ -303,20 +370,22 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
         if (back.lengthSqr() < 1.0E-4D) {
             back = this.position().subtract(target.position()).multiply(1.0D, 0.0D, 1.0D);
         }
+        if (back.lengthSqr() < 1.0E-4D) {
+            back = this.forwardVec().scale(-1.0D);
+        }
         back = back.normalize();
         Vec3 side = new Vec3(-back.z, 0.0D, back.x);
-        Vec3[] candidates = new Vec3[] {back, back.add(side).normalize(), back.subtract(side).normalize(), side, side.scale(-1.0D)};
+        Vec3 front = back.scale(-1.0D);
+        Vec3[] candidates = new Vec3[] {back, back.add(side).normalize(), back.subtract(side).normalize(), side, side.scale(-1.0D), front.add(side).normalize(), front.subtract(side).normalize(), front};
         for (Vec3 dir : candidates) {
-            for (int dy = 1; dy >= -2; dy--) {
-                Vec3 spot = target.position().add(dir.scale(3.4D)).add(0.0D, dy, 0.0D);
-                BlockPos pos = BlockPos.containing(spot);
-                BlockState below = this.level().getBlockState(pos.below());
-                if (!below.isFaceSturdy(this.level(), pos.below(), net.minecraft.core.Direction.UP)) {
+            for (double radius : new double[] {3.4D, 2.6D, 4.2D}) {
+                Vec3 spot = target.position().add(dir.scale(radius));
+                BlockHitResult ground = this.level().clip(new ClipContext(spot.add(0.0D, 1.5D, 0.0D), spot.add(0.0D, -3.0D, 0.0D), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                if (ground.getType() != HitResult.Type.BLOCK || ground.getDirection() != Direction.UP) {
                     continue;
                 }
-                Vec3 feet = new Vec3(spot.x, pos.getY(), spot.z);
-                AABB box = this.getDimensions(this.getPose()).makeBoundingBox(feet);
-                if (this.level().noCollision(this, box) && !this.level().containsAnyLiquid(box)) {
+                Vec3 feet = ground.getLocation();
+                if (this.isValidBlinkSpot(feet)) {
                     return feet;
                 }
             }
@@ -395,8 +464,13 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
             return true;
         }
         if (this.blinkCooldown <= 0 && dist > 7.0D && dist < 20.0D) {
-            this.startSkill(SKILL_BLINK, "blink");
-            return true;
+            this.blinkTarget = this.findBlinkSpot(target);
+            if (this.blinkTarget != null) {
+                this.startSkill(SKILL_BLINK, "blink");
+                return true;
+            }
+            this.blinkCooldown = 20;
+            LOGGER.debug("Rift Mantis {} skips blink at {}: no safe landing near target {} at {}", this.getId(), this.position(), target.getId(), target.position());
         }
         if (this.bladeCooldown <= 0 && sight && dist > 6.0D && dist < 19.0D) {
             this.startSkill(SKILL_BLADE, "blade");
@@ -412,6 +486,10 @@ public final class RiftMantisEntity extends Monster implements GeoEntity {
     // 目标失效时中止技能
     void abortSkill() {
         if (this.isCasting()) {
+            if (this.getSkill() == SKILL_BLINK) {
+                this.cancelBlink("target lost");
+                return;
+            }
             LOGGER.debug("Rift Mantis {} aborts skill {}", this.getId(), this.getSkill());
             this.endSkill();
         }
