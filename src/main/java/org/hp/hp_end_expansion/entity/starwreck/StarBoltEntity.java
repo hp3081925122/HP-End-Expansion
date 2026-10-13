@@ -206,9 +206,14 @@ public class StarBoltEntity extends AbstractArrow {
         if (tag.contains("StarAmmo", 10)) pickupStack = ItemStack.of(tag.getCompound("StarAmmo"));
         if (tag.contains("StarWeapon", 10)) weaponStack = ItemStack.of(tag.getCompound("StarWeapon"));
         unstableRemnantTriggered = tag.getBoolean("UnstableRemnantTriggered");
+        homing = tag.getBoolean("Homing");
+        skyEyeDamageReduced = tag.getBoolean("SkyEyeDamageReduced");
+        homingMomentumRecovered = tag.getBoolean("HomingMomentumRecovered");
         chestplateBounceCount = tag.getInt("ChestplateBounceCount");
         chestplateHitEntityIds.clear();
         for (int id : tag.getIntArray("ChestplateHitEntityIds")) chestplateHitEntityIds.add(id);
+        LOGGER.debug("Restored star bolt relic state: entity={}, homing={}, skyEyeDamageReduced={}, momentumRecovered={}",
+            getId(), homing, skyEyeDamageReduced, homingMomentumRecovered);
     }
 
     @Override public void addAdditionalSaveData(CompoundTag tag) {
@@ -216,6 +221,9 @@ public class StarBoltEntity extends AbstractArrow {
         if (!pickupStack.isEmpty()) tag.put("StarAmmo", pickupStack.save(new CompoundTag()));
         if (weaponStack != null) tag.put("StarWeapon", weaponStack.save(new CompoundTag()));
         tag.putBoolean("UnstableRemnantTriggered", unstableRemnantTriggered);
+        tag.putBoolean("Homing", homing);
+        tag.putBoolean("SkyEyeDamageReduced", skyEyeDamageReduced);
+        tag.putBoolean("HomingMomentumRecovered", homingMomentumRecovered);
         tag.putInt("ChestplateBounceCount", chestplateBounceCount);
         tag.putIntArray("ChestplateHitEntityIds", chestplateHitEntityIds.toIntArray());
     }
