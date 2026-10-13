@@ -5,11 +5,16 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
+import org.hp.hp_end_expansion.item.AbyssCrystalSpineItem;
 import org.hp.hp_end_expansion.item.MatriarchScytheItem;
 import org.hp.hp_end_expansion.item.MobDuelStickItem;
 import org.hp.hp_end_expansion.item.RiftEggItem;
 import org.hp.hp_end_expansion.item.DevourerWingsItem;
 import org.hp.hp_end_expansion.item.StarBeaconItem;
+import org.hp.hp_end_expansion.item.TidecrownTentacleItem;
+import org.hp.hp_end_expansion.item.TideRemnantClawItem;
+import org.hp.hp_end_expansion.item.TidebreakerHammerCoreItem;
+import org.hp.hp_end_expansion.item.VoidCoreItem;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -41,8 +46,9 @@ public final class ModItems {
         "end_mote_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.END_MOTE, 0x1A0A2E, 0x9FE8FF, new Item.Properties())
     );
-    public static final DeferredItem<Item> ABYSS_CRYSTAL_SPINE = ITEMS.register(
-        "abyss_crystal_spine", () -> new Item(new Item.Properties())
+    // 潮灯须鲛掉落：深渊晶刺（遗物）
+    public static final DeferredItem<AbyssCrystalSpineItem> ABYSS_CRYSTAL_SPINE = ITEMS.register(
+        "abyss_crystal_spine", () -> new AbyssCrystalSpineItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE))
     );
     public static final DeferredItem<SpawnEggItem> TIDELAMP_WYRM_SPAWN_EGG = ITEMS.register(
         "tidelamp_wyrm_spawn_egg",
@@ -52,9 +58,9 @@ public final class ModItems {
         "tidecrown_anemone_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.TIDECROWN_ANEMONE, 0x314F56, 0x99DECB, new Item.Properties())
     );
-    public static final DeferredItem<Item> TIDECROWN_TENTACLE = ITEMS.register(
+    public static final DeferredItem<TidecrownTentacleItem> TIDECROWN_TENTACLE = ITEMS.register(
         "tidecrown_tentacle",
-        () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
+        () -> new TidecrownTentacleItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON))
     );
     public static final DeferredItem<SpawnEggItem> TIDEBREAKER_SHRIMP_SPAWN_EGG = ITEMS.register(
         "tidebreaker_shrimp_spawn_egg",
@@ -69,9 +75,9 @@ public final class ModItems {
         () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
     );
     // 碎潮锤将专属掉落
-    public static final DeferredItem<Item> TIDEBREAKER_HAMMER_CORE = ITEMS.register(
+    public static final DeferredItem<TidebreakerHammerCoreItem> TIDEBREAKER_HAMMER_CORE = ITEMS.register(
         "tidebreaker_hammer_core",
-        () -> new Item(new Item.Properties().rarity(Rarity.RARE))
+        () -> new TidebreakerHammerCoreItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE))
     );
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",
@@ -86,9 +92,9 @@ public final class ModItems {
         () -> new DeferredSpawnEggItem(ModEntities.TIDE_REMNANT_HERMIT_CRAB, 0xD7C89D, 0x247C83, new Item.Properties())
     );
     // 潮骸寄居蟹掉落：潮骸蟹钳
-    public static final DeferredItem<Item> TIDE_REMNANT_CLAW = ITEMS.register(
+    public static final DeferredItem<TideRemnantClawItem> TIDE_REMNANT_CLAW = ITEMS.register(
         "tide_remnant_claw",
-        () -> new Item(new Item.Properties())
+        () -> new TideRemnantClawItem(new Item.Properties().stacksTo(1))
     );
     // 末晶萤掉落：末晶尘
     public static final DeferredItem<Item> END_DUST = ITEMS.register(
@@ -97,9 +103,9 @@ public final class ModItems {
     );
 
     // 裂空鳐掉落：虚空核心
-    public static final DeferredItem<Item> VOID_CORE = ITEMS.register(
+    public static final DeferredItem<VoidCoreItem> VOID_CORE = ITEMS.register(
         "void_core",
-        () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant())
+        () -> new VoidCoreItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).fireResistant())
     );
     // 裂空鳐掉落：鳐翼膜
     public static final DeferredItem<Item> RAY_MEMBRANE = ITEMS.register(

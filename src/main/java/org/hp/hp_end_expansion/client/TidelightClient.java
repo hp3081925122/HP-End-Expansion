@@ -14,23 +14,44 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.hp.hp_end_expansion.Hp_end_expansion;
+import org.hp.hp_end_expansion.item.TideCrossbowItem;
+import org.hp.hp_end_expansion.network.TideCrossbowShootPayload;
 import org.hp.hp_end_expansion.registry.*;
 import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class TidelightClient {
+    private static boolean attackHandled;
+
+    @SubscribeEvent public static void attack(InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (!event.isAttack() || minecraft.player == null || minecraft.screen != null
+            || minecraft.player.isSpectator() || TideCrossbowItem.heldHand(minecraft.player) == null) return;
+        event.setCanceled(true);
+        event.setSwingHand(false);
+        if (!attackHandled) {
+            attackHandled = true;
+            PacketDistributor.sendToServer(TideCrossbowShootPayload.INSTANCE);
+        }
+    }
+
+    @SubscribeEvent public static void attackRelease(ClientTickEvent.Post event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.screen != null || !minecraft.options.keyAttack.isDown()) attackHandled = false;
+    }
     @SubscribeEvent public static void crossbow(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             var bow = ModTidelight.TIDE_CROSSBOW.get();
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pull"), (stack, level, entity, seed) -> {
-                if (entity == null || CrossbowItem.isCharged(stack)) return 0.0F;
+                if (entity == null || !entity.isUsingItem() || entity.getUseItem() != stack) return 0.0F;
                 return (float) (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / CrossbowItem.getChargeDuration(stack, entity);
             });
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("pulling"), (stack, level, entity, seed) ->
-                entity != null && entity.isUsingItem() && entity.getUseItem() == stack && !CrossbowItem.isCharged(stack) ? 1.0F : 0.0F);
+                entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("charged"), (stack, level, entity, seed) ->
-                CrossbowItem.isCharged(stack) ? 1.0F : 0.0F);
+                CrossbowItem.isCharged(stack) && (entity == null || !entity.isUsingItem() || entity.getUseItem() != stack) ? 1.0F : 0.0F);
             ItemProperties.register(bow, ResourceLocation.withDefaultNamespace("firework"), (stack, level, entity, seed) -> {
                 ChargedProjectiles charged = stack.get(DataComponents.CHARGED_PROJECTILES);
                 return charged != null && charged.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
