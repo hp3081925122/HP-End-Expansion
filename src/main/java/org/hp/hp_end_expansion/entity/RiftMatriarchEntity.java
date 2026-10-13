@@ -98,6 +98,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Integer> SKILL_TICK = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> CORE_OPEN = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> TELEPORT_SEQUENCE = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     // Boss 血条：20 格刻度，60% 与 25% 恰好落在刻度上
@@ -154,6 +155,37 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         this.entityData.define(SKILL_TICK, 0);
         this.entityData.define(PHASE, 1);
         this.entityData.define(CORE_OPEN, false);
+        this.entityData.define(TELEPORT_SEQUENCE, 0);
+    }
+
+    @Override
+    public void teleportTo(double x, double y, double z) {
+        super.teleportTo(x, y, z);
+        if (!this.level().isClientSide()) {
+            int sequence = this.entityData.get(TELEPORT_SEQUENCE) + 1;
+            this.entityData.set(TELEPORT_SEQUENCE, sequence);
+            LOGGER.debug("Rift Matriarch {} synchronizes teleport {} at {} in skill {}", this.getId(), sequence, this.position(), this.getSkill());
+        }
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
+        if (this.level().isClientSide() && TELEPORT_SEQUENCE.equals(data)) {
+            Vec3 previous = this.position();
+            Vec3 destination = this.getPositionCodec().decode(0L, 0L, 0L);
+            float yaw = this.lerpSteps > 0 ? (float) this.lerpYRot : this.getYRot();
+            float pitch = this.lerpSteps > 0 ? (float) this.lerpXRot : this.getXRot();
+            this.moveTo(destination.x, destination.y, destination.z, yaw, pitch);
+            this.lerpSteps = 0;
+            this.lerpHeadSteps = 0;
+            this.yBodyRot = yaw;
+            this.yBodyRotO = yaw;
+            this.yHeadRot = yaw;
+            this.yHeadRotO = yaw;
+            this.setDeltaMovement(Vec3.ZERO);
+            LOGGER.debug("Client Rift Matriarch {} snaps teleport {} from {} to {}", this.getId(), this.entityData.get(TELEPORT_SEQUENCE), previous, destination);
+        }
     }
 
     @Override
