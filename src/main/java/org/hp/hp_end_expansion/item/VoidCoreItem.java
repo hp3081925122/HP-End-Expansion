@@ -1,11 +1,7 @@
 package org.hp.hp_end_expansion.item;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +15,6 @@ import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModTidelight;
 import org.slf4j.Logger;
 import top.theillusivec4.curios.api.CuriosApi;
-import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID)
@@ -33,8 +28,10 @@ public final class VoidCoreItem extends Item implements ICurioItem {
     }
 
     @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, Identifier id, ItemStack stack) {
-        return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY, CAPACITY);
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display,
+        java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("attribute.modifier.plus.0", 3,
+            net.minecraft.network.chat.Component.translatable(ModTidelight.CROSSBOW_CAPACITY.value().getDescriptionId())).withStyle(net.minecraft.ChatFormatting.BLUE));
     }
 
     @SubscribeEvent

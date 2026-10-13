@@ -3,6 +3,7 @@ package org.hp.hp_end_expansion.worldgen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;
@@ -26,7 +27,7 @@ public final class StarwreckTerrain {
             || state.is(ModStarwreck.EMBER_STARWRECK_STONE.get()) || state.is(ModStarwreck.METEOR_ASH.get());
     }
     public static int surface(WorldGenLevel level, int x, int z) {
-        int top = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
+        int top = level.getHeight(level instanceof ServerLevel ? Heightmap.Types.WORLD_SURFACE : Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
         for (int y = Math.min(top, 127); y >= 30; y--) {
             if (terrain(level.getBlockState(new BlockPos(x, y, z)))) return y;
         }
