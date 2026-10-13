@@ -44,9 +44,9 @@ public final class ModItems {
     public static final DeferredItem<Item> ABYSS_CRYSTAL_SPINE = ITEMS.register(
         "abyss_crystal_spine", () -> new Item(new Item.Properties())
     );
-    public static final DeferredItem<SpawnEggItem> ABYSS_WATCHER_SPAWN_EGG = ITEMS.register(
-        "abyss_watcher_spawn_egg",
-        () -> new DeferredSpawnEggItem(ModEntities.ABYSS_WATCHER, 0x243348, 0x66DAE7, new Item.Properties())
+    public static final DeferredItem<SpawnEggItem> TIDELAMP_WYRM_SPAWN_EGG = ITEMS.register(
+        "tidelamp_wyrm_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDELAMP_WYRM, 0x243348, 0x66DAE7, new Item.Properties())
     );
     public static final DeferredItem<SpawnEggItem> TIDECROWN_ANEMONE_SPAWN_EGG = ITEMS.register(
         "tidecrown_anemone_spawn_egg",
@@ -60,17 +60,18 @@ public final class ModItems {
         "tidebreaker_shrimp_spawn_egg",
         () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP, 0x2C525C, 0xB0B897, new Item.Properties())
     );
-    public static final DeferredItem<SpawnEggItem> TIDEBREAKER_SHRIMP_TEST_SPAWN_EGG = ITEMS.register(
-        "tidebreaker_shrimp_test_spawn_egg",
-        () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_SHRIMP_TEST, 0x2C525C, 0xB0B897, new Item.Properties())
-    );
-    public static final DeferredItem<SpawnEggItem> LOBSTER_ELITE_SPAWN_EGG = ITEMS.register(
-        "lobster_elite_spawn_egg",
-        () -> new DeferredSpawnEggItem(ModEntities.LOBSTER_ELITE, 0x1F5866, 0x8FF0D8, new Item.Properties())
+    public static final DeferredItem<SpawnEggItem> TIDEBREAKER_WARLORD_SPAWN_EGG = ITEMS.register(
+        "tidebreaker_warlord_spawn_egg",
+        () -> new DeferredSpawnEggItem(ModEntities.TIDEBREAKER_WARLORD, 0x1F5866, 0x8FF0D8, new Item.Properties())
     );
     public static final DeferredItem<Item> TIDEBREAKER_GAUNTLET = ITEMS.register(
         "tidebreaker_gauntlet",
         () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON))
+    );
+    // 碎潮锤将专属掉落
+    public static final DeferredItem<Item> TIDEBREAKER_HAMMER_CORE = ITEMS.register(
+        "tidebreaker_hammer_core",
+        () -> new Item(new Item.Properties().rarity(Rarity.RARE))
     );
     public static final DeferredItem<SpawnEggItem> LANTERN_JELLYFISH_SPAWN_EGG = ITEMS.register(
         "lantern_jellyfish_spawn_egg",

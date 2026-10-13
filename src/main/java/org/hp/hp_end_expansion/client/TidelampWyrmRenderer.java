@@ -16,40 +16,40 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
-import org.hp.hp_end_expansion.entity.tidelight.AbyssWatcherEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidelampWyrmEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
-public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEntity> {
+public final class TidelampWyrmRenderer extends GeoEntityRenderer<TidelampWyrmEntity> {
     private static final double LIFT = 0.45;
     private static float shake, shakeO;
     private static int ticks;
 
-    public AbyssWatcherRenderer(EntityRendererProvider.Context context) {
-        super(context, new AbyssWatcherModel());
+    public TidelampWyrmRenderer(EntityRendererProvider.Context context) {
+        super(context, new TidelampWyrmModel());
         shadowRadius = 1.6F;
         addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 
     @SubscribeEvent
     public static void registerRenderer(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntities.ABYSS_WATCHER.get(), AbyssWatcherRenderer::new);
+        event.registerEntityRenderer(ModEntities.TIDELAMP_WYRM.get(), TidelampWyrmRenderer::new);
         event.registerEntityRenderer(ModEntities.ABYSS_VFX.get(), AbyssVfxRenderer::new);
     }
 
     // 死亡由动画表现，不叠加原版侧翻
-    @Override protected float getDeathMaxRotation(AbyssWatcherEntity animatable) { return 0; }
-    @Override public boolean shouldShowName(AbyssWatcherEntity animatable) { return false; }
+    @Override protected float getDeathMaxRotation(TidelampWyrmEntity animatable) { return 0; }
+    @Override public boolean shouldShowName(TidelampWyrmEntity animatable) { return false; }
 
     @Override
-    protected int getBlockLightLevel(AbyssWatcherEntity entity, BlockPos pos) {
+    protected int getBlockLightLevel(TidelampWyrmEntity entity, BlockPos pos) {
         return Math.max(12, super.getBlockLightLevel(entity, pos));
     }
 
     @Override
-    public void render(AbyssWatcherEntity entity, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+    public void render(TidelampWyrmEntity entity, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         poseStack.pushPose();
         poseStack.translate(0.0, LIFT, 0.0);
         super.render(entity, yaw, partialTick, poseStack, buffers, light);
@@ -59,20 +59,20 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
 
     // ---------------- 跟随本体的技能特效 ----------------
 
-    private void skillFx(AbyssWatcherEntity w, float pt, PoseStack ps, MultiBufferSource b) {
+    private void skillFx(TidelampWyrmEntity w, float pt, PoseStack ps, MultiBufferSource b) {
         byte skill = w.getSkill();
-        if (skill == AbyssWatcherEntity.NONE) return;
+        if (skill == TidelampWyrmEntity.NONE) return;
         float age = w.getSkillAge(pt);
         float yaw = Mth.rotLerp(pt, w.yBodyRotO, w.yBodyRot);
         Vec3 cam = entityRenderDispatcher.camera.getPosition().subtract(w.getPosition(pt));
         PoseStack.Pose p = ps.last();
         switch (skill) {
-            case AbyssWatcherEntity.BITE -> bite(age, yaw, cam, p, b);
-            case AbyssWatcherEntity.SWEEP -> sweep(age, yaw, w.groundOffset(pt), cam, p, b);
-            case AbyssWatcherEntity.VOLLEY -> volley(age, yaw, cam, p, b);
-            case AbyssWatcherEntity.GAZE -> gaze(w, age, yaw, pt, cam, p, b);
-            case AbyssWatcherEntity.ROAR -> roar(age, yaw, p, b);
-            case AbyssWatcherEntity.MAELSTROM -> maelstrom(age, yaw, cam, p, b);
+            case TidelampWyrmEntity.BITE -> bite(age, yaw, cam, p, b);
+            case TidelampWyrmEntity.SWEEP -> sweep(age, yaw, w.groundOffset(pt), cam, p, b);
+            case TidelampWyrmEntity.VOLLEY -> volley(age, yaw, cam, p, b);
+            case TidelampWyrmEntity.GAZE -> gaze(w, age, yaw, pt, cam, p, b);
+            case TidelampWyrmEntity.ROAR -> roar(age, yaw, p, b);
+            case TidelampWyrmEntity.MAELSTROM -> maelstrom(age, yaw, cam, p, b);
             default -> {}
         }
     }
@@ -94,15 +94,15 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
 
     // 冲咬：眼睛逐渐亮起成星芒（读招），冲刺时嘴前拖出两道弧光，合嘴瞬间由服务端放爆闪
     private static void bite(float age, float yaw, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
-        if (age < AbyssWatcherEntity.BITE_DASH) {
-            float t = age / AbyssWatcherEntity.BITE_DASH;
+        if (age < TidelampWyrmEntity.BITE_DASH) {
+            float t = age / TidelampWyrmEntity.BITE_DASH;
             eyes(yaw, cam, p, b, 0.25 + 0.55 * t, 0.4F + 0.6F * t);
-        } else if (age < AbyssWatcherEntity.BITE_SNAP + 2) {
+        } else if (age < TidelampWyrmEntity.BITE_SNAP + 2) {
             eyes(yaw, cam, p, b, 0.8, 1);
-            float k = Mth.clamp((AbyssWatcherEntity.BITE_SNAP + 2 - age) / 3, 0, 1);
+            float k = Mth.clamp((TidelampWyrmEntity.BITE_SNAP + 2 - age) / 3, 0, 1);
             VertexConsumer a = AbyssFx.glow(b, AbyssFx.ARC);
             double head = Math.toRadians(yaw + 90);
-            Vec3 c = AbyssWatcherEntity.mouthOffset(yaw).subtract(fwd(yaw).scale(3.7));
+            Vec3 c = TidelampWyrmEntity.mouthOffset(yaw).subtract(fwd(yaw).scale(3.7));
             AbyssFx.arcBlade(p, a, c.add(0, 0.9, 0), head + 0.35, 0.7, 3.2, 4.2, 0.0, 10, k);
             AbyssFx.arcBlade(p, a, c.add(0, -0.4, 0), head - 0.35 + 0.7, 0.7, 3.2, 4.2, 0.0, 10, k);
         }
@@ -111,14 +111,14 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
     // 鳍刃回旋：脚下法阵随蓄力扩到攻击半径；回旋时两片弧刃绕身体扫一圈
     private static void sweep(float age, float yaw, double groundY, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
         double R = 5.5;
-        if (age < AbyssWatcherEntity.SWEEP_START) {
-            float t = age / AbyssWatcherEntity.SWEEP_START;
+        if (age < TidelampWyrmEntity.SWEEP_START) {
+            float t = age / TidelampWyrmEntity.SWEEP_START;
             Vec3 ground = new Vec3(0, groundY, 0);
             AbyssFx.decal(p, AbyssFx.glow(b, AbyssFx.GLYPH), ground, R * (0.35 + 0.65 * t), age * 0.05, 0.35F + 0.4F * t);
             AbyssFx.flatRing(p, AbyssFx.glow(b, AbyssFx.RING), ground.add(0, 0.02, 0), R - 0.4, R, 40, 10, 0, t);
             return;
         }
-        float t = (age - AbyssWatcherEntity.SWEEP_START) / (AbyssWatcherEntity.SWEEP_END - AbyssWatcherEntity.SWEEP_START);
+        float t = (age - TidelampWyrmEntity.SWEEP_START) / (TidelampWyrmEntity.SWEEP_END - TidelampWyrmEntity.SWEEP_START);
         if (t > 1.5F) return;
         float k = t <= 1 ? 1 : 1 - (t - 1) * 2;
         // 动画里第 18-26 tick 身体从 -35° 转到 360°
@@ -137,7 +137,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         VertexConsumer g = AbyssFx.glow(b, AbyssFx.FLARE);
         for (int i = 0; i < 3; i++) {
           for (int side = -1; side <= 1; side += 2) {
-            Vec3 at = AbyssWatcherEntity.spineOffset(yaw, i, side);
+            Vec3 at = TidelampWyrmEntity.spineOffset(yaw, i, side);
             float lit = Mth.clamp((age - i * 3) / 10, 0, 1);
             float shot = 0;
             int m = 20 + i * 4;
@@ -149,13 +149,13 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
     }
 
     // 深渊凝视：嘴前聚光（星芒变大 + 圆环往里收），瞄准细线；发射后是自绘光束，末端打出星芒和地面冲击环
-    private static void gaze(AbyssWatcherEntity w, float age, float yaw, float pt, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
-        Vec3 mouth = AbyssWatcherEntity.mouthOffset(yaw);
+    private static void gaze(TidelampWyrmEntity w, float age, float yaw, float pt, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
+        Vec3 mouth = TidelampWyrmEntity.mouthOffset(yaw);
         Vec3 dir = w.beamDirection();
-        double len = AbyssWatcherEntity.beamLength(w.level(), w.getPosition(pt).add(mouth), dir);
+        double len = TidelampWyrmEntity.beamLength(w.level(), w.getPosition(pt).add(mouth), dir);
         VertexConsumer flare = AbyssFx.glow(b, AbyssFx.FLARE);
-        if (age < AbyssWatcherEntity.GAZE_FIRE) {
-            float t = age / AbyssWatcherEntity.GAZE_FIRE;
+        if (age < TidelampWyrmEntity.GAZE_FIRE) {
+            float t = age / TidelampWyrmEntity.GAZE_FIRE;
             AbyssFx.billboard(p, flare, mouth, cam.subtract(mouth), 0.3 + 1.1 * t, age * 0.3, 0.5F + 0.5F * t);
             double rr = 2.6 * (1 - t) + 0.5;
             AbyssFx.axialRing(p, AbyssFx.glow(b, AbyssFx.RING), mouth, dir, rr, rr + 0.35, 24, t);
@@ -163,9 +163,9 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
             eyes(yaw, cam, p, b, 0.3 + 0.4 * t, t);
             return;
         }
-        if (age > AbyssWatcherEntity.GAZE_END + 2) return;
-        float fade = Mth.clamp(Math.min((age - AbyssWatcherEntity.GAZE_FIRE) / 3, (AbyssWatcherEntity.GAZE_END + 2 - age) / 3), 0, 1);
-        double width = AbyssWatcherEntity.BEAM_RADIUS;
+        if (age > TidelampWyrmEntity.GAZE_END + 2) return;
+        float fade = Mth.clamp(Math.min((age - TidelampWyrmEntity.GAZE_FIRE) / 3, (TidelampWyrmEntity.GAZE_END + 2 - age) / 3), 0, 1);
+        double width = TidelampWyrmEntity.BEAM_RADIUS;
         VertexConsumer beam = AbyssFx.glow(b, AbyssFx.BEAM);
         float v0 = -age * 0.6F, v1 = v0 + (float) (len / (4 * Math.max(width, 0.05)));
         AbyssFx.ribbon(p, beam, mouth, dir, cam.subtract(mouth), len, width, v0, v1, fade);
@@ -179,7 +179,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         AbyssFx.billboard(p, flare, mouth, cam.subtract(mouth), 1.3 * fade, age * 0.4, fade);
         Vec3 end = mouth.add(dir.scale(len));
         AbyssFx.billboard(p, flare, end, cam.subtract(end), 1.6 * fade * (1 + 0.15 * Mth.sin(age * 3)), -age * 0.5, fade);
-        if (len < AbyssWatcherEntity.GAZE_LENGTH - 0.1)
+        if (len < TidelampWyrmEntity.GAZE_LENGTH - 0.1)
             AbyssFx.flatRing(p, AbyssFx.glow(b, AbyssFx.RING), end.add(0, 0.05, 0), 0.4, 1.4 + 0.3 * Mth.sin(age * 2), 20, 5, age * 0.3F, fade);
         eyes(yaw, cam, p, b, 0.7, fade);
     }
@@ -187,7 +187,7 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
     // 咆哮：嘴前连续推出三道音波环
     private static void roar(float age, float yaw, PoseStack.Pose p, MultiBufferSource b) {
         VertexConsumer g = AbyssFx.glow(b, AbyssFx.RING);
-        float a = age - AbyssWatcherEntity.ROAR_BLAST;
+        float a = age - TidelampWyrmEntity.ROAR_BLAST;
         if (a < 0 || a > 14) return;
         float k = 1 - a / 14;
         AbyssFx.wallRing(p, g, new Vec3(0, -1, 0), 7, 5, 0, 40, 10, k);
@@ -195,10 +195,10 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
 
     // 渊潮漩涡：盘旋时眼睛常亮；俯冲时嘴前聚成一颗星芒，身后两道弧光
     private static void maelstrom(float age, float yaw, Vec3 cam, PoseStack.Pose p, MultiBufferSource b) {
-        if (age >= AbyssWatcherEntity.MAEL_RISE && age < AbyssWatcherEntity.MAEL_DIVE) eyes(yaw, cam, p, b, 0.6, 0.9F);
-        if (age >= AbyssWatcherEntity.MAEL_DIVE && age < AbyssWatcherEntity.MAEL_SLAM) {
-            float t = (age - AbyssWatcherEntity.MAEL_DIVE) / (AbyssWatcherEntity.MAEL_SLAM - AbyssWatcherEntity.MAEL_DIVE);
-            Vec3 m = AbyssWatcherEntity.mouthOffset(yaw);
+        if (age >= TidelampWyrmEntity.MAEL_RISE && age < TidelampWyrmEntity.MAEL_DIVE) eyes(yaw, cam, p, b, 0.6, 0.9F);
+        if (age >= TidelampWyrmEntity.MAEL_DIVE && age < TidelampWyrmEntity.MAEL_SLAM) {
+            float t = (age - TidelampWyrmEntity.MAEL_DIVE) / (TidelampWyrmEntity.MAEL_SLAM - TidelampWyrmEntity.MAEL_DIVE);
+            Vec3 m = TidelampWyrmEntity.mouthOffset(yaw);
             AbyssFx.billboard(p, AbyssFx.glow(b, AbyssFx.FLARE), m, cam.subtract(m), 0.8 + 1.4 * t, age * 0.5, 1);
             VertexConsumer a = AbyssFx.glow(b, AbyssFx.ARC);
             double head = Math.toRadians(yaw + 90);
@@ -216,21 +216,21 @@ public final class AbyssWatcherRenderer extends GeoEntityRenderer<AbyssWatcherEn
         shake *= 0.6F;
         Player player = mc.player;
         if (player == null || mc.level == null || mc.isPaused()) return;
-        for (AbyssWatcherEntity w : mc.level.getEntitiesOfClass(AbyssWatcherEntity.class, player.getBoundingBox().inflate(32))) {
+        for (TidelampWyrmEntity w : mc.level.getEntitiesOfClass(TidelampWyrmEntity.class, player.getBoundingBox().inflate(32))) {
             if (!w.isAlive()) continue;
             float near = (float) Mth.clamp(1 - w.distanceTo(player) / 24, 0, 1);
             if (near <= 0) continue;
             int age = (int) w.getSkillAge(0);
             byte s = w.getSkill();
             float k = 0;
-            if (s == AbyssWatcherEntity.BITE && age >= AbyssWatcherEntity.BITE_SNAP && age < AbyssWatcherEntity.BITE_SNAP + 3) k = 0.4F;
-            if (s == AbyssWatcherEntity.SWEEP && age >= AbyssWatcherEntity.SWEEP_START && age < AbyssWatcherEntity.SWEEP_END) k = 0.25F;
-            if (s == AbyssWatcherEntity.GAZE && age >= AbyssWatcherEntity.GAZE_FIRE && age < AbyssWatcherEntity.GAZE_END) k = 0.15F;
-            if (s == AbyssWatcherEntity.MAELSTROM) {
-                if (age >= AbyssWatcherEntity.MAEL_RISE && age < AbyssWatcherEntity.MAEL_DIVE) k = 0.12F;
-                if (age >= AbyssWatcherEntity.MAEL_SLAM && age < AbyssWatcherEntity.MAEL_SLAM + 5) k = 0.9F;
+            if (s == TidelampWyrmEntity.BITE && age >= TidelampWyrmEntity.BITE_SNAP && age < TidelampWyrmEntity.BITE_SNAP + 3) k = 0.4F;
+            if (s == TidelampWyrmEntity.SWEEP && age >= TidelampWyrmEntity.SWEEP_START && age < TidelampWyrmEntity.SWEEP_END) k = 0.25F;
+            if (s == TidelampWyrmEntity.GAZE && age >= TidelampWyrmEntity.GAZE_FIRE && age < TidelampWyrmEntity.GAZE_END) k = 0.15F;
+            if (s == TidelampWyrmEntity.MAELSTROM) {
+                if (age >= TidelampWyrmEntity.MAEL_RISE && age < TidelampWyrmEntity.MAEL_DIVE) k = 0.12F;
+                if (age >= TidelampWyrmEntity.MAEL_SLAM && age < TidelampWyrmEntity.MAEL_SLAM + 5) k = 0.9F;
             }
-            if (s == AbyssWatcherEntity.ROAR && age >= AbyssWatcherEntity.ROAR_BLAST && age < AbyssWatcherEntity.ROAR_BLAST + 12) k = 0.5F;
+            if (s == TidelampWyrmEntity.ROAR && age >= TidelampWyrmEntity.ROAR_BLAST && age < TidelampWyrmEntity.ROAR_BLAST + 12) k = 0.5F;
             shake = Math.max(shake, k * near);
         }
     }

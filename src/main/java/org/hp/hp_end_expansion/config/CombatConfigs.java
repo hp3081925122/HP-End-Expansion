@@ -28,6 +28,7 @@ import org.hp.hp_end_expansion.entity.StarDevourerEntity;
 import org.hp.hp_end_expansion.entity.VoidRayEntity;
 import org.hp.hp_end_expansion.entity.starwreck.SkyrenderEntity;
 import org.hp.hp_end_expansion.entity.starwreck.StarChaserEntity;
+import org.hp.hp_end_expansion.entity.tidelight.TidebreakerWarlordEntity;
 
 public final class CombatConfigs {
     public static final Settings RIFT_MANTIS = new Settings("rift_mantis", "裂隙螳螂", 160, 12, 10, 0.3, 40, 0.8, 0)
@@ -102,7 +103,20 @@ public final class CombatConfigs {
         .damage("meteorTrigger", 0.5, "天陨的触发血线，占最大生命的比例；第二阶段只放一次")
         .damage("meteorHealthRatio", 0.5, "天陨落地后场内生物的生命变为当前的多少，直接改血、不致死")
         .finish();
-    private static final List<Settings> ALL = List.of(RIFT_MANTIS, RIFT_MATRIARCH, VOID_RAY, STAR_DEVOURER, STAR_CHASER, SKYRENDER);
+    public static final Settings TIDEBREAKER_WARLORD = new Settings("tidebreaker_warlord", "碎潮锤将", 170, 10, 10, 0.27, 32, 0.9, 0)
+        .damage("comboSweepDamage", 8, "连锤第一段前方横扫伤害")
+        .damage("comboHookDamage", 6, "连锤第二段回勾伤害")
+        .damage("comboSmashDamage", 11, "连锤第三段下砸落点伤害")
+        .damage("slamDamage", 12, "重砸落点范围伤害")
+        .damage("waveDamage", 6, "重砸地面震波伤害，跳起可躲")
+        .damage("spinDamage", 9, "回旋锤伤害")
+        .damage("ramDamage", 12, "冲撞伤害")
+        .damage("counterDamage", 8, "格挡反击伤害")
+        .damage("surgeDamage", 8, "第二阶段潮涌每道喷泉伤害")
+        .damage("guardMultiplier", 0.35, "格挡时正面受伤倍率")
+        .damage("punishMultiplier", 1.3, "重砸卡锤与撞墙硬直时受伤倍率")
+        .finish();
+    private static final List<Settings> ALL = List.of(RIFT_MANTIS, RIFT_MATRIARCH, VOID_RAY, STAR_DEVOURER, STAR_CHASER, SKYRENDER, TIDEBREAKER_WARLORD);
 
     private CombatConfigs() {}
 
@@ -158,6 +172,10 @@ public final class CombatConfigs {
             if (difficulty == Difficulty.EASY) key = "maxHealthEasy";
             else if (difficulty == Difficulty.HARD) key = "maxHealthHard";
             health = settings.value(key);
+        } else if (mob instanceof TidebreakerWarlordEntity) {
+            // 碎潮锤将
+            settings = TIDEBREAKER_WARLORD;
+            health = settings.value("maxHealth");
         } else if (mob instanceof StarCoreEntity) {
             float ratio = mob.getHealth() / mob.getMaxHealth();
             set(mob, Attributes.MAX_HEALTH, STAR_DEVOURER.value("starCoreHealth"));

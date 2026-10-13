@@ -11,7 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 
-/** 深渊守望者特效的绘制工具：发光部分走 eyes（叠加发光），晶体走半透明自发光。所有面两面都画。 */
+/** 潮灯须鲛特效的绘制工具：发光部分走 eyes（叠加发光），晶体走半透明自发光。所有面两面都画。 */
 final class AbyssFx {
     static final ResourceLocation GLYPH = tex("glyph"), CRYSTAL = tex("crystal"), ARC = tex("arc"), RING = tex("ring"),
         VORTEX = tex("vortex"), BEAM = tex("beam"), FLARE = tex("flare");
