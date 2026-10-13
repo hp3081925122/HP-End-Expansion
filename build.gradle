@@ -67,6 +67,10 @@ mixin {
     config "${mod_id}.mixins.json"
 }
 
+afterEvaluate {
+    minecraft.runs.client.token 'asset_index', project.minecraft_asset_index
+}
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
