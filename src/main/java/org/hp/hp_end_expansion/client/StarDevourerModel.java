@@ -4,8 +4,8 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.StarDevourerEntity;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoRenderer;
 
@@ -50,8 +50,8 @@ public final class StarDevourerModel extends GeoModel<StarDevourerEntity> {
         // 核心碎裂后隐藏晶体骨骼、显示碎裂骨骼
         for (int i = 0; i < 3; i++) {
             boolean broken = animatable.isCoreBroken(i);
-            GeoBone crystal = this.getAnimationProcessor().getBone(CORE_NAMES[i] + "_crystal");
-            GeoBone shards = this.getAnimationProcessor().getBone(CORE_NAMES[i] + "_broken");
+            CoreGeoBone crystal = this.getAnimationProcessor().getBone(CORE_NAMES[i] + "_crystal");
+            CoreGeoBone shards = this.getAnimationProcessor().getBone(CORE_NAMES[i] + "_broken");
             if (crystal != null) {
                 crystal.setHidden(broken);
             }

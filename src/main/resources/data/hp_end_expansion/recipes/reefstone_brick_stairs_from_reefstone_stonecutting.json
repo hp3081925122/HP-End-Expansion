@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "hp_end_expansion:reefstone"
+  },
+  "result": "hp_end_expansion:reefstone_brick_stairs",
+  "count": 1
+}

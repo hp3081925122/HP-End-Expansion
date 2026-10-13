@@ -79,7 +79,7 @@ public final class StarwreckPiece extends StructurePiece {
             MeteorTortoiseEntity tortoise=StarwreckEntities.METEOR_TORTOISE.get().create(level.getLevel());
             if(tortoise!=null) {
                 tortoise.moveTo(floor.getX()+0.5,floor.getY(),floor.getZ()+0.5,level.getRandom().nextFloat()*360,0);
-                tortoise.finalizeSpawn(level,level.getCurrentDifficultyAt(floor),MobSpawnType.STRUCTURE,null);
+                tortoise.finalizeSpawn(level,level.getCurrentDifficultyAt(floor),MobSpawnType.STRUCTURE,null,null);
                 tortoise.setPersistenceRequired();level.addFreshEntity(tortoise);spawned=true;
             }
         }

@@ -23,7 +23,7 @@ public final class RiftEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.rift_egg").withStyle(ChatFormatting.GRAY));
     }
 

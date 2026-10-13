@@ -50,7 +50,7 @@ public final class StarImpactEntity extends Entity {
         return (FallingStarEntity.IMPACT_RADIUS + 0.3F) * (1 - (1 - t) * (1 - t) * (1 - t));
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(SMALL, false); }
+    @Override protected void defineSynchedData() { this.entityData.define(SMALL, false); }
 
     public boolean isSmall() { return entityData.get(SMALL); }
 

@@ -46,7 +46,7 @@ public final class StarShardEntity extends Entity {
         BearerVfxEntity.spawn(level, BearerVfxEntity.BRAND, to, 0, 1, FLIGHT);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
 
     @Override public void tick() {
         super.tick();
@@ -72,7 +72,7 @@ public final class StarShardEntity extends Entity {
         }
         BearerVfxEntity.spawn(server, BearerVfxEntity.SLAM, at, 0, RADIUS / BearerVfxEntity.RING_TO * 1.1F, 0);
         level().playSound(null, at.x, at.y, at.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.HOSTILE, 1.3F, 0.7F);
-        level().playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.6F, 1.4F);
+        level().playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.6F, 1.4F);
         discard();
     }
 

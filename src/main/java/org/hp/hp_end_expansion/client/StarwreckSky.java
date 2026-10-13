@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -18,14 +18,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
 import org.joml.Matrix4f;
@@ -65,7 +65,8 @@ public final class StarwreckSky {
         }));
     }
 
-    @SubscribeEvent public static void tick(ClientTickEvent.Post e) {
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
@@ -88,11 +89,11 @@ public final class StarwreckSky {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void render(RenderLevelStageEvent e) {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
-        float pt = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = e.getPartialTick();
         float L = Mth.lerp(pt, presenceO, presence);
         if (L < 0.003F) return;
         L = L * L * (3 - 2 * L);
-        Matrix4f m = new Matrix4f(e.getModelViewMatrix());
+        Matrix4f m = new Matrix4f(e.getPoseStack().last().pose());
         float t = ticks + pt;
         Tesselator tess = Tesselator.getInstance();
 
@@ -115,20 +116,23 @@ public final class StarwreckSky {
         // 2. 加法：地平线热帘、垂死的星
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         curtains(b, m, t, L);
         dyingStars(b, m, t, L);
         draw(b);
 
         // 3. 普通混合：星骸带碎块的剪影，挡住身后的光
         RenderSystem.defaultBlendFunc();
-        b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, false);
         draw(b);
 
         // 4. 加法：碎块朝地平线那侧的余烬边、飘落的余烬
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, true);
         embers(b, m, t, L);
         draw(b);
@@ -147,12 +151,13 @@ public final class StarwreckSky {
         if (staticSkyBuffer != null) staticSkyBuffer.close();
         staticSkyBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         // 底色、尘光、远星一次性烘进顶点缓冲
-        BufferBuilder b = tess.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder b = tess.getBuilder();
+        b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f identity = new Matrix4f();
         dome(b, identity);
         beltDust(b, identity);
         starField(b, identity);
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         if (mesh == null) {
             staticSkyBuffer.close();
             staticSkyBuffer = null;
@@ -470,13 +475,13 @@ public final class StarwreckSky {
 
     private static void tri(BufferBuilder b, Matrix4f m, Vec3 p0, float r0, float g0, float b0, float a0,
                             Vec3 p1, float r1, float g1, float b1, float a1, Vec3 p2, float r2, float g2, float b2, float a2) {
-        b.addVertex(m, (float) p0.x, (float) p0.y, (float) p0.z).setColor(r0, g0, b0, a0);
-        b.addVertex(m, (float) p1.x, (float) p1.y, (float) p1.z).setColor(r1, g1, b1, a1);
-        b.addVertex(m, (float) p2.x, (float) p2.y, (float) p2.z).setColor(r2, g2, b2, a2);
+        b.vertex(m, (float) p0.x, (float) p0.y, (float) p0.z).color(r0, g0, b0, a0).endVertex();
+        b.vertex(m, (float) p1.x, (float) p1.y, (float) p1.z).color(r1, g1, b1, a1).endVertex();
+        b.vertex(m, (float) p2.x, (float) p2.y, (float) p2.z).color(r2, g2, b2, a2).endVertex();
     }
 
     private static void draw(BufferBuilder b) {
-        MeshData mesh = b.build();
+        BufferBuilder.RenderedBuffer mesh = b.end();
         if (mesh != null) BufferUploader.drawWithShader(mesh);
     }
 

@@ -27,11 +27,11 @@ import org.hp.hp_end_expansion.entity.FlightAvoidance;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 余烬蛾（设计文档 9.1）。
@@ -61,9 +61,9 @@ public final class EmberMothEntity extends PathfinderMob implements GeoEntity {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 4).add(Attributes.MOVEMENT_SPEED, 0.2).add(Attributes.FLYING_SPEED, 0.45);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(FLEEING, false);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(FLEEING, false);
     }
 
     public boolean isFleeing() { return entityData.get(FLEEING); }

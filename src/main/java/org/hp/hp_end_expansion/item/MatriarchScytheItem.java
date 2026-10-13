@@ -26,7 +26,7 @@ public final class MatriarchScytheItem extends SwordItem {
     private static final int COOLDOWN = 160;
 
     public MatriarchScytheItem(Tier tier, Properties properties) {
-        super(tier, properties);
+        super(tier, 5, -2.6F, properties);
     }
 
     @Override
@@ -60,7 +60,7 @@ public final class MatriarchScytheItem extends SwordItem {
         }
         level.playSound(null, end.x, end.y, end.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.3F);
         player.getCooldowns().addCooldown(this, COOLDOWN);
-        stack.hurtAndBreak(2, player, LivingEntity.getSlotForHand(hand));
+        stack.hurtAndBreak(2, player, broken -> broken.broadcastBreakEvent(hand));
         return InteractionResultHolder.consume(stack);
     }
 }

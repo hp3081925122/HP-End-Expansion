@@ -27,11 +27,11 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
     public static final byte NONE = 0, LASH = 1, BIND = 2, BLOOM = 3;
@@ -66,11 +66,11 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
             .add(Attributes.FOLLOW_RANGE, 14).add(Attributes.ATTACK_DAMAGE, 5);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b) {
-        super.defineSynchedData(b);
-        b.define(SKILL, NONE); b.define(START, 0); b.define(SEQUENCE, 0); b.define(AIM_YAW, 0F);
-        b.define(LEFT_YAW, 0F); b.define(RIGHT_YAW, 0F);
-        b.define(POINT, new Vector3f()); b.define(LEFT_END, new Vector3f()); b.define(RIGHT_END, new Vector3f());
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(SKILL, NONE); entityData.define(START, 0); entityData.define(SEQUENCE, 0); entityData.define(AIM_YAW, 0F);
+        entityData.define(LEFT_YAW, 0F); entityData.define(RIGHT_YAW, 0F);
+        entityData.define(POINT, new Vector3f()); entityData.define(LEFT_END, new Vector3f()); entityData.define(RIGHT_END, new Vector3f());
     }
 
     @Override protected void registerGoals() {
@@ -226,7 +226,7 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
                 waveHit.add(v.getId()); hit(v, 7, v.position().subtract(c), 0.55);
             }
         }
-        if (age == BLOOM_START) { playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.1F, 1.65F); playSound(SoundEvents.GENERIC_SPLASH, 2F, 0.65F); }
+        if (age == BLOOM_START) { playSound(SoundEvents.GENERIC_EXPLODE, 1.1F, 1.65F); playSound(SoundEvents.GENERIC_SPLASH, 2F, 0.65F); }
     }
     private void hit(LivingEntity v, float damage, Vec3 dir, double push) {
         if (!v.hurt(damageSources().mobAttack(this), damage)) return;
@@ -258,4 +258,5 @@ public final class TidecrownAnemoneEntity extends Monster implements GeoEntity {
             return super.adjustTick(tick);
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 1.45F; }
 }

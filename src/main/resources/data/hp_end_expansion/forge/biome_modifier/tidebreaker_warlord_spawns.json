@@ -1,0 +1,12 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": [
+    "hp_end_expansion:tidelight_reef"
+  ],
+  "spawners": {
+    "type": "hp_end_expansion:tidebreaker_warlord",
+    "weight": 1,
+    "minCount": 1,
+    "maxCount": 1
+  }
+}

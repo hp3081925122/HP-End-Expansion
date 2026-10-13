@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.EventHooks;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.hp.hp_end_expansion.entity.starwreck.StarBoltEntity;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
@@ -45,7 +45,6 @@ public final class StarBowItem extends BowItem {
         return stack -> stack.is(ModStarwreck.STAR_CRYSTAL_SHARD.get());
     }
 
-    @Override
     public ItemStack getDefaultCreativeAmmo(@Nullable Player player, ItemStack projectileWeaponItem) {
         return ModStarwreck.STAR_CRYSTAL_SHARD.get().getDefaultInstance();
     }
@@ -61,23 +60,19 @@ public final class StarBowItem extends BowItem {
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
-        if (!(entity instanceof Player player)) {
-            super.releaseUsing(stack, level, entity, timeLeft);
-            return;
-        }
+        if (!(entity instanceof Player player)) return;
         boolean holyStar = hasHolyStar(player);
         boolean infinity = hasInfinity(player, stack);
         boolean starcallPendant = hasStarcallPendant(player);
         boolean skyEye = hasSkyEye(player);
         boolean skyrenderHorn = hasSkyrenderHorn(player);
-        if (!holyStar && !infinity && !starcallPendant && !skyEye && !skyrenderHorn) {
-            super.releaseUsing(stack, level, entity, timeLeft);
-            return;
-        }
         ItemStack ammo = player.getProjectile(stack);
-        if (ammo.isEmpty()) return;
-        int charge = getUseDuration(stack, entity) - timeLeft;
-        charge = EventHooks.onArrowLoose(stack, level, player, charge, true);
+        if (ammo.isEmpty()) {
+            if (!player.getAbilities().instabuild) return;
+            ammo = ModStarwreck.STAR_CRYSTAL_SHARD.get().getDefaultInstance();
+        }
+        int charge = getUseDuration(stack) - timeLeft;
+        charge = ForgeEventFactory.onArrowLoose(stack, level, player, charge, true);
         if (charge < 0) return;
         float effectiveCharge = getEffectiveChargeTicks(player, charge);
         float power = getPowerForTime((int) Math.min(effectiveCharge, FULL_CHARGE_TICKS));
@@ -87,12 +82,11 @@ public final class StarBowItem extends BowItem {
                 shootPendantArrows(server, player, player.getUsedItemHand(), stack, ammo, power * 3.0F, power == 1.0F,
                     holyStar || infinity, getDamageMultiplier(player, effectiveCharge));
             } else {
-                ItemStack ammoInput = holyStar || infinity ? ammo.copyWithCount(ammo.getCount() + 1) : ammo;
-                List<ItemStack> projectiles = draw(stack, ammoInput, player);
-                if (!projectiles.isEmpty()) {
-                    shoot(server, player, player.getUsedItemHand(), stack, projectiles, power * 3.0F, 1.0F, power == 1.0F, null);
-                }
+                shootPendantArrow(server, player, player.getUsedItemHand(), stack, ammo, power * 3.0F,
+                    power == 1.0F, 0, false, getDamageMultiplier(player, effectiveCharge));
+                if (!holyStar && !infinity && !player.getAbilities().instabuild) ammo.shrink(1);
             }
+            if (ammo.isEmpty()) player.getInventory().removeItem(ammo);
         }
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS,
             1.0F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + power * 0.5F);
@@ -167,13 +161,19 @@ public final class StarBowItem extends BowItem {
         shootPendantArrow(level, player, hand, weapon, ammo, reducedVelocity, crit, 0, false, damageMultiplier);
         shootPendantArrow(level, player, hand, weapon, ammo, reducedVelocity, crit, -8, true, damageMultiplier);
         shootPendantArrow(level, player, hand, weapon, ammo, reducedVelocity, crit, 8, true, damageMultiplier);
-        if (!freeAmmo && !player.hasInfiniteMaterials()) ammo.shrink(1);
+        if (!freeAmmo && !player.getAbilities().instabuild) ammo.shrink(1);
     }
 
     private static void shootPendantArrow(ServerLevel level, Player player, InteractionHand hand, ItemStack weapon,
         ItemStack ammo, float velocity, boolean crit, float yawOffset, boolean extra, float damageMultiplier) {
         StarBoltEntity bolt = new StarBoltEntity(level, player, ammo.copyWithCount(1), weapon);
         if (crit) bolt.setCritArrow(true);
+        int powerLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, weapon);
+        if (powerLevel > 0) bolt.setBaseDamage(bolt.getBaseDamage() + powerLevel * 0.5D + 0.5D);
+        int punch = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, weapon);
+        if (punch > 0) bolt.setKnockback(punch);
+        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, weapon) > 0) bolt.setSecondsOnFire(100);
+        if (player.getAbilities().instabuild) bolt.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         if (damageMultiplier != 1.0F) bolt.setBaseDamage(bolt.getBaseDamage() * damageMultiplier);
         if (extra) {
             bolt.pickup = AbstractArrow.Pickup.DISALLOWED;
@@ -182,28 +182,11 @@ public final class StarBowItem extends BowItem {
         }
         bolt.shootFromRotation(player, player.getXRot(), player.getYRot() + yawOffset, 0, velocity, 1.0F);
         level.addFreshEntity(bolt);
-        weapon.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+        weapon.hurtAndBreak(1, player, e -> e.broadcastBreakEvent(hand));
     }
 
     private static boolean hasInfinity(Player player, ItemStack stack) {
-        var infinity = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.INFINITY);
-        return EnchantmentHelper.getItemEnchantmentLevel(infinity, stack) > 0;
+        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) > 0;
     }
 
-    // 星晶碎片不是箭，原版会退回成普通箭；这里射出自己的星晶矢
-    @Override
-    protected Projectile createProjectile(Level level, LivingEntity shooter, ItemStack weapon, ItemStack ammo, boolean isCrit) {
-        StarBoltEntity bolt = new StarBoltEntity(level, shooter, ammo.copyWithCount(1), weapon);
-        if (isCrit) bolt.setCritArrow(true);
-        return customArrow(bolt, ammo, weapon);
-    }
-
-    @Override
-    protected void shootProjectile(LivingEntity shooter, Projectile projectile, int index, float velocity, float inaccuracy,
-        float angle, LivingEntity target) {
-        super.shootProjectile(shooter, projectile, index, velocity, inaccuracy, angle, target);
-        if (projectile instanceof StarBoltEntity bolt && shooter instanceof Player player && hasSkyrenderHorn(player)) {
-            bolt.setBaseDamage(bolt.getBaseDamage() * getDamageMultiplier(player, getChargeTicks(player)));
-        }
-    }
 }

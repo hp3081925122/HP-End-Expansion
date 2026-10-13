@@ -1,6 +1,6 @@
 package org.hp.hp_end_expansion.mixin;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 
 @Mixin(TheEndBiomeSource.class)
 public abstract class EndBiomeSourceMixin implements StarwreckBiomeAccess {
-    @Shadow @Final @Mutable public static MapCodec<TheEndBiomeSource> CODEC;
+    @Shadow @Final @Mutable public static Codec<TheEndBiomeSource> CODEC;
     @Unique private Holder<Biome> hp_starwreck;
     @Unique private Holder<Biome> hp_tidelight;
     @Unique private volatile StarwreckNoise.Sampling hp_sampling;
@@ -28,7 +28,7 @@ public abstract class EndBiomeSourceMixin implements StarwreckBiomeAccess {
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void hp_codec(CallbackInfo ci) {
         if (TerrablenderCompat.isLoaded()) return;
-        CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(RegistryOps.<Biome, TheEndBiomeSource>retrieveGetter(Registries.BIOME))
+        CODEC = RecordCodecBuilder.create(instance -> instance.group(RegistryOps.<Biome, TheEndBiomeSource>retrieveGetter(Registries.BIOME))
             .apply(instance, TheEndBiomeSource::create));
     }
     @Inject(method = "create", at = @At("RETURN"))

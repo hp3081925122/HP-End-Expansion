@@ -70,9 +70,9 @@ public final class TideVfxEntity extends Entity {
     /** 水墙当前半径。 */
     public static float waveRadius(float age) { return 0.5F + (WAVE_RADIUS - 0.5F) * Math.min(1, age / WAVE_GROW); }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(KIND, GEYSER);
-        builder.define(SCALE, 1F);
+    @Override protected void defineSynchedData() {
+        this.entityData.define(KIND, GEYSER);
+        this.entityData.define(SCALE, 1F);
     }
 
     @Override public void tick() {

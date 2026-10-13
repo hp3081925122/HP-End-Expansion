@@ -46,6 +46,8 @@ public class StarBoltEntity extends AbstractArrow {
     public final Vec3[] trail = new Vec3[TRAIL];
     public int trailCount;
     private boolean homing;
+    private ItemStack pickupStack = ItemStack.EMPTY;
+    @Nullable private ItemStack weaponStack;
     private int homingTargetId = -1;
     private boolean unstableRemnantTriggered;
     private boolean skyEyeDamageReduced;
@@ -58,16 +60,13 @@ public class StarBoltEntity extends AbstractArrow {
     }
 
     public StarBoltEntity(Level level, LivingEntity owner, ItemStack ammo, @Nullable ItemStack weapon) {
-        super(StarwreckEntities.STAR_BOLT.get(), owner, level, ammo, weapon);
+        super(StarwreckEntities.STAR_BOLT.get(), owner, level);
+        pickupStack = ammo.copyWithCount(1);
+        weaponStack = weapon == null ? null : weapon.copy();
     }
 
-    @Override protected ItemStack getDefaultPickupItem() {
-        return new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get());
-    }
-
-    @Override protected double getDefaultGravity() {
-        if (getOwner() instanceof Player player && StarBowItem.hasSkyrenderHorn(player)) return 0.0D;
-        return super.getDefaultGravity();
+    @Override protected ItemStack getPickupItem() {
+        return pickupStack.isEmpty() ? new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get()) : pickupStack.copy();
     }
 
     @Override protected SoundEvent getDefaultHitGroundSoundEvent() {
@@ -81,6 +80,7 @@ public class StarBoltEntity extends AbstractArrow {
     }
 
     @Override public void tick() {
+        setNoGravity(getOwner() instanceof Player player && StarBowItem.hasSkyrenderHorn(player));
         if (!level().isClientSide && homing && !inGround) updateHoming();
         // 原版箭在客户端 tick 里只要是暴击就每拍撒 4 个 CRIT 粒子，拉满弓必暴击，会盖住星晶矢自己的拖尾。
         // 客户端这一拍先把暴击标记临时清掉再放回，伤害在服务端算，不受影响；渲染读到的仍是真实标记。
@@ -203,6 +203,8 @@ public class StarBoltEntity extends AbstractArrow {
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("StarAmmo", 10)) pickupStack = ItemStack.of(tag.getCompound("StarAmmo"));
+        if (tag.contains("StarWeapon", 10)) weaponStack = ItemStack.of(tag.getCompound("StarWeapon"));
         unstableRemnantTriggered = tag.getBoolean("UnstableRemnantTriggered");
         chestplateBounceCount = tag.getInt("ChestplateBounceCount");
         chestplateHitEntityIds.clear();
@@ -211,6 +213,8 @@ public class StarBoltEntity extends AbstractArrow {
 
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (!pickupStack.isEmpty()) tag.put("StarAmmo", pickupStack.save(new CompoundTag()));
+        if (weaponStack != null) tag.put("StarWeapon", weaponStack.save(new CompoundTag()));
         tag.putBoolean("UnstableRemnantTriggered", unstableRemnantTriggered);
         tag.putInt("ChestplateBounceCount", chestplateBounceCount);
         tag.putIntArray("ChestplateHitEntityIds", chestplateHitEntityIds.toIntArray());
@@ -243,7 +247,7 @@ public class StarBoltEntity extends AbstractArrow {
         Vec3 direction = target.getEyePosition().subtract(from);
         if (direction.lengthSqr() < 1.0E-6D || !(level() instanceof ServerLevel server) || !(getOwner() instanceof LivingEntity owner)) return;
         direction = direction.normalize();
-        StarBoltEntity bounced = new StarBoltEntity(server, owner, getPickupItemStackOrigin().copyWithCount(1), getWeaponItem());
+        StarBoltEntity bounced = new StarBoltEntity(server, owner, getPickupItem().copyWithCount(1), weaponStack);
         bounced.setBaseDamage(getBaseDamage());
         bounced.setCritArrow(isCritArrow());
         bounced.setHoming(homing);
@@ -290,4 +294,5 @@ public class StarBoltEntity extends AbstractArrow {
         sl.sendParticles(ModParticles.STAR_EMBER.get(), at.x, at.y, at.z, n / 2, 0.12, 0.12, 0.12, 0.03);
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 0.6F, 1.5F + random.nextFloat() * 0.3F);
     }
+    @Override protected float getEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 0.13F; }
 }

@@ -40,12 +40,12 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.registry.ModStarwreck;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 
 /**
  * 陨壳龟（设计文档 9.3）。中立：平时趴着或慢慢挪、啃星苔芽。
@@ -82,13 +82,13 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
 
     public static AttributeSupplier.Builder createAttributes() {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 60).add(Attributes.ARMOR, 10).add(Attributes.KNOCKBACK_RESISTANCE, 0.8)
-            .add(Attributes.MOVEMENT_SPEED, 0.12).add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 16).add(Attributes.STEP_HEIGHT, 1.0);
+            .add(Attributes.MOVEMENT_SPEED, 0.12).add(Attributes.ATTACK_DAMAGE, 6).add(Attributes.FOLLOW_RANGE, 16).add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.0 - 0.6D);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(CRYSTALS, MAX_CRYSTALS);
-        builder.define(MODE, CALM);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(CRYSTALS, MAX_CRYSTALS);
+        this.entityData.define(MODE, CALM);
     }
 
     public int getCrystals() { return entityData.get(CRYSTALS); }
@@ -107,7 +107,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
         if (StarRain.active(server)) {
             if (!shelledForStarRain) {
                 shelledForStarRain = true;
-                stopTriggeredAnim("action", "stomp");
+                stopTriggeredAnimation("action", "stomp");
                 LOGGER.debug("Meteor tortoise entered star rain shelter: entity={}, dimension={}", getId(), server.dimension().location());
             }
             setTarget(null);
@@ -207,7 +207,7 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
                 Math.cos(angle) * 0.22, 0.03, Math.sin(angle) * 0.22, 1);
             if (i % 2 == 0) server.sendParticles(dust, getX() + Math.cos(angle) * 2.2, getY() + 0.1, getZ() + Math.sin(angle) * 2.2, 2, 0.3, 0.05, 0.3, 0.1);
         }
-        level().playSound(null, getX(), getY(), getZ(), SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.HOSTILE, 1.3F, 0.7F);
+        level().playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.3F, 0.7F);
     }
 
     // 镐右击龟壳：敲下一簇星晶，掉 1～2 个星晶碎片，不激怒
@@ -223,14 +223,14 @@ public final class MeteorTortoiseEntity extends PathfinderMob implements GeoEnti
             if (level() instanceof ServerLevel server)
                 server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ModStarwreck.STAR_CRYSTAL_BLOCK.get().defaultBlockState()),
                     getX(), getY() + 1.1, getZ(), 12, 0.3, 0.2, 0.3, 0.1);
-            stack.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+            stack.hurtAndBreak(1, player, broken -> broken.broadcastBreakEvent(hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND));
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
 
     // 壳上剩余的晶簇越多，死亡时掉的星晶碎片越多：0～1 簇掉 1 个，2～3 簇掉 2 个，4 簇掉 3 个
-    @Override protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
-        super.dropCustomDeathLoot(level, source, recentlyHit);
+    @Override protected void dropCustomDeathLoot(DamageSource source, int lootingMultiplier, boolean recentlyHit) {
+        super.dropCustomDeathLoot(source, lootingMultiplier, recentlyHit);
         spawnAtLocation(new ItemStack(ModStarwreck.STAR_CRYSTAL_SHARD.get(), 1 + getCrystals() / 2));
     }
 

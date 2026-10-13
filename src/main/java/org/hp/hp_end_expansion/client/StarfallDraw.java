@@ -30,12 +30,13 @@ public final class StarfallDraw {
     public static RenderType solid(ResourceLocation texture) { return RenderType.entityCutoutNoCull(texture); }
 
     public static void vertex(PoseStack.Pose pose, VertexConsumer buffer, Vec3 p, float u, float v, float r, float g, float b, float a) {
-        buffer.addVertex(pose, (float) p.x, (float) p.y, (float) p.z)
-            .setColor(r, g, b, a)
-            .setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY)
-            .setLight(LightTexture.FULL_BRIGHT)
-            .setNormal(pose, 0, 1, 0);
+        buffer.vertex(pose.pose(), (float) p.x, (float) p.y, (float) p.z)
+            .color((int) (r * 255), (int) (g * 255), (int) (b * 255), (int) (a * 255))
+            .uv(u, v)
+            .overlayCoords(OverlayTexture.NO_OVERLAY)
+            .uv2(LightTexture.FULL_BRIGHT)
+            .normal(pose.normal(), 0, 1, 0)
+            .endVertex();
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，两面都画。rgb 已乘好亮度。 */

@@ -18,7 +18,6 @@
   "entity.hp_end_expansion.tidebreaker_shrimp": "Tidebreaker Mantis Shrimp",
   "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "Tidebreaker Mantis Shrimp Spawn Egg",
   "item.hp_end_expansion.tidebreaker_gauntlet": "Tidebreaker Gauntlet",
-
   "entity.hp_end_expansion.tidecrown_anemone": "Tidecrown Anemone",
   "item.hp_end_expansion.tidecrown_anemone_spawn_egg": "Tidecrown Anemone Spawn Egg",
   "item.hp_end_expansion.tidecrown_tentacle": "Tidecrown Tentacle",
@@ -187,5 +186,6 @@
   "message.hp_end_expansion.sky_eye_omen.present": "The Skyrender has already descended in this dimension",
   "message.hp_end_expansion.sky_eye_omen.starfall": "Wait for the star rain to end first",
   "message.hp_end_expansion.sky_eye_omen.no_room": "There is no room nearby for it to land",
-  "message.hp_end_expansion.starfall_omen.no_site": "There is no open ground nearby for a meteor"
+  "message.hp_end_expansion.starfall_omen.no_site": "There is no open ground nearby for a meteor",
+  "subtitles.hp_end_expansion.mace_smash_ground": "Mace smashes ground"
 }

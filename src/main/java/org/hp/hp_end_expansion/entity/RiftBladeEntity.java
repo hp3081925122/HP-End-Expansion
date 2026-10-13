@@ -54,7 +54,7 @@ public final class RiftBladeEntity extends Projectile {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData() {
     }
 
     @Override
@@ -63,7 +63,7 @@ public final class RiftBladeEntity extends Projectile {
         // 命中检测与飞行位移
         HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
         if (hit.getType() != HitResult.Type.MISS) {
-            this.hitTargetOrDeflectSelf(hit);
+            this.onHit(hit);
         }
         Vec3 motion = this.getDeltaMovement();
         this.setPos(this.getX() + motion.x, this.getY() + motion.y, this.getZ() + motion.z);
@@ -125,11 +125,6 @@ public final class RiftBladeEntity extends Projectile {
     @Override
     public boolean isPickable() {
         return false;
-    }
-
-    @Override
-    protected double getDefaultGravity() {
-        return 0.0D;
     }
 
     @Override

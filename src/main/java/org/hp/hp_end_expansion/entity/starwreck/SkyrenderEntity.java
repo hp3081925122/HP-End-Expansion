@@ -56,7 +56,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.entity.PartEntity;
+import net.minecraftforge.entity.PartEntity;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.registry.ModParticles;
@@ -65,11 +65,11 @@ import org.joml.Vector3f;
 import org.slf4j.Logger;
 import top.theillusivec4.curios.api.CuriosApi;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
@@ -105,8 +105,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     /** 爪扫后留在空中的三道裂痕：离身体中心的半径（格）、左右各张开的角度（度）、离地高度范围。 */
     public static final double[] TEAR_RADII = {5.5, 6.5, 7.5};
     public static final double TEAR_SPAN = 70, TEAR_LOW = 0.3, TEAR_HIGH = 2.2, RAKE_REACH = 7.0, GAZE_RANGE = 48, GAZE_CONE = 75;
-    private static final ResourceLocation PARTY_HEALTH = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "skyrender_party_health");
-    private static final ResourceLocation FINAL_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "skyrender_final_speed");
+    private static final java.util.UUID PARTY_HEALTH = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":skyrender_party_health").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    private static final java.util.UUID FINAL_SPEED = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":skyrender_final_speed").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(SkyrenderEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> PHASE = SynchedEntityData.defineId(SkyrenderEntity.class, EntityDataSerializers.BYTE);
@@ -175,13 +175,18 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             .add(Attributes.MOVEMENT_SPEED, 0.3)
             .add(Attributes.FOLLOW_RANGE, 48)
             .add(Attributes.KNOCKBACK_RESISTANCE, 1)
-            .add(Attributes.STEP_HEIGHT, 1.5);
+            .add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.5 - 0.6D);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(STATE, NONE).define(PHASE, (byte) 0).define(VARIANT, (byte) 1).define(ACTION, 0).define(LOCK_YAW, 0F)
-            .define(AIM, new Vector3f()).define(ANCHOR, new Vector3f());
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(STATE, NONE);
+        this.entityData.define(PHASE, (byte) 0);
+        this.entityData.define(VARIANT, (byte) 1);
+        this.entityData.define(ACTION, 0);
+        this.entityData.define(LOCK_YAW, 0F);
+        this.entityData.define(AIM, new Vector3f());
+        this.entityData.define(ANCHOR, new Vector3f());
     }
 
     @Override protected void registerGoals() {
@@ -258,8 +263,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     }
 
     /** 刷怪蛋或指令生成：没有仪式，就地当战场中心，直接落地怒吼。 */
-    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data) {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data);
+    @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData data, @Nullable CompoundTag spawnTag) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, data, spawnTag);
         setupArena(position(), 28, true);
         entityData.set(ANCHOR, position().toVector3f());
         entityData.set(PHASE, (byte) 1);
@@ -541,7 +546,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         if (players <= 1) return;
         AttributeInstance health = getAttribute(Attributes.MAX_HEALTH);
         if (health == null) return;
-        health.addOrReplacePermanentModifier(new AttributeModifier(PARTY_HEALTH, 0.5 * (players - 1), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(health, new AttributeModifier(PARTY_HEALTH, "hp_end_expansion.party_health", 0.5 * (players - 1), AttributeModifier.Operation.MULTIPLY_BASE));
         setHealth(getMaxHealth());
         LOGGER.debug("Skyrender scaled for {} players, max health {}", players, getMaxHealth());
     }
@@ -597,8 +602,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         }
         groundBurst(level, land, 3.5F, 80);
         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, land.x, land.y + 0.5, land.z, 1, 0, 0, 0, 0);
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 8, 0.45F);
-        playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 6, 0.5F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 8, 0.45F);
+        playSound(org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND_HEAVY.get(), 6, 0.5F);
         entityData.set(PHASE, (byte) 1);
         startState(ROAR);
         LOGGER.debug("Skyrender landed at {}", land);
@@ -636,7 +641,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             entityData.set(PHASE, next);
             if (next == 3) {
                 AttributeInstance speed = getAttribute(Attributes.MOVEMENT_SPEED);
-                if (speed != null) speed.addOrReplacePermanentModifier(new AttributeModifier(FINAL_SPEED, 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                if (speed != null) org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(speed, new AttributeModifier(FINAL_SPEED, "hp_end_expansion.final_speed", 0.2, AttributeModifier.Operation.MULTIPLY_BASE));
             }
             LOGGER.debug("Skyrender enters phase {}", next);
         }
@@ -699,7 +704,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         if (t == METEOR_HIT) meteorImpact(level, meteorTargets());
         // 第二次爆闪
         if (t == METEOR_HIT + 14) {
-            playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.45F);
+            playSound(SoundEvents.GENERIC_EXPLODE, 10, 0.45F);
             playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 8, 0.35F);
         }
         // 余烬：碎屑往上飘回天裂
@@ -723,8 +728,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             }
             push(target, target.position().subtract(center), 1.0, 0.4);
         }
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.5F);
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 10, 0.6F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 10, 0.5F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 10, 0.6F);
         playSound(SoundEvents.WARDEN_SONIC_BOOM, 10, 0.6F);
         playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 10, 0.4F);
         Vec3 floor = new Vec3(center.x, floorY, center.z);
@@ -940,8 +945,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         }
         Vec3 club = position().subtract(f.scale(5));
         groundBurst(level, club, 1.6F, 30);
-        playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 4, 0.6F);
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.5F, 0.8F);
+        playSound(org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND_HEAVY.get(), 4, 0.6F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 1.5F, 0.8F);
     }
 
     // ---------- 跃袭 ----------
@@ -1007,8 +1012,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         }
         groundBurst(level, land, 3F, 60);
         level.sendParticles(ModParticles.SKY_MOTE.get(), land.x, land.y + 1, land.z, 40, 2.5, 0.6, 2.5, 0.08);
-        playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 6, 0.5F);
-        playSound(SoundEvents.GENERIC_EXPLODE.value(), 3, 0.6F);
+        playSound(org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND_HEAVY.get(), 6, 0.5F);
+        playSound(SoundEvents.GENERIC_EXPLODE, 3, 0.6F);
         LOGGER.debug("Skyrender leap landed: entity={}, at={}, hits={}", getId(), land, count);
     }
 
@@ -1113,7 +1118,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             // 四爪在地上犁出的土
             if (t % 2 == 0 && onGround()) groundBurst(level, position().add(forward().scale(1.5)), 1.6F, 12);
         }
-        if (t == 6) playSound(SoundEvents.MACE_SMASH_GROUND, 5, 0.6F);
+        if (t == 6) playSound(org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND.get(), 5, 0.6F);
         if (t == 12 || t == 22) playSound(SoundEvents.RAVAGER_STEP, 3, 0.6F);
         if (t == 32) playSound(SoundEvents.ENDER_DRAGON_GROWL, 5, 0.65F);
     }
@@ -1264,9 +1269,9 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     @Override public void knockback(double strength, double x, double z) {}
     @Override public boolean isPushable() { return false; }
     @Override public boolean isPushedByFluid() { return false; }
-    @Override public boolean canBeLeashed() { return false; }
+    @Override public boolean canBeLeashed(net.minecraft.world.entity.player.Player player) { return false; }
     @Override public boolean removeWhenFarAway(double distance) { return false; }
-    @Override public boolean canChangeDimensions(Level from, Level to) { return false; }
+    @Override public boolean canChangeDimensions() { return false; }
     @Override public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) { return false; }
     @Override public boolean shouldRenderAtSqrDistance(double d) { return d < 256 * 256; }
 
@@ -1443,4 +1448,5 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             yHeadRot = yaw;
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 2.4F; }
 }

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "hp_end_expansion:starwreck_bricks"
+  },
+  "result": "hp_end_expansion:starwreck_brick_wall",
+  "count": 1
+}

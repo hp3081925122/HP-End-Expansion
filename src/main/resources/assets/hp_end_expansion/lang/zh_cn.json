@@ -18,7 +18,6 @@
   "entity.hp_end_expansion.tidebreaker_shrimp": "碎潮拳虾",
   "item.hp_end_expansion.tidebreaker_shrimp_spawn_egg": "碎潮拳虾刷怪蛋",
   "item.hp_end_expansion.tidebreaker_gauntlet": "碎潮拳甲",
-
   "entity.hp_end_expansion.tidecrown_anemone": "潮冠缚葵",
   "item.hp_end_expansion.tidecrown_anemone_spawn_egg": "潮冠缚葵刷怪蛋",
   "item.hp_end_expansion.tidecrown_tentacle": "潮冠触腕",
@@ -187,5 +186,6 @@
   "message.hp_end_expansion.sky_eye_omen.present": "裂天之主已经降临在这个维度",
   "message.hp_end_expansion.sky_eye_omen.starfall": "先等这场星雨结束",
   "message.hp_end_expansion.sky_eye_omen.no_room": "附近没有能让它落脚的地方",
-  "message.hp_end_expansion.starfall_omen.no_site": "附近没有能落下陨星的空地"
+  "message.hp_end_expansion.starfall_omen.no_site": "附近没有能落下陨星的空地",
+  "subtitles.hp_end_expansion.mace_smash_ground": "重锤砸地"
 }

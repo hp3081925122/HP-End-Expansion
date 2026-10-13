@@ -4,10 +4,10 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import org.slf4j.Logger;
 import org.hp.hp_end_expansion.registry.ModItems;
@@ -19,8 +19,8 @@ import org.hp.hp_end_expansion.worldgen.tidelight.TidelightWorldgen;
 import org.hp.hp_end_expansion.worldgen.StarwreckConfig;
 import org.hp.hp_end_expansion.config.CombatConfigs;
 import org.hp.hp_end_expansion.worldgen.StarwreckWorldgen;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.config.ModConfig;
 import org.hp.hp_end_expansion.compat.TerrablenderCompat;
 
 @Mod(Hp_end_expansion.MODID)
@@ -28,7 +28,7 @@ public final class Hp_end_expansion {
     public static final String MODID = "hp_end_expansion";
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TIDELIGHT_TAB = CREATIVE_MODE_TABS.register(
+    public static final RegistryObject<CreativeModeTab> TIDELIGHT_TAB = CREATIVE_MODE_TABS.register(
         "tidelight_reef",
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hp_end_expansion.tidelight_reef"))
@@ -55,7 +55,7 @@ public final class Hp_end_expansion {
             })
             .build()
     );
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> STARWRECK_TAB = CREATIVE_MODE_TABS.register(
+    public static final RegistryObject<CreativeModeTab> STARWRECK_TAB = CREATIVE_MODE_TABS.register(
         "starwreck_wastes",
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hp_end_expansion.starwreck_wastes"))
@@ -68,7 +68,7 @@ public final class Hp_end_expansion {
             })
             .build()
     );
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register(
+    public static final RegistryObject<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register(
         "main",
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hp_end_expansion"))
@@ -87,7 +87,9 @@ public final class Hp_end_expansion {
             .build()
     );
 
-    public Hp_end_expansion(IEventBus modEventBus, ModContainer container) {
+    public Hp_end_expansion() {
+        IEventBus modEventBus = net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus();
+        org.hp.hp_end_expansion.network.ModNetwork.register();
         LOGGER.debug("Using default ordering for creative tab hp_end_expansion:main");
         ModEntities.register(modEventBus);
         ModStarwreck.register(modEventBus);
@@ -95,10 +97,12 @@ public final class Hp_end_expansion {
         StarwreckWorldgen.register(modEventBus);
         ModTidelight.register(modEventBus);
         TidelightWorldgen.register(modEventBus);
-        container.registerConfig(ModConfig.Type.COMMON, StarwreckConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, StarwreckConfig.SPEC);
         TerrablenderCompat.registerListener();
-        CombatConfigs.register(modEventBus, container);
+        CombatConfigs.register(modEventBus);
         ModParticles.PARTICLE_TYPES.register(modEventBus);
+        org.hp.hp_end_expansion.compat.LootingBonusCondition.TYPES.register(modEventBus);
+        org.hp.hp_end_expansion.compat.TagEnchantmentFunction.TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
     }

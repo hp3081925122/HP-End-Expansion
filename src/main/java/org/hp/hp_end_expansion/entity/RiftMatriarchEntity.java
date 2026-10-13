@@ -48,11 +48,11 @@ import org.hp.hp_end_expansion.registry.ModItems;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public final class RiftMatriarchEntity extends Monster implements GeoEntity {
@@ -89,9 +89,9 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     private static final int MAX_MINIONS = 3;
 
     // 属性修饰符标识
-    private static final ResourceLocation PARTY_HEALTH = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_party_health");
-    private static final ResourceLocation NEST_SPEED = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_nest_speed");
-    private static final ResourceLocation SHATTER_ARMOR = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "matriarch_shatter_armor");
+    private static final java.util.UUID PARTY_HEALTH = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":matriarch_party_health").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    private static final java.util.UUID NEST_SPEED = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":matriarch_nest_speed").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    private static final java.util.UUID SHATTER_ARMOR = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":matriarch_shatter_armor").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     // 同步字段：当前技能、技能 tick、阶段、背部核心暴露
     private static final EntityDataAccessor<Integer> SKILL = SynchedEntityData.defineId(RiftMatriarchEntity.class, EntityDataSerializers.INT);
@@ -144,16 +144,16 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
             .add(Attributes.MOVEMENT_SPEED, 0.32D)
             .add(Attributes.FOLLOW_RANGE, 48.0D)
-            .add(Attributes.STEP_HEIGHT, 1.5D);
+            .add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.5D - 0.6D);
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, SKILL_NONE);
-        builder.define(SKILL_TICK, 0);
-        builder.define(PHASE, 1);
-        builder.define(CORE_OPEN, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, SKILL_NONE);
+        this.entityData.define(SKILL_TICK, 0);
+        this.entityData.define(PHASE, 1);
+        this.entityData.define(CORE_OPEN, false);
     }
 
     @Override
@@ -264,8 +264,8 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             this.partyScaled = true;
             int players = Math.min(4, this.playersInArena(serverLevel).size());
             if (players > 1) {
-                this.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
-                    new AttributeModifier(PARTY_HEALTH, 0.5D * (players - 1), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(this.getAttribute(Attributes.MAX_HEALTH),
+                    new AttributeModifier(PARTY_HEALTH, "party_health", 0.5D * (players - 1), AttributeModifier.Operation.MULTIPLY_BASE));
                 this.setHealth(this.getMaxHealth());
                 LOGGER.debug("Rift Matriarch {} scaled for {} players, max health {}", this.getId(), players, this.getMaxHealth());
             }
@@ -444,7 +444,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                     serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), p.x, p.y + 0.2D, p.z, 4, 0.3D, 0.1D, 0.3D, 0.2D);
                 }
             }
-            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.2F, 1.0F);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 1.2F, 1.0F);
         }
         if (t >= 40) {
             this.tripleCooldown = this.cd(60);
@@ -577,7 +577,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), this.getX(), this.getY() + 0.3D, this.getZ(), 30, 2.0D, 0.2D, 2.0D, 0.3D);
             }
             VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, this.position().add(0.0D, 0.05D, 0.0D), 0.0F, 5.0F, 0, 12, this);
-            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.5F, 0.9F);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 1.5F, 0.9F);
         }
         if (t >= 50) {
             this.webCooldown = this.cd(240);
@@ -747,7 +747,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 serverLevel.sendParticles(ModParticles.RIFT_SHARD.get(), dest.x, dest.y + 0.3D, dest.z, 60, 3.0D, 0.3D, 3.0D, 0.35D);
             }
             VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, dest.add(0.0D, 0.05D, 0.0D), 0.0F, 7.0F, 0, 14, this);
-            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 0.7F);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 2.0F, 0.7F);
         }
         if (t >= 110) {
             this.finaleCooldown = 600;
@@ -822,12 +822,12 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
     // 阶段属性：二阶段移速 +15%，三阶段护甲 -8
     private void applyPhaseAttributes(int phase) {
         if (phase >= 2) {
-            this.getAttribute(Attributes.MOVEMENT_SPEED).addOrReplacePermanentModifier(
-                new AttributeModifier(NEST_SPEED, 0.15D, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(this.getAttribute(Attributes.MOVEMENT_SPEED),
+                new AttributeModifier(NEST_SPEED, "nest_speed", 0.15D, AttributeModifier.Operation.MULTIPLY_BASE));
         }
         if (phase >= 3) {
-            this.getAttribute(Attributes.ARMOR).addOrReplacePermanentModifier(
-                new AttributeModifier(SHATTER_ARMOR, -8.0D, AttributeModifier.Operation.ADD_VALUE));
+            org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(this.getAttribute(Attributes.ARMOR),
+                new AttributeModifier(SHATTER_ARMOR, "shatter_armor", -8.0D, AttributeModifier.Operation.ADDITION));
         }
     }
 
@@ -1008,9 +1008,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
         super.customServerAiStep();
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
     }
-
-    @Override
-    public boolean canChangeDimensions(Level from, Level to) {
+    public boolean canChangeDimensions() {
         return false;
     }
 
@@ -1218,4 +1216,5 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             }
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 4.8F; }
 }

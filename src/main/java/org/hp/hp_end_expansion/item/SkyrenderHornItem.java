@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.item;
 
+import net.minecraft.world.level.Level;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,7 +15,7 @@ public final class SkyrenderHornItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         for (int i = 1; i <= 5; i++) {
             tooltip.add(Component.translatable("tooltip.hp_end_expansion.skyrender_horn." + i).withStyle(ChatFormatting.GOLD));
         }

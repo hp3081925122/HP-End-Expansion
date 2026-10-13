@@ -1,0 +1,12 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": [
+    "hp_end_expansion:tidelight_reef"
+  ],
+  "spawners": {
+    "type": "hp_end_expansion:glimmerfin",
+    "weight": 14,
+    "minCount": 3,
+    "maxCount": 5
+  }
+}

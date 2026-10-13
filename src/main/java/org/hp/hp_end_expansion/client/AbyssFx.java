@@ -28,8 +28,8 @@ final class AbyssFx {
 
     static void v(PoseStack.Pose p, VertexConsumer vc, Vec3 pos, float u, float v, float k) {
         float c = Mth.clamp(k, 0, 1);
-        vc.addVertex(p, (float) pos.x, (float) pos.y, (float) pos.z).setColor(c, c, c, c).setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(p, 0, 1, 0);
+        vc.vertex(p.pose(), (float) pos.x, (float) pos.y, (float) pos.z).color(c, c, c, c).uv(u, v)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(p.normal(), 0, 1, 0).endVertex();
     }
 
     /** a(u0,v0) b(u1,v0) c(u1,v1) d(u0,v1)，两面。 */

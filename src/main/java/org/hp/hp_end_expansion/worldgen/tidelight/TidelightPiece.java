@@ -44,7 +44,7 @@ public final class TidelightPiece extends TemplateStructurePiece {
         if (marker.equals("middle_chest") || marker.equals("head_chest") || marker.equals("shrine_chest")) {
             level.setBlock(pos, Blocks.CHEST.defaultBlockState().rotate(placeSettings.getRotation()), 2);
             String loot = marker.equals("shrine_chest") ? "tide_shrine" : "whalefall_reef";
-            if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) container.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath("hp_end_expansion", "chests/" + loot)), random.nextLong());
+            if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) container.setLootTable(ResourceLocation.fromNamespaceAndPath("hp_end_expansion", "chests/" + loot), random.nextLong());
         }
     }
 }

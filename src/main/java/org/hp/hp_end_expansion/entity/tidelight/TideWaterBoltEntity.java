@@ -36,13 +36,13 @@ public final class TideWaterBoltEntity extends ThrowableProjectile {
         Vec3 d = aim.subtract(from);
         // 补偿重力下坠，让水箭在中段对准瞄准点
         double flight = d.length() / SPEED;
-        bolt.shoot(d.x, d.y + 0.5 * bolt.getDefaultGravity() * flight * flight, d.z, SPEED, 0);
+        bolt.shoot(d.x, d.y + 0.5 * bolt.getGravity() * flight * flight, d.z, SPEED, 0);
         level.addFreshEntity(bolt);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    @Override protected void defineSynchedData() {}
 
-    @Override protected double getDefaultGravity() { return 0.01; }
+    @Override protected float getGravity() { return 0.01F; }
 
     @Override public void tick() {
         super.tick();

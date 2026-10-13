@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.item;
 
+import net.minecraft.world.level.Level;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,7 +30,7 @@ public final class DevourerWingsItem extends Item implements ICurioItem {
         ItemStack equipped = entity.getItemBySlot(slot);
         if (slot != EquipmentSlot.CHEST || equipped.canElytraFly(entity)) return equipped;
         if (!(entity instanceof Player player)) return equipped;
-        return CuriosApi.getCuriosInventory(player)
+        return CuriosApi.getCuriosInventory(player).resolve()
             .flatMap(handler -> handler.findFirstCurio(ModItems.DEVOURER_WINGS.get()))
             .filter(result -> result.slotContext().identifier().equals("back"))
             .map(result -> result.stack())
@@ -37,7 +38,7 @@ public final class DevourerWingsItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.devourer_wings.flight").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.devourer_wings").withStyle(ChatFormatting.GRAY));
     }

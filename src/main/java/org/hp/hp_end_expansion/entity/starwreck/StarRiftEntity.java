@@ -68,7 +68,7 @@ public final class StarRiftEntity extends Entity {
         return Phase.CLOSING;
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { builder.define(AGE, 0); }
+    @Override protected void defineSynchedData() { this.entityData.define(AGE, 0); }
 
     @Override public void tick() {
         super.tick();

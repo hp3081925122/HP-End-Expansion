@@ -56,11 +56,11 @@ import org.hp.hp_end_expansion.registry.ModParticles;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public final class StarDevourerEntity extends Monster implements GeoEntity {
@@ -125,7 +125,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     // 场地
     private static final double ARENA_RADIUS = 32.0D;
     private static final int LEAVE_LIMIT = 1200;
-    private static final ResourceLocation PARTY_HEALTH = ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "devourer_party_health");
+    private static final java.util.UUID PARTY_HEALTH = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":devourer_party_health").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
     // 同步字段：技能、技能 tick、阶段、射线终点、已碎核心位掩码
     private static final EntityDataAccessor<Integer> SKILL = SynchedEntityData.defineId(StarDevourerEntity.class, EntityDataSerializers.INT);
@@ -194,13 +194,13 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, SKILL_NONE);
-        builder.define(SKILL_TICK, 0);
-        builder.define(PHASE, 1);
-        builder.define(BEAM_POINT, new Vector3f());
-        builder.define(BROKEN_CORES, 0);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, SKILL_NONE);
+        this.entityData.define(SKILL_TICK, 0);
+        this.entityData.define(PHASE, 1);
+        this.entityData.define(BEAM_POINT, new Vector3f());
+        this.entityData.define(BROKEN_CORES, 0);
     }
 
     @Override
@@ -422,8 +422,8 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.partyScaled = true;
             int players = Math.min(4, this.playersInArena(serverLevel).size());
             if (players > 1) {
-                this.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
-                    new AttributeModifier(PARTY_HEALTH, 0.5D * (players - 1), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                org.hp.hp_end_expansion.compat.AttributeCompat.permanentModifier(this.getAttribute(Attributes.MAX_HEALTH),
+                    new AttributeModifier(PARTY_HEALTH, "party_health", 0.5D * (players - 1), AttributeModifier.Operation.MULTIPLY_BASE));
                 this.setHealth(this.getMaxHealth());
                 LOGGER.debug("Star Devourer {} scaled for {} players, max health {}", this.getId(), players, this.getMaxHealth());
             }
@@ -519,7 +519,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             }
             double a = Math.PI * 2.0D * i / count;
             ray.moveTo(this.getX() + Math.cos(a) * 6.0D, this.getY() + 2.0D, this.getZ() + Math.sin(a) * 6.0D, this.getYRot(), 0.0F);
-            ray.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(ray.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
+            ray.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(ray.blockPosition()), MobSpawnType.MOB_SUMMONED, null, null);
             ray.makeMinion((float) CombatConfigs.STAR_DEVOURER.value("summonMinionHealth"));
             ray.setTarget(this.getTarget());
             serverLevel.addFreshEntity(ray);
@@ -661,7 +661,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 if (seg == 2 && local == DIVE_WINDUP + (DIVE_CYCLE - DIVE_WINDUP) / 2) {
                     VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_SHOCK, this.diveLow.subtract(0.0D, 0.8D, 0.0D), 0.0F, 6.0F, 0, 12, this);
                     this.hitCircle(this.diveLow, 6.0D, CombatConfigs.STAR_DEVOURER.damage("diveImpactDamage"), 0.5D);
-                    this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 0.7F);
+                    this.playSound(SoundEvents.GENERIC_EXPLODE, 2.0F, 0.7F);
                 }
             }
         } else {
@@ -850,7 +850,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.spinStart = start;
             float yaw = (float) (Mth.atan2(this.spinDir.z, this.spinDir.x) * Mth.RAD_TO_DEG) - 90.0F;
             VoidRayVfxEntity.spawn(this.level(), VoidRayVfxEntity.KIND_WARN_WIDE, new Vec3(start.x, start.y - 1.5D, start.z), yaw, 20.0F, 0, SPIN_WINDUP + 2, this);
-            this.playSound(SoundEvents.TRIDENT_RIPTIDE_3.value(), 2.5F, 0.6F);
+            this.playSound(SoundEvents.TRIDENT_RIPTIDE_3, 2.5F, 0.6F);
         }
         if (this.spinDir == null || this.spinStart == null) {
             this.endSkill();
@@ -935,7 +935,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 player.hurt(this.damageSources().indirectMagic(this, this), damage);
             }
             serverLevel.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 2.0D, this.getZ(), 200, 6.0D, 4.0D, 6.0D, 0.6D);
-            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 4.0F, 0.5F);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 4.0F, 0.5F);
             LOGGER.debug("Star Devourer {} star burst damage {}", this.getId(), damage);
             for (StarCoreEntity core : this.starCores) {
                 core.discard();
@@ -1048,9 +1048,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
         super.customServerAiStep();
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
     }
-
-    @Override
-    public boolean canChangeDimensions(Level from, Level to) {
+    public boolean canChangeDimensions() {
         return false;
     }
 
@@ -1295,4 +1293,5 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             this.boss.getMoveControl().setWantedPosition(x, y, z, 1.0D);
         }
     }
+    @Override protected float getStandingEyeHeight(net.minecraft.world.entity.Pose pose, net.minecraft.world.entity.EntityDimensions dimensions) { return 2.4F; }
 }

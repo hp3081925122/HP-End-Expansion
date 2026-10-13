@@ -197,8 +197,10 @@ public class SkyMeteorEntity extends Entity {
         return cracks;
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(STAR_RADIUS, 14F).define(ARENA_RADIUS, 28F).define(FROM_YAW, 0F);
+    @Override protected void defineSynchedData() {
+        this.entityData.define(STAR_RADIUS, 14F);
+        this.entityData.define(ARENA_RADIUS, 28F);
+        this.entityData.define(FROM_YAW, 0F);
     }
 
     @Override public void tick() {
@@ -264,7 +266,7 @@ public class SkyMeteorEntity extends Entity {
             for (int j = 0; j < 3; j++) level().addParticle(ParticleTypes.LAVA, true, p.x, p.y + 0.5, p.z, 0, 0, 0);
             for (int j = 0; j < 4; j++) level().addParticle(ParticleTypes.LARGE_SMOKE, true, p.x + (random.nextDouble() - 0.5) * size * 2, p.y + 1,
                 p.z + (random.nextDouble() - 0.5) * size * 2, 0, 0.08, 0);
-            if ((i & 1) == 0) level().playLocalSound(p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 3, 0.7F + 0.3F * noise(getId(), i, 9), false);
+            if ((i & 1) == 0) level().playLocalSound(p.x, p.y, p.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3, 0.7F + 0.3F * noise(getId(), i, 9), false);
         }
     }
 

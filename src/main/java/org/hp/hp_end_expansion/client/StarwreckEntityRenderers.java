@@ -7,11 +7,11 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import org.hp.hp_end_expansion.registry.ModParticles;
 import org.hp.hp_end_expansion.Hp_end_expansion;
 import org.hp.hp_end_expansion.entity.starwreck.EmberBeetleEntity;
@@ -25,24 +25,23 @@ import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.registry.StarwreckEntities;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.cache.GeckoLibCache;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 // 星骸荒原三种生物共用：geo / 贴图 / 动画按实体 ID 取，发光部位由 *_glowmask 贴图给出
-@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class StarwreckEntityRenderers {
     static {
         // 万象灾厄的动画是自己的格式，但放在 animations/ 下。GeckoLib 扫到后解析失败会中断整批加载，后面的动画文件全部丢失。
-        GeckoLibCache.registerNamespaceExclusion("myriad_calamity");
     }
 
     private StarwreckEntityRenderers() {}
@@ -92,9 +91,9 @@ public final class StarwreckEntityRenderers {
         }
 
         @Override public void preRender(PoseStack poseStack, T animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
-                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+                                        @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
             Matrix4f baseTranslations = entityRenderTranslations;
-            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+            super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             if (animatable instanceof StarChaserEntity) {
                 if (isReRender) {
                     entityRenderTranslations = baseTranslations;
@@ -115,8 +114,8 @@ public final class StarwreckEntityRenderers {
         }
 
         @Override public void renderFinal(PoseStack poseStack, T animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer,
-                                          float partialTick, int packedLight, int packedOverlay, int colour) {
-            super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
+                                          float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+            super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
             if (animatable instanceof StarChaserEntity chaser && !chaser.isInvisible())
                 StarChaserVfx.render(chaser, model, poseStack, bufferSource, partialTick);
             if (animatable instanceof StarBearerEntity bearer) {
@@ -174,13 +173,13 @@ public final class StarwreckEntityRenderers {
             if (animatable instanceof MeteorTortoiseEntity tortoise) {
                 int left = tortoise.getCrystals();
                 for (int i = 0; i < CRYSTAL_BONES.length; i++) {
-                    GeoBone bone = getAnimationProcessor().getBone(CRYSTAL_BONES[i]);
+                    var bone = getAnimationProcessor().getBone(CRYSTAL_BONES[i]);
                     if (bone != null) bone.setHidden(i >= left);
                 }
             }
             if (animatable instanceof StarBearerEntity bearer) {
-                GeoBone whole = getAnimationProcessor().getBone("star");
-                GeoBone broken = getAnimationProcessor().getBone("star_broken");
+                var whole = getAnimationProcessor().getBone("star");
+                var broken = getAnimationProcessor().getBone("star_broken");
                 if (whole != null) whole.setHidden(bearer.isStarBroken());
                 if (broken != null) broken.setHidden(!bearer.isStarBroken());
             }

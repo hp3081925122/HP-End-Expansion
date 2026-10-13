@@ -39,12 +39,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import org.slf4j.Logger;
 
 /**
@@ -136,14 +136,14 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
             .add(Attributes.MOVEMENT_SPEED, 0.2)
             .add(Attributes.FOLLOW_RANGE, TRACK_RANGE)
             .add(Attributes.ATTACK_DAMAGE, CLAW_DAMAGE)
-            .add(Attributes.STEP_HEIGHT, 1.0);
+            .add(net.minecraftforge.common.ForgeMod.STEP_HEIGHT_ADDITION.get(), 1.0 - 0.6D);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(SKILL, NONE);
-        builder.define(RESTING, false);
-        builder.define(SKULL_BROKEN, false);
+    @Override protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(SKILL, NONE);
+        this.entityData.define(RESTING, false);
+        this.entityData.define(SKULL_BROKEN, false);
     }
 
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
@@ -443,7 +443,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
         }
         impactFx(at, 1.4F, 20);
         if (level() instanceof ServerLevel server) TideVfxEntity.spawnSplash(server, at, 1.0F);
-        level().playSound(null, at.x, at.y, at.z, SoundEvents.MACE_SMASH_GROUND, SoundSource.HOSTILE, 1.3F, 0.8F);
+        level().playSound(null, at.x, at.y, at.z, org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND.get(), SoundSource.HOSTILE, 1.3F, 0.8F);
         level().playSound(null, at.x, at.y, at.z, SoundEvents.PLAYER_SPLASH, SoundSource.HOSTILE, 0.8F, 1.0F);
     }
 
@@ -471,7 +471,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
                 return;
             }
             grabbed = caught;
-            playSound(SoundEvents.ARMOR_EQUIP_TURTLE.value(), 1.2F, 0.6F);
+            playSound(SoundEvents.ARMOR_EQUIP_TURTLE, 1.2F, 0.6F);
         }
         if (grabbed == null) return;
         if (!grabbed.isAlive() || grabbed.isPassenger() || grabbed.isRemoved()) { releaseGrab(); return; }
@@ -509,7 +509,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
             }
             impactFx(ground, 1.6F, 26);
             if (level() instanceof ServerLevel server) TideVfxEntity.spawnSplash(server, ground, 1.35F);
-            level().playSound(null, ground.x, ground.y, ground.z, SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.HOSTILE, 1.4F, 0.8F);
+            level().playSound(null, ground.x, ground.y, ground.z, org.hp.hp_end_expansion.registry.ModTidelight.MACE_SMASH_GROUND_HEAVY.get(), SoundSource.HOSTILE, 1.4F, 0.8F);
             level().playSound(null, ground.x, ground.y, ground.z, SoundEvents.PLAYER_SPLASH_HIGH_SPEED, SoundSource.HOSTILE, 0.9F, 0.9F);
         }
     }
@@ -615,7 +615,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
         if (t == CANNON_BURST) {
             TideVfxEntity.spawnWave(server, this, position());
             impactFx(position(), 2.5F, 40);
-            level().playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.0F, 1.3F);
+            level().playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.0F, 1.3F);
             level().playSound(null, getX(), getY(), getZ(), SoundEvents.PLAYER_SPLASH_HIGH_SPEED, SoundSource.HOSTILE, 2.0F, 0.7F);
         }
     }
@@ -627,7 +627,7 @@ public final class TideRemnantHermitCrabEntity extends PathfinderMob implements 
 
     public static double beamLength(Level level, Vec3 origin, Vec3 dir) {
         Vec3 end = origin.add(dir.scale(BEAM_LENGTH));
-        HitResult hit = level.clip(new ClipContext(origin, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
+        HitResult hit = level.clip(new ClipContext(origin, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
         return hit.getType() == HitResult.Type.MISS ? BEAM_LENGTH : hit.getLocation().distanceTo(origin);
     }
 

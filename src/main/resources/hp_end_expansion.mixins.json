@@ -1,7 +1,22 @@
 {
   "required": true,
   "package": "org.hp.hp_end_expansion.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": ["EndBiomeSourceMixin", "RandomStateMixin", "NoiseChunkMixin", "LivingEntityFallFlyingMixin", "PlayerFallFlyingMixin", "TideCrossbowMultishotMixin", "TideCrossbowEquipmentMixin", "TideCrossbowArrowDamageMixin"],
-  "injectors": {"defaultRequire": 1}
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "EndBiomeSourceMixin",
+    "RandomStateMixin",
+    "NoiseChunkMixin",
+    "LivingEntityFallFlyingMixin",
+    "PlayerFallFlyingMixin",
+    "TideCrossbowEquipmentMixin",
+    "TideCrossbowArrowDamageMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "hp_end_expansion.refmap.json",
+  "client": [
+    "MinecraftMusicMixin"
+  ],
+  "minVersion": "0.8"
 }

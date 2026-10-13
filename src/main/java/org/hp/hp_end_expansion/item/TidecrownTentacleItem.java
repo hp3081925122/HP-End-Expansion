@@ -1,5 +1,6 @@
 package org.hp.hp_end_expansion.item;
 
+import net.minecraft.world.level.Level;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.util.List;
@@ -25,8 +26,8 @@ public final class TidecrownTentacleItem extends Item implements ICurioItem {
     }
 
     @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
-        return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY, new AttributeModifier(id, 1.0D, AttributeModifier.Operation.ADD_VALUE));
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, java.util.UUID id, ItemStack stack) {
+        return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY.get(), new AttributeModifier(id, "hp_end_expansion.capacity", 1.0D, AttributeModifier.Operation.ADDITION));
     }
 
     @Override
@@ -55,7 +56,7 @@ public final class TidecrownTentacleItem extends Item implements ICurioItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.hp_end_expansion.tidecrown_tentacle.reload").withStyle(ChatFormatting.GOLD));
     }
 }
