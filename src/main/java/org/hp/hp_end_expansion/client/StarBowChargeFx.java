@@ -94,7 +94,7 @@ public final class StarBowChargeFx {
         return StarBowItem.getChargeTicks(user) >= FULL_TICKS;
     }
 
-    private static boolean firstPerson(Entity entity) {
+    static boolean firstPerson(Entity entity) {
         Minecraft minecraft = Minecraft.getInstance();
         return entity != null && entity == minecraft.getCameraEntity() && minecraft.options.getCameraType().isFirstPerson();
     }
