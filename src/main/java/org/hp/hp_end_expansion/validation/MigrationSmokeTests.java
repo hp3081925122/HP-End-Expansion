@@ -36,6 +36,7 @@ public final class MigrationSmokeTests {
         if(!Boolean.getBoolean("hp_end_expansion.migrationTests")) return;
         FUNCTIONS.register("migration_smoke",()->MigrationSmokeTests::run);
         FUNCTIONS.register(bus);
+        if(Boolean.getBoolean("hp_end_expansion.serverValidation")) MigrationServerTests.register(bus);
         bus.addListener(MigrationSmokeTests::tests);
     }
     private static Identifier id(String name) { return Identifier.fromNamespaceAndPath(Hp_end_expansion.MODID,name); }

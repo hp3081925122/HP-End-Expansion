@@ -1,13 +1,9 @@
 package org.hp.hp_end_expansion.item;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -25,8 +21,9 @@ public final class TidecrownTentacleItem extends Item implements ICurioItem {
     }
 
     @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, Identifier id, ItemStack stack) {
-        return ImmutableMultimap.of(ModTidelight.CROSSBOW_CAPACITY, new AttributeModifier(id, 1.0D, AttributeModifier.Operation.ADD_VALUE));
+    public top.theillusivec4.curios.api.CurioAttributeModifiers getDefaultCurioAttributeModifiers(ItemStack stack) {
+        return top.theillusivec4.curios.api.CurioAttributeModifiers.EMPTY.withModifierAdded(ModTidelight.CROSSBOW_CAPACITY,
+            new AttributeModifier(Identifier.fromNamespaceAndPath(org.hp.hp_end_expansion.Hp_end_expansion.MODID, "tidecrown_tentacle_capacity"), 1.0D, AttributeModifier.Operation.ADD_VALUE), "relic");
     }
 
     @Override
