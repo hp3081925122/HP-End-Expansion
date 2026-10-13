@@ -1,6 +1,12 @@
 package org.hp.hp_end_expansion.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -9,14 +15,36 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.hp.hp_end_expansion.item.StarBowItem;
+import org.slf4j.Logger;
 
 public final class StarChargeParticle extends TextureSheetParticle {
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final ParticleRenderType CHARGE_TRANSLUCENT = new ParticleRenderType() {
+        @Override
+        public void begin(BufferBuilder buffer, TextureManager textures) {
+            RenderSystem.depthMask(false);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+        }
+
+        @Override
+        public void end(Tesselator tessellator) {
+            tessellator.end();
+            RenderSystem.depthMask(true);
+        }
+    };
+
     private static final int STREAM = 0;
     private static final int RING = 1;
     private static final int PULSE = 2;
@@ -116,6 +144,9 @@ public final class StarChargeParticle extends TextureSheetParticle {
         previousRight = localRight;
         previousUp = localUp;
         previousForward = localForward;
+        if (mode == HALO) {
+            LOGGER.debug("Star bow halo {} created for owner {}; first-person culling disabled {}", halo, ownerId, StarBowChargeFx.firstPerson(level.getEntity(ownerId)));
+        }
     }
 
     private void updateLocal(int age) {
@@ -175,8 +206,12 @@ public final class StarChargeParticle extends TextureSheetParticle {
         zo = z;
         oRoll = roll;
         LivingEntity owner = owner();
-        if (owner == null || age++ >= lifetime || ((mode == RING || mode == CONSTELLATION) && !StarBowChargeFx.full(owner))
+        boolean expired = age++ >= lifetime && mode != HALO && mode != CONSTELLATION;
+        if (owner == null || expired || ((mode == RING || mode == CONSTELLATION) && !StarBowChargeFx.full(owner))
             || (mode == HALO && StarBowChargeFx.stage(owner) < halo)) {
+            if (mode == HALO) {
+                LOGGER.debug("Star bow halo {} removed for owner {} at age {}; owner missing {}, current stage {}", halo, ownerId, age, owner == null, owner == null ? -1 : StarBowChargeFx.stage(owner));
+            }
             remove();
             return;
         }
@@ -186,9 +221,15 @@ public final class StarChargeParticle extends TextureSheetParticle {
         updateLocal(age);
         roll += mode == STREAM ? spin * 0.7F : mode == HALO ? spin : 0.12F;
         Vec3 world = StarBowChargeFx.toWorld(owner, 1, localRight, localUp, localForward);
-        x = world.x;
-        y = world.y;
-        z = world.z;
+        this.setPos(world.x, world.y, world.z);
+        double extent = quadSize * 2.2D;
+        this.setBoundingBox(new AABB(world.x - extent, world.y - extent, world.z - extent,
+            world.x + extent, world.y + extent, world.z + extent));
+    }
+
+    @Override
+    public boolean shouldCull() {
+        return !StarBowChargeFx.firstPerson(owner());
     }
 
     @Override public void render(VertexConsumer buffer, Camera camera, float partialTick) {
@@ -236,7 +277,7 @@ public final class StarChargeParticle extends TextureSheetParticle {
     }
 
     @Override public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        return CHARGE_TRANSLUCENT;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
