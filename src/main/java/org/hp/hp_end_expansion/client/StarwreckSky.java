@@ -115,7 +115,7 @@ public final class StarwreckSky {
 
         // 2. 加法：地平线热帘、垂死的星
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(StarfallRenderTypes::skyAdditiveShader);
         BufferBuilder b = tess.getBuilder();
         b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         curtains(b, m, t, L);
@@ -125,12 +125,14 @@ public final class StarwreckSky {
         // 3. 普通混合：星骸带碎块的剪影，挡住身后的光
         RenderSystem.defaultBlendFunc();
         b = tess.getBuilder();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, false);
         draw(b);
 
         // 4. 加法：碎块朝地平线那侧的余烬边、飘落的余烬
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.setShader(StarfallRenderTypes::skyAdditiveShader);
         b = tess.getBuilder();
         b.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         debris(b, m, t, L, true);

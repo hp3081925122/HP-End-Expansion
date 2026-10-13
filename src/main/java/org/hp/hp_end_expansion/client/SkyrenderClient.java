@@ -4,6 +4,11 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 
@@ -136,11 +141,24 @@ public final class SkyrenderClient {
         // 发光层走加法：黑的地方不加光，只有裂边和裂纹亮
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         g.setColor(1, 1, 1, Mth.clamp(glow * fade, 0, 1));
-        g.blit(GAZE_OVERLAY_GLOW, x, y, dw, dh, 0, 0, 256, 144, 256, 144);
+        glowOverlay(g, x, y, dw, dh);
         RenderSystem.defaultBlendFunc();
         g.setColor(1, 1, 1, 1);
         RenderSystem.disableBlend();
         if (age >= charge) g.fill(0, 0, w, h, ((int) (Mth.clamp(fade, 0, 1) * 230) << 24) | 0xFFF4E8);
+    }
+
+    private static void glowOverlay(GuiGraphics graphics, int x, int y, int width, int height) {
+        RenderSystem.setShaderTexture(0, GAZE_OVERLAY_GLOW);
+        RenderSystem.setShader(StarfallRenderTypes::guiAdditiveShader);
+        Matrix4f matrix = graphics.pose().last().pose();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.vertex(matrix, x, y, 0).uv(0, 0).endVertex();
+        buffer.vertex(matrix, x, y + height, 0).uv(0, 1).endVertex();
+        buffer.vertex(matrix, x + width, y + height, 0).uv(1, 1).endVertex();
+        buffer.vertex(matrix, x + width, y, 0).uv(1, 0).endVertex();
+        BufferUploader.drawWithShader(buffer.end());
     }
 
     // ---------- 共用：画四边形 ----------

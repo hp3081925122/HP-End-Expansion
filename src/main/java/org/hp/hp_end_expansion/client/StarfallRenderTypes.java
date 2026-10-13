@@ -21,6 +21,8 @@ public final class StarfallRenderTypes extends RenderType {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<ResourceLocation, RenderType> ADDITIVE_TYPES = new HashMap<>();
     private static ShaderInstance additiveShader;
+    private static ShaderInstance skyAdditiveShader;
+    private static ShaderInstance guiAdditiveShader;
 
     private StarfallRenderTypes() {
         super("starfall_additive", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, () -> {}, () -> {});
@@ -33,7 +35,21 @@ public final class StarfallRenderTypes extends RenderType {
                 additiveShader = shader;
                 LOGGER.debug("Starfall additive shader loaded with ONE + ONE blending");
             });
+        event.registerShader(new ShaderInstance(event.getResourceProvider(),
+            ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "sky_additive"), DefaultVertexFormat.POSITION_COLOR), shader -> {
+                skyAdditiveShader = shader;
+                LOGGER.debug("Sky additive shader loaded with SRC_ALPHA + ONE blending");
+            });
+        event.registerShader(new ShaderInstance(event.getResourceProvider(),
+            ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID, "gui_additive"), DefaultVertexFormat.POSITION_TEX), shader -> {
+                guiAdditiveShader = shader;
+                LOGGER.debug("GUI additive shader loaded with SRC_ALPHA + ONE blending");
+            });
     }
+
+    public static ShaderInstance skyAdditiveShader() { return skyAdditiveShader; }
+
+    public static ShaderInstance guiAdditiveShader() { return guiAdditiveShader; }
 
     public static RenderType additive(ResourceLocation texture) {
         return ADDITIVE_TYPES.computeIfAbsent(texture, key -> create("starfall_additive", DefaultVertexFormat.NEW_ENTITY,
