@@ -35,6 +35,7 @@ import org.hp.hp_end_expansion.entity.tidelight.LanternJellyfishEntity;
 import org.hp.hp_end_expansion.entity.tidelight.AbyssWatcherEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TidecrownAnemoneEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
+import org.hp.hp_end_expansion.entity.tidelight.LobsterEliteEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideRemnantHermitCrabEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideVfxEntity;
 import org.hp.hp_end_expansion.entity.tidelight.TideWaterBoltEntity;
@@ -227,6 +228,14 @@ public final class ModEntities {
             .build("hp_end_expansion:tidebreaker_shrimp_test")
     );
 
+    // 龙虾精英
+    public static final DeferredHolder<EntityType<?>, EntityType<LobsterEliteEntity>> LOBSTER_ELITE = ENTITY_TYPES.register(
+        "lobster_elite",
+        () -> EntityType.Builder.of(LobsterEliteEntity::new, MobCategory.MONSTER)
+            .sized(2.4F, 3.6F).eyeHeight(3.0F).clientTrackingRange(12).updateInterval(1)
+            .build("hp_end_expansion:lobster_elite")
+    );
+
     private ModEntities() {
     }
 
@@ -240,6 +249,7 @@ public final class ModEntities {
         event.put(TIDECROWN_ANEMONE.get(), TidecrownAnemoneEntity.createAttributes().build());
         event.put(TIDEBREAKER_SHRIMP.get(), TidebreakerShrimpEntity.createAttributes().build());
         event.put(TIDEBREAKER_SHRIMP_TEST.get(), TidebreakerShrimpEntity.createAttributes().build());
+        event.put(LOBSTER_ELITE.get(), LobsterEliteEntity.createAttributes().build());
         event.put(ABYSS_WATCHER.get(), AbyssWatcherEntity.createAttributes().build());
         event.put(RIFT_MANTIS.get(), RiftMantisEntity.createAttributes().build());
         event.put(RIFT_MATRIARCH.get(), RiftMatriarchEntity.createAttributes().build());
@@ -331,6 +341,7 @@ public final class ModEntities {
             && reason != MobSpawnType.CHUNK_GENERATION
             || level.getEntitiesOfClass(TidebreakerShrimpEntity.class, new AABB(pos).inflate(24.0D), e -> e.isAlive()).isEmpty();
     }
+
     private static boolean validTidelightSpawnGround(BlockState state) {
         return ReefstoneBlock.isReef(state) || state.is(ModTidelight.PEARL_SAND.get());
     }
