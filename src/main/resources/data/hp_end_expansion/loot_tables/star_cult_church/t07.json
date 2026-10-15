@@ -1,0 +1,70 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:written_book",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 1
+            },
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{title: \"星位全录\", author: \"守夜抄录者\", pages: ['{\"text\": \"三处星位分别位于抄经室、祭服室与东塔。\\\\n\\\\n观察偏心之星，铭记坠落、环绕、回归，最后面向后殿。\"}', '{\"text\": \"陨星落下以后，守夜者仍每日整理祭服，为归来的旅人留下一盏灯。\\\\n\\\\n石匣埋于殿下，星仪悬于殿中。愿后来者记住这里曾经有人生活。\"}']}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:experience_bottle",
+          "weight": 3,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "hp_end_expansion:star_cult_church/ordinary_book",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}
