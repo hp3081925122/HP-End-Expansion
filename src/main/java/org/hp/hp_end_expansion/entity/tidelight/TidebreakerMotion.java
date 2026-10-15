@@ -3,6 +3,7 @@ package org.hp.hp_end_expansion.entity.tidelight;
 import net.minecraft.world.phys.Vec3;
 
 public final class TidebreakerMotion {
+ private static final double PUNCH_REACH_SCALE = 1.35;
  private TidebreakerMotion() {}
  // 拳锤正面中心坐标，按连锤、冲拳、空泡、格挡动画每半 tick 烘焙
  private static final float[][][] FRAMES = {
@@ -219,6 +220,11 @@ public final class TidebreakerMotion {
  float[][] frames=FRAMES[Math.max(0,Math.min(3,skill-1))];
  float t=Math.max(0,Math.min(frames.length-1,age*2)); int a=(int)t,b=Math.min(a+1,frames.length-1),i=side*3;
  double x=frames[a][i]+(frames[b][i]-frames[a][i])*(t-a), y=frames[a][i+1]+(frames[b][i+1]-frames[a][i+1])*(t-a),z=frames[a][i+2]+(frames[b][i+2]-frames[a][i+2])*(t-a);
+ if (skill == TidebreakerShrimpEntity.COMBO) {
+ x=frames[0][i]+(x-frames[0][i])*PUNCH_REACH_SCALE;
+ y=frames[0][i+1]+(y-frames[0][i+1])*PUNCH_REACH_SCALE;
+ z=frames[0][i+2]+(z-frames[0][i+2])*PUNCH_REACH_SCALE;
+ }
  double r=Math.toRadians(yaw);return new Vec3((Math.cos(r)*x+Math.sin(r)*z)/16,y/16,(Math.sin(r)*x-Math.cos(r)*z)/16);
  }
 }
