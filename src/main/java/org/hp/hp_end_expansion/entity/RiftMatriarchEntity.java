@@ -308,7 +308,7 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
             RiftVfxEntity.spawn(serverLevel, RiftVfxEntity.KIND_PORTAL, this.arenaCenter.x, this.arenaCenter.y, this.arenaCenter.z, this.getYRot(), 0.0F, 3.0F, 16);
             this.teleportTo(this.arenaCenter.x, this.arenaCenter.y, this.arenaCenter.z);
         }
-        // 脱战：场内 60 秒无玩家则回满血并消失
+        // 脱战：场内 60 秒无玩家则原地回满血、清空仇恨
         if (this.tickCount % 20 == 0) {
             if (this.playersInArena(serverLevel).isEmpty()) {
                 this.emptyTicks += 20;
@@ -316,15 +316,10 @@ public final class RiftMatriarchEntity extends Monster implements GeoEntity {
                 this.emptyTicks = 0;
             }
             if (this.emptyTicks >= LEAVE_LIMIT && this.isAlive()) {
-                LOGGER.debug("Rift Matriarch {} despawns, no players for 60s", this.getId());
+                LOGGER.debug("Rift Matriarch {} resets in place, no players for 60s", this.getId());
                 this.setHealth(this.getMaxHealth());
-                if (this.summonedByEgg) {
-                    ItemEntity egg = new ItemEntity(serverLevel, this.arenaCenter.x, this.arenaCenter.y + 0.5D, this.arenaCenter.z, new ItemStack(ModItems.RIFT_EGG.get()));
-                    serverLevel.addFreshEntity(egg);
-                }
-                serverLevel.sendParticles(ModParticles.RIFT_SPARK.get(), this.getX(), this.getY() + 3.0D, this.getZ(), 40, 2.0D, 2.0D, 2.0D, 0.1D);
-                this.discard();
-                return;
+                this.setTarget(null);
+                this.emptyTicks = 0;
             }
         }
         // 阶段判定：生命跨过 60% 与 25%

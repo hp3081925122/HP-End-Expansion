@@ -105,6 +105,7 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
     /** 爪扫后留在空中的三道裂痕：离身体中心的半径（格）、左右各张开的角度（度）、离地高度范围。 */
     public static final double[] TEAR_RADII = {5.5, 6.5, 7.5};
     public static final double TEAR_SPAN = 70, TEAR_LOW = 0.3, TEAR_HIGH = 2.2, RAKE_REACH = 7.0, GAZE_RANGE = 48, GAZE_CONE = 75;
+    private static final double NEAR_FIGHT = 24;
     private static final java.util.UUID PARTY_HEALTH = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":skyrender_party_health").getBytes(java.nio.charset.StandardCharsets.UTF_8));
     private static final java.util.UUID FINAL_SPEED = java.util.UUID.nameUUIDFromBytes((Hp_end_expansion.MODID + ":skyrender_final_speed").getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
@@ -517,13 +518,18 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
 
     private List<Player> fighters() {
         double r = radius + 16;
-        return level().getEntitiesOfClass(Player.class, new AABB(center, center).inflate(r, 48, r),
-            p -> p.isAlive() && !p.isSpectator() && !p.isCreative() && p.position().subtract(center).horizontalDistance() <= r);
+        AABB area = new AABB(center, center).inflate(r, 48, r).minmax(getBoundingBox().inflate(NEAR_FIGHT, 24, NEAR_FIGHT));
+        return level().getEntitiesOfClass(Player.class, area,
+            p -> p.isAlive() && !p.isSpectator() && !p.isCreative()
+                && (p.position().subtract(center).horizontalDistance() <= r
+                    || p.position().subtract(position()).horizontalDistance() <= NEAR_FIGHT && Math.abs(p.getY() - getY()) <= 24));
     }
 
     private void pickTarget(List<Player> fighters) {
         LivingEntity current = getTarget();
         boolean valid = current instanceof Player p && fighters.contains(p);
+        if (!valid && current != null) LOGGER.debug("Skyrender dropped target: entity={}, target={}, alive={}, fromCenter={}, fromSelf={}",
+            getId(), current.getId(), current.isAlive(), current.position().subtract(center).horizontalDistance(), current.distanceTo(this));
         if (valid && tickCount % 20 != 0) return;
         // 每秒重选一次最近的玩家
         Player best = null;
@@ -747,6 +753,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
         LivingEntity t = getTarget();
         if (t == null || !t.isAlive()) {
             behindTicks = 0;
+            if (tickCount % 100 == 0) LOGGER.debug("Skyrender idle without target: entity={}, fromCenter={}, radius={}, fighters={}",
+                getId(), position().subtract(center).horizontalDistance(), radius, fighters.size());
             return;
         }
         Vec3 to = t.position().subtract(position());
@@ -1434,7 +1442,8 @@ public class SkyrenderEntity extends Monster implements GeoEntity {
             double d = position().subtract(t.position()).horizontalDistance();
             if (d > 4.2) {
                 if (--repath <= 0) {
-                    getNavigation().moveTo(t, 1.0);
+                    boolean pathed = getNavigation().moveTo(t, 1.0);
+                    if (!pathed && tickCount % 40 < 12) LOGGER.debug("Skyrender chase path failed: entity={}, target={}, distance={}", getId(), t.getId(), d);
                     repath = 6 + random.nextInt(6);
                 }
                 return;

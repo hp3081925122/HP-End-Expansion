@@ -41,8 +41,8 @@ public final class ModTidelight {
     public static final RegistryObject<ColoredFallingBlock> PEARL_SAND = block("pearl_sand", () -> new ColoredFallingBlock(0xFFDCE8E0, BlockBehaviour.Properties.copy(Blocks.SAND)));
     public static final RegistryObject<TidelightCoralBlock> LUMEN_CORAL = block("lumen_coral", () -> new TidelightCoralBlock(plant().lightLevel(s -> 6)));
     public static final RegistryObject<Block> LUMEN_CORAL_BLOCK = block("lumen_coral_block", () -> new Block(BlockBehaviour.Properties.copy(Blocks.TUBE_CORAL_BLOCK).lightLevel(s -> 8)));
-    public static final RegistryObject<BaseCoralFanBlock> LUMEN_CORAL_FAN = BLOCKS.register("lumen_coral_fan", () -> new BaseCoralFanBlock(plant().lightLevel(s -> 5)));
-    public static final RegistryObject<BaseCoralWallFanBlock> LUMEN_CORAL_WALL_FAN = BLOCKS.register("lumen_coral_wall_fan", () -> new BaseCoralWallFanBlock(plant().lightLevel(s -> 5)));
+    public static final RegistryObject<BaseCoralFanBlock> LUMEN_CORAL_FAN = BLOCKS.register("lumen_coral_fan", () -> new BaseCoralFanBlock(plant().offsetType(BlockBehaviour.OffsetType.NONE).lightLevel(s -> 5)));
+    public static final RegistryObject<BaseCoralWallFanBlock> LUMEN_CORAL_WALL_FAN = BLOCKS.register("lumen_coral_wall_fan", () -> new BaseCoralWallFanBlock(plant().offsetType(BlockBehaviour.OffsetType.NONE).lightLevel(s -> 5)));
     public static final RegistryObject<StandingAndWallBlockItem> CORAL_FAN_ITEM = item("lumen_coral_fan", () -> new StandingAndWallBlockItem(LUMEN_CORAL_FAN.get(), LUMEN_CORAL_WALL_FAN.get(), new Item.Properties(), Direction.DOWN));
     public static final RegistryObject<TidelightFlowerBlock> TIDE_WHISKERS = block("tide_whiskers", () -> new TidelightFlowerBlock(plant().replaceable()));
     public static final RegistryObject<TidelightFlowerBlock> LANTERN_ANEMONE = block("lantern_anemone", () -> new TidelightFlowerBlock(plant().lightLevel(s -> 7)));
