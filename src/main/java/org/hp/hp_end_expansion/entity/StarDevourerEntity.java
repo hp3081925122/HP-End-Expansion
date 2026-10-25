@@ -435,7 +435,7 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
             LOGGER.debug("Star Devourer {} left arena at {}, pulled back", this.getId(), this.position());
             this.teleportTo(this.arenaCenter.x, this.arenaCenter.y + this.cruiseHeight(), this.arenaCenter.z);
         }
-        // 脱战：场内 60 秒无玩家则回满血并消失
+        // 脱战：场内 60 秒无玩家则原地回满血、清空仇恨
         if (this.tickCount % 20 == 0) {
             if (this.playersInArena(serverLevel).isEmpty()) {
                 this.emptyTicks += 20;
@@ -443,16 +443,11 @@ public final class StarDevourerEntity extends Monster implements GeoEntity {
                 this.emptyTicks = 0;
             }
             if (this.emptyTicks >= LEAVE_LIMIT && this.isAlive()) {
-                LOGGER.debug("Star Devourer {} despawns, no players for 60s", this.getId());
+                LOGGER.debug("Star Devourer {} resets in place, no players for 60s", this.getId());
                 this.setHealth(this.getMaxHealth());
-                if (this.summonedByBeacon) {
-                    ItemEntity beacon = new ItemEntity(serverLevel, this.arenaCenter.x, this.arenaCenter.y + 0.5D, this.arenaCenter.z, new ItemStack(ModItems.STAR_BEACON.get()));
-                    serverLevel.addFreshEntity(beacon);
-                }
                 this.clearSummons(serverLevel);
-                serverLevel.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 2.0D, this.getZ(), 60, 3.0D, 1.5D, 3.0D, 0.1D);
-                this.discard();
-                return;
+                this.setTarget(null);
+                this.emptyTicks = 0;
             }
         }
         // 阶段判定：生命跨过 55% 与 20%，或三核心全碎
