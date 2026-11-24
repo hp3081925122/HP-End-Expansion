@@ -16,6 +16,7 @@ import org.hp.hp_end_expansion.entity.tidelight.TidebreakerWarlordEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 @EventBusSubscriber(modid = Hp_end_expansion.MODID, value = Dist.CLIENT)
 public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<TidebreakerWarlordEntity> {
@@ -47,6 +48,7 @@ public final class TidebreakerWarlordRenderer extends GeoEntityRenderer<Tidebrea
     public TidebreakerWarlordRenderer(EntityRendererProvider.Context context) {
         super(context, new Model());
         shadowRadius = 1.2F;
+        addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 
     // 注册碎潮锤将渲染器
