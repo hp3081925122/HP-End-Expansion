@@ -16,13 +16,14 @@ import org.hp.hp_end_expansion.entity.tidelight.TidebreakerShrimpEntity;
 import org.hp.hp_end_expansion.registry.ModEntities;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 @EventBusSubscriber(modid=Hp_end_expansion.MODID,value=Dist.CLIENT)
 public final class TidebreakerShrimpRenderer extends GeoEntityRenderer<TidebreakerShrimpEntity> {
     private static ResourceLocation id(String path){return ResourceLocation.fromNamespaceAndPath(Hp_end_expansion.MODID,path);}
     private static ResourceLocation fx(String name){return id("textures/entity/tidebreaker_"+name+".png");}
     private static final ResourceLocation STREAK=fx("streak"),ARC=fx("arc"),BUBBLE=fx("bubble"),SHARD=fx("shard"),GUARD=fx("guard"),IMPACT=fx("impact");
-    public TidebreakerShrimpRenderer(EntityRendererProvider.Context c){super(c,new Model());shadowRadius=.65F;}
+    public TidebreakerShrimpRenderer(EntityRendererProvider.Context c){super(c,new Model());shadowRadius=.65F;addRenderLayer(new AutoGlowingGeoLayer<>(this));}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerEntityRenderer(ModEntities.TIDEBREAKER_SHRIMP.get(),TidebreakerShrimpRenderer::new);}
     @Override protected float getDeathMaxRotation(TidebreakerShrimpEntity e){return 0;}
     @Override public boolean shouldRender(TidebreakerShrimpEntity e,Frustum f,double x,double y,double z){return e.shouldRender(x,y,z)&&f.isVisible(e.getBoundingBox().inflate(e.skill()==0?2:9));}
